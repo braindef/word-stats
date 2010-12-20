@@ -39,7 +39,7 @@ For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level
 
 For LIX:
 
-* - 25: Children's Books (green)
+* -25: Children's Books (green)
 * 25 - 30: Simple texts (green)
 * 30 - 40: Normal Text / Fiction (yellow)
 * 40 - 50: Factual information, such as Wikipedia (orange)
@@ -85,6 +85,7 @@ Yes, they are just for style consistence.
 = Can I style the word counts lists? =
 
 Be my guest. The classes are:
+
 * Container widget li: word-stats-counts-widget
 * h2 widget title: word-stats-counts-title
 * Widget and shortcode ul of counts: word-stats-counts
