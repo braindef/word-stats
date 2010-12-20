@@ -1,0 +1,76 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Word Stats Plugin es_ES v.1.2\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-12-17 17:53+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
+"Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Spanish\n"
+"X-Poedit-Country: SPAIN\n"
+
+#: word-stats.php:58
+msgid "Words"
+msgstr "Palabras"
+
+#: word-stats.php:64
+msgid "Total words"
+msgstr "Palabras totales"
+
+#: word-stats.php:105
+#: word-stats.php:127
+msgid "Total Word Counts"
+msgstr "Palabras totales"
+
+#: word-stats.php:105
+msgid "Displays the word counts of all public post types"
+msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
+
+#: word-stats.php:112
+msgid "Title:"
+msgstr "Título:"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "Readability:"
+msgstr "Legibilidad:"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "characters"
+msgstr "caracteres"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "alphanumeric characters"
+msgstr "caracteres alfanuméricos"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "words"
+msgstr "palabras"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "sentences"
+msgstr "frases"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "characters per word"
+msgstr "caracteres por palabra"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "characters per sentence"
+msgstr "caracteres por frase"
+
+#: word-stats.php:225
+#: word-stats.php:227
+msgid "words per sentence"
+msgstr "palabras por frase"
+
