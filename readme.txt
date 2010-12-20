@@ -6,7 +6,7 @@ Requires at least: 2.9.0
 Tested up to: 3.0.3
 Stable tag: 1.2
 
-Adds total and per post type word counts to your dashboard, a widget to show the counts in your sidebar, and displays characters, words and sentences live stats and color coded ARI, CLI and LIX readability levels below the edit post text area.
+Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
 
 == Description ==
 
@@ -84,7 +84,7 @@ Yes, they are just for style consistence.
 
 = Can I style the word counts lists? =
 
-Be my guest. The classes are:
+Of course. The CSS classes are:
 
 * Container widget li: word-stats-counts-widget
 * h2 widget title: word-stats-counts-title
