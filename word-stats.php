@@ -2,7 +2,7 @@
 /*
 Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
-Description: Adds total and per post type word counts to your dashboard, a widget to show the counts in your sidebar, and displays characters, words and sentences live stats and color coded ARI, CLI and LIX readability levels below the edit post text area.
+Description: Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
 Author: Fran Ontanaya
 Version: 1.2
 Author URI: http://www.franontanaya.com
