@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
 Author: Fran Ontanaya
-Version: 1.2
+Version: 1.2.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -26,9 +26,9 @@ http://bestseller.franontanaya.com/?p=101
 
 */
 
-/* § Word Counts
+/* # Word Counts
 -------------------------------------------------------------- */
-// § Count words from all post types and cache the output
+// # Count words from all post types and cache the output
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
 
 function ws_cache_word_counts() {
@@ -69,7 +69,7 @@ function ws_cache_word_counts() {
 }
 add_action( 'save_post', 'ws_cache_word_counts' );
 
-// § Output the cached word counts with the proper HTML tags
+// # Output the cached word counts with the proper HTML tags
 function ws_get_word_counts( $mode ) {
 
 	if ( !get_option( 'ws-counts-cache' ) ) {
@@ -98,7 +98,7 @@ function ws_total_word_counts() {
 add_action( 'right_now_content_table_end', 'ws_total_word_counts' );
 
 
-// § Widget to output word counts
+// # Widget to output word counts
 class widget_ws_word_counts extends WP_Widget {
 	function widget_ws_word_counts() {
 		// widget actual processes
@@ -138,16 +138,16 @@ class widget_ws_word_counts extends WP_Widget {
 } // end class
 add_action( 'widgets_init', create_function( '', 'return register_widget( "widget_ws_word_counts" );' ) );
 
-// § Shortcode to output word counts
+// # Shortcode to output word counts
 function ws_word_counts_sc( $atts = null, $content = null ) {
 	return '<ul class="word-stats-counts">' . ws_get_word_counts( 'list' ) . '</ul>'; 
 }
 add_shortcode( 'wordcounts', 'ws_word_counts_sc' );
 
 
-/* § Live post stats
+/* # Live post stats
 -------------------------------------------------------------- */
-// § Display post legibility
+// # Display post legibility
 function ws_readability() { ?>
 
 	<script type="text/javascript">
