@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard
 Requires at least: 2.9.0
 Tested up to: 3.0.3
-Stable tag: 1.2
+Stable tag: 1.2.1
 
 Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
 
@@ -99,6 +99,8 @@ Of course. The CSS classes are:
 2. Live stats for the post being edited.
 
 == Changelog ==
+= 1.2.1 =
+* Removed a trailing line break in the source code and unicode section characters in the comments 
 
 = 1.2 =
 * Counts words from any registered public post type, including any custom post types.
