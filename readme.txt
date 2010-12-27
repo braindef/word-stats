@@ -115,14 +115,14 @@ The CSS classes are:
 
 == Changelog ==
 = 1.4 =
-* Added keyword live count and ignore keywords option
-* Live stats script now loads only when editing a post
-* Now HTML no-break spaces are processed too
-* Fixed typo in Spanish translation file
+* Added keyword live count and ignore keywords option.
+* Live stats script now loads only when editing a post.
+* Now HTML no-break spaces are processed too.
+* Fixed typo in Spanish translation file.
 
 = 1.3 =
 * Stats are cached as post metadata when the post is saved.
-* Added a Readability Index column to the edit posts list htat shows an aggregate of all indexes.
+* Added a Readability Index column to the edit posts list that shows an aggregate of all indexes.
 * Fixed a short PHP open tag.
 * Added an options page.
 * Added option to disable R.I. column.
