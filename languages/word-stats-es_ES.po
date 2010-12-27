@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.2\n"
+"Project-Id-Version: Word Stats Plugin es_ES v.1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-17 17:53+0100\n"
+"POT-Creation-Date: 2010-12-27 08:28+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -13,64 +13,88 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: word-stats.php:58
+#: word-stats.php:59
 msgid "Words"
 msgstr "Palabras"
 
-#: word-stats.php:64
+#: word-stats.php:65
 msgid "Total words"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
-#: word-stats.php:127
+#: word-stats.php:103
+#: word-stats.php:125
 msgid "Total Word Counts"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
+#: word-stats.php:103
 msgid "Displays the word counts of all public post types"
 msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 
-#: word-stats.php:112
+#: word-stats.php:110
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "characters"
 msgstr "caracteres"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "words"
 msgstr "palabras"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:229
+#: word-stats.php:231
 msgid "words per sentence"
 msgstr "palabras por frase"
+
+#: word-stats.php:317
+msgid "R.I."
+msgstr "I.L."
+
+#: word-stats.php:381
+msgid "Word Stats Options"
+msgstr "Opciones de Word Stats"
+
+#: word-stats.php:389
+msgid "Display aggregate readability column in the manage posts list"
+msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
+
+#: word-stats.php:395
+msgid "Enable total word counts."
+msgstr "Habilitar cuentas totals de palabras."
+
+#: word-stats.php:396
+msgid "This may slow down post saving in large blogs."
+msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
+
+#: word-stats.php:400
+msgid "Save Changes"
+msgstr "Guardar cambios"
 
