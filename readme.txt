@@ -116,7 +116,7 @@ The CSS classes are:
 == Changelog ==
 = 1.4 =
 * Added keyword live count and ignore keywords option
-* Live stats scripts now loads only when editing a post
+* Live stats script now loads only when editing a post
 * Now HTML no-break spaces are processed too
 * Fixed typo in Spanish translation file
 
