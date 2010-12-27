@@ -2,9 +2,9 @@
 /*
 Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
-Description: Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
+Description: Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area
 Author: Fran Ontanaya
-Version: 1.2.1
+Version: 1.3
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -24,6 +24,7 @@ http://bestseller.franontanaya.com/?p=101
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+Thanks to Allan Ellegaard for testing and input. 
 */
 
 /* # Word Counts
@@ -67,7 +68,6 @@ function ws_cache_word_counts() {
 	update_option( 'ws-counts-cache', $cache );
 	return $cache;
 }
-add_action( 'save_post', 'ws_cache_word_counts' );
 
 // # Output the cached word counts with the proper HTML tags
 function ws_get_word_counts( $mode ) {
@@ -95,8 +95,6 @@ function ws_get_word_counts( $mode ) {
 function ws_total_word_counts() {
 	echo ws_get_word_counts( 'table' );
 }
-add_action( 'right_now_content_table_end', 'ws_total_word_counts' );
-
 
 // # Widget to output word counts
 class widget_ws_word_counts extends WP_Widget {
@@ -136,14 +134,20 @@ class widget_ws_word_counts extends WP_Widget {
 	<?php
 	}
 } // end class
-add_action( 'widgets_init', create_function( '', 'return register_widget( "widget_ws_word_counts" );' ) );
 
 // # Shortcode to output word counts
 function ws_word_counts_sc( $atts = null, $content = null ) {
 	return '<ul class="word-stats-counts">' . ws_get_word_counts( 'list' ) . '</ul>'; 
 }
+
 add_shortcode( 'wordcounts', 'ws_word_counts_sc' );
 
+// Hook the functions
+if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
+	add_action( 'save_post', 'ws_cache_word_counts' );
+	add_action( 'right_now_content_table_end', 'ws_total_word_counts' );
+	add_action( 'widgets_init', create_function( '', 'return register_widget( "widget_ws_word_counts" );' ) );
+}
 
 /* # Live post stats
 -------------------------------------------------------------- */
@@ -232,8 +236,181 @@ function ws_readability() { ?>
 		wsRefreshStats();
 	</script>
 
-	<?
+	<?php
 }
 
 add_action('admin_footer', 'ws_readability');
+
+/* # Static post stats
+-------------------------------------------------------------- */
+// Calculate stats the PHP way and store them.
+function ws_cache_readability_stats( $id = null ) {
+	if ( !$id ) {
+		global $post;
+		if ( !$post->ID ) {
+			return null;
+		}
+		$id = $post->ID;
+	}
+	$thepost = get_post( $id );
+
+	// Strip tags
+	$allWords = strip_tags( $thepost->post_content );
+
+	// Count
+	if ( $allWords ) {
+		$totalCharacters = strlen( $allWords );
+		$temp = preg_replace( '/\W/', '', $allWords );
+		$totalAlphanumeric = strlen( $temp );
+		$temp = str_replace( '!', '.', $allWords );
+		$temp = str_replace( '?', '.', $temp );
+		$temp = str_replace( ';', '.', $temp );
+		$temp = preg_replace( '/[A-Z]\./', 'A', $temp );
+		$sentenceArray = explode( '.', $temp );
+		$totalSentences = count( $sentenceArray );
+		if ( $sentenceArray[ $totalSentences - 1 ] == '' ) { $totalSentences = $totalSentences - 1; }
+		$wordArray = preg_split( '/[\s\.]+/', $temp );
+		$totalWords = count( $wordArray );
+		if ( $wordArray[ $totalWords - 1 ] == '' ) { $totalWords = $totalWords - 1; }
+
+		// Do the calcs if we aren't going to divide by zero
+		if ( $totalWords > 0 && $totalSentences > 0 ) {
+			$charsPerWord = intval( $totalAlphanumeric / $totalWords );
+			$charsPerSentence = intval( $totalAlphanumeric / $totalSentences );
+			$wordsPerSentence = intval( $totalWords / $totalSentences );
+
+			// Automated Readability Index
+			$ARI = round( 4.71 * ( $totalAlphanumeric / $totalWords ) + 0.5 * ( $totalWords / $totalSentences ) - 21.43, 1);
+
+			// Coleman-Liau Index
+			$CLI = round( 5.88 * ( $totalAlphanumeric / $totalWords ) - 29.6 * ( $totalSentences / $totalWords ) - 15.8, 1);
+
+			// LIX
+			$LIXlongwords = 0;
+			for ($i = 0; $i < count( $wordArray ); $i = $i + 1 ) {
+				if ( strlen( $wordArray[ $i ] ) > 6 ) { $LIXlongwords++; }
+			}
+			$temp = preg_split( '/[,;\.\(\:]/', $allWords );
+			$LIX = round( $totalWords / count( $temp ) + ( $LIXlongwords * 100 ) / $totalWords, 1) ;
+		} else {
+			$ARI = '0';
+			$CLI = '0';
+			$LIX = '0';
+		}
+	} else {
+		$ARI = '0';
+		$CLI = '0';
+		$LIX = '0';
+	}
+
+	// Create/update the post meta fields for readability
+	update_post_meta( $id, 'readability_ARI', $ARI );
+	update_post_meta( $id, 'readability_CLI', $CLI );
+	update_post_meta( $id, 'readability_LIX', $LIX );
+}
+
+add_action( 'save_post', 'ws_cache_readability_stats' );
+
+/* # Add a column to the post management list
+-------------------------------------------------------------- */
+function ws_readability_column( $defaults ) {
+    $defaults[ 'readability' ] = __( 'R.I.', 'word-stats' );
+    return $defaults;
+}
+
+function ws_custom_column() {
+	global $post;
+	$ARI = get_post_meta( $post->ID, 'readability_ARI', true );
+	$CLI = get_post_meta( $post->ID, 'readability_CLI', true );
+	$LIX = get_post_meta( $post->ID, 'readability_LIX', true );
+
+	if ( !$ARI ) {
+		// If there is no data or the post is blank
+		echo '<span style="color:#999;">--</span>';
+	} else {
+		// Trying to aggregate the indexes in a meaningful way.
+		$r_avg = ( floatval( $ARI ) + floatval( $CLI ) + ( ( floatval( $LIX ) - 10 ) / 2 ) ) / 3;
+		if ( $r_avg < 8 ) { echo '<span style="color: #0c0;">', round( $r_avg, 1 ), '</span>'; }
+		if ( $r_avg > 7.9 && $r_avg < 12 ) { echo '<span style="color: #aa0;">', round( $r_avg, 1 ), '</span>'; }
+		if ( $r_avg > 11.9 && $r_avg < 16 ) { echo '<span style="color: #c60;">', round( $r_avg, 1 ), '</span>'; }
+		if ( $r_avg > 15.9 && $r_avg < 20 ) { echo '<span style="color: #c00;">', round( $r_avg, 1 ), '</span>'; }
+		if ( $r_avg > 19.9 ) { echo '<span style="color: #a0a;">', round( $r_avg, 1 ), '</span>'; }
+	}
+}
+
+// Load style for the column
+function ws_admin_init() {
+	wp_register_style( 'word-stats-css', plugins_url() . '/word-stats/word-stats.css' );
+	wp_enqueue_style( 'word-stats-css' );
+}
+
+if ( get_option( 'word_stats_RI_Column' ) || get_option( 'word_stats_RI_Column' ) == '' ) {
+	add_filter( 'manage_posts_columns', 'ws_readability_column' );
+	add_action( 'manage_posts_custom_column', 'ws_custom_column' );
+	add_action( 'admin_init', 'ws_admin_init' );
+}
+
+/* § Construct the options page
+-------------------------------------------------------------- */
+// create custom plugin settings menu
+add_action('admin_menu', 'word_stats_create_menu');
+
+function word_stats_create_menu() {
+	//create new settings menu
+	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', 'word_stats_settings_page' );
+	//call register settings function
+	add_action( 'admin_init', 'register_word_stats_settings' );
+}
+
+function register_word_stats_settings() {
+	//register our settings
+	register_setting( 'word-stats-settings-group', 'word_stats_RI_column' );
+	register_setting( 'word-stats-settings-group', 'word_stats_totals' );
+}
+
+function word_stats_settings_page() {
+
+	// Default values
+	$opt_RI_column = get_option( 'word_stats_RI_column' );
+	if ( $opt_RI_column == null ) { $opt_RI_column = 1; }
+	$opt_totals = get_option( 'word_stats_totals' );
+	if ( $opt_totals == null ) { $opt_totals = 1; }
+
+?>
+<div class="wrap">
+	<h2><?php _e( 'Word Stats Options', 'word-stats' ); ?></h2>
+
+	<form method="post" action="options.php">
+		 <?php settings_fields( 'word-stats-settings-group' ); ?>
+
+		<p>
+			<input type="hidden" name="word_stats_RI_column" value="0" />
+			<input type="checkbox" name="word_stats_RI_column" value="1" <?php if ( $opt_RI_column ) { ?>checked="checked"<?php } echo ' '; ?>/>
+			<?php _e( 'Display aggregate readability column in the manage posts list', 'word-stats' ); ?>	 	
+		</p>
+
+		<p>
+			<input type="hidden" name="word_stats_totals" value="0" />
+			<input type="checkbox" name="word_stats_totals" value="1" <?php if ( $opt_totals ) { ?>checked="checked"<?php } echo ' '; ?>/>
+			<?php _e( 'Enable total word counts.', 'word-stats' ); ?> 
+			<?php _e( 'This may slow down post saving in large blogs.', 'word-stats' ); ?> 
+		</p>
+
+		<p class="submit">
+			<input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
+		</p>
+	</form>
+</div>
+<?php } ?>
+
+<?php
+// TODO:
+// Allow to select algorythms
+// Enable live readability
+// Enable extra readability stats
+// Calculate all posts now
+// Delete readability metadata now
+// Enable keywords count - this goes in a different timeInterval
+// Paragraph counts
+// Word Stats Custom Index
 ?>
