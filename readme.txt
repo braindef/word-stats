@@ -66,7 +66,7 @@ They try to reflect how easy the text is to read, not to understand. You can wri
 
 = Why the readability index column doesn't show any value? =
 
-The values are cached when once the post is saved. I'll add in the future an option to recalculate all posts.
+The values are cached once the post is saved. I'll add in the future an option to recalculate all posts.
 
 = Why the live counters seem to lag? =
 
