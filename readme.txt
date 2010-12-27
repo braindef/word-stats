@@ -1,16 +1,16 @@
 === Plugin Name ===
 Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
-Tags: word count, dashboard, readability
+Tags: word count, dashboard, readability, keywords
 Requires at least: 2.9.0
 Tested up to: 3.0.3
-Stable tag: 1.3
+Stable tag: 1.4
 
-Adds total word counts to your dashboard, a widget to show them, and readability levels to edit post page and posts list.
+Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
 
 == Description ==
 
-Word Stats adds stats and readability level indexes for your blog posts.
+Word Stats adds stats, keyword counts and readability level indexes for your blog posts.
 
 It can count the number of words in each public post type in your blog, including any custom post types, and display the totals in your dashboard. You can also show them in your blog with a widget or the &#91;wordcounts&#93; shortcode.
 
@@ -19,6 +19,7 @@ It adds too live statistics for the edit post panel:
 * Color coded legibility indexes: Automated Readability Index, Coleman-Liau Index and LIX. 
 * Total characters, alphanumeric characters, words and sentences
 * Characters per word, characters per sentence, words per sentence
+* Relevant keywords, except those specified to be ignored
 
 You can also display optionally an extra column with the aggregated readability level of each post in the manage posts list.  
 
@@ -69,11 +70,15 @@ The values are cached when once the post is saved. I'll add in the future an opt
 
 = Why the live counters seem to lag? =
 
-The calculations are refreshed every 5 seconds.
+The calculations are refreshed every 15 seconds.
 
 = The word count from the plugin doesn't match the word count from WordPress! =
 
 The plugin uses a slightly more accurate word splitter.
+
+= How does Word Stats pick the relevant keywords? =
+
+It shows any keyword that appears at least twice and at least 1/4 times the top keyword.
 
 = How does Word Stats count sentences? =
 
@@ -109,6 +114,11 @@ The CSS classes are:
 3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 1.4 =
+* Added keyword live count and ignore keywords option
+* Live stats scripts now loads only when editing a post
+* Now HTML no-break spaces are processed too
+* Fixed typo in Spanish translation file
 
 = 1.3 =
 * Stats are cached as post metadata when the post is saved.

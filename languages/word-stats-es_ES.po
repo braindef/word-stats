@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.3\n"
+"Project-Id-Version: Word Stats Plugin es_ES v.1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-27 08:28+0100\n"
+"POT-Creation-Date: 2010-12-27 20:26+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -34,67 +34,84 @@ msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:259
+#: word-stats.php:261
+msgid "Keywords:"
+msgstr "Palabras clave:"
+
+#: word-stats.php:259
+msgid "No relevant keywords."
+msgstr "Ninguna palabra clave relevante."
+
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "characters"
 msgstr "caracteres"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "words"
 msgstr "palabras"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: word-stats.php:229
-#: word-stats.php:231
+#: word-stats.php:266
+#: word-stats.php:268
 msgid "words per sentence"
 msgstr "palabras por frase"
 
-#: word-stats.php:317
+#: word-stats.php:360
 msgid "R.I."
 msgstr "I.L."
 
-#: word-stats.php:381
+#: word-stats.php:430
 msgid "Word Stats Options"
 msgstr "Opciones de Word Stats"
 
-#: word-stats.php:389
+#: word-stats.php:438
 msgid "Display aggregate readability column in the manage posts list"
 msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
 
-#: word-stats.php:395
+#: word-stats.php:444
 msgid "Enable total word counts."
-msgstr "Habilitar cuentas totals de palabras."
+msgstr "Habilitar cuentas totales de palabras."
 
-#: word-stats.php:396
+#: word-stats.php:445
 msgid "This may slow down post saving in large blogs."
 msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
 
-#: word-stats.php:400
+#: word-stats.php:451
+msgid "Enable live keyword count."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: word-stats.php:455
+msgid "Ignore these keywords (space separated):"
+msgstr "Ignorar estas palabras clave (separadas por espacios):"
+
+#: word-stats.php:460
 msgid "Save Changes"
 msgstr "Guardar cambios"
 
