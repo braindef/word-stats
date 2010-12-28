@@ -453,7 +453,7 @@ function word_stats_settings_page() {
 
 		<p>
 			<?php _e( 'Ignore these keywords (space separated):', 'word-stats' ); ?><br /> 
-			<textarea name="word_stats_ignore_keywords" width="50" height="10"><?php echo esc_attr( strip_tags( $opt_ignore_keywords ) ); ?></textarea>
+			<textarea name="word_stats_ignore_keywords" cols="50" rows="10"><?php echo esc_attr( strip_tags( $opt_ignore_keywords ) ); ?></textarea>
 		</p>
 
 		<p class="submit">
