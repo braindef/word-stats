@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
 Author: Fran Ontanaya
-Version: 1.4
+Version: 1.4.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -243,9 +243,9 @@ function ws_readability() { ?>
 					}
 				}
 
-				/* Relevant keywords must have at least two appareances and half the appareances of the top keyword */
+				/* Relevant keywords must have at least three appareances and half the appareances of the top keyword */
 				for ( var j in wordHash ) {
-					if ( wordHash[j] >= topCount/4 && wordHash[j] > 1 ) {
+					if ( wordHash[j] >= topCount/5 && wordHash[j] > 2 ) {
 						if ( wordHash[j] == topCount ) {
 							temp = temp + '<span style="font-weight:bold; color:#0c0;">' + j + ' (' + wordHash[j] + ')</span> ';
 						} else if ( wordHash[j] > topCount / 1.5 ) {
@@ -279,7 +279,7 @@ function ws_readability() { ?>
 }
 
 // Load only when editing a post
-if ( $_GET[ 'action' ] == 'edit' ) {
+if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER['SCRIPT_FILENAME'], 'post-new.php' ) === false ) {
 	add_action('admin_footer', 'ws_readability');
 }
 
@@ -453,7 +453,7 @@ function word_stats_settings_page() {
 
 		<p>
 			<?php _e( 'Ignore these keywords (space separated):', 'word-stats' ); ?><br /> 
-			<textarea name="word_stats_ignore_keywords"><?php echo esc_attr( strip_tags( $opt_ignore_keywords ) ); ?></textarea>
+			<textarea name="word_stats_ignore_keywords" width="50" height="10"><?php echo esc_attr( strip_tags( $opt_ignore_keywords ) ); ?></textarea>
 		</p>
 
 		<p class="submit">

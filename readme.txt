@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 2.9.0
 Tested up to: 3.0.3
-Stable tag: 1.4
+Stable tag: 1.4.1
 
 Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
 
@@ -78,7 +78,7 @@ The plugin uses a slightly more accurate word splitter.
 
 = How does Word Stats pick the relevant keywords? =
 
-It shows any keyword that appears at least twice and at least 1/4 times the top keyword.
+It shows any keyword that appears at least three times and at least 1/5 times the top keyword.
 
 = How does Word Stats count sentences? =
 
@@ -114,6 +114,11 @@ The CSS classes are:
 3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 1.4.1 =
+* Increased ignored keywords textarea size.
+* Increased minimum count for relevant keywords to 3 and lowered relevancy threshold to 1/5 of the top keyword.
+* Fixed live stats not loading in new post page.
+
 = 1.4 =
 * Added keyword live count and ignore keywords option.
 * Live stats script now loads only when editing a post.
