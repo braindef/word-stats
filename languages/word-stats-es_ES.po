@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.4\n"
+"Project-Id-Version: Word Stats Plugin es_ES v.1.4.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-27 20:26+0100\n"
+"POT-Creation-Date: 2010-12-30 18:17+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -83,35 +83,43 @@ msgstr "caracteres por frase"
 msgid "words per sentence"
 msgstr "palabras por frase"
 
-#: word-stats.php:360
+#: word-stats.php:365
 msgid "R.I."
 msgstr "I.L."
 
-#: word-stats.php:430
+#: word-stats.php:441
 msgid "Word Stats Options"
 msgstr "Opciones de Word Stats"
 
-#: word-stats.php:438
+#: word-stats.php:449
 msgid "Display aggregate readability column in the manage posts list"
 msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
 
-#: word-stats.php:444
+#: word-stats.php:455
 msgid "Enable total word counts."
 msgstr "Habilitar cuentas totales de palabras."
 
-#: word-stats.php:445
+#: word-stats.php:456
 msgid "This may slow down post saving in large blogs."
 msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
 
-#: word-stats.php:451
+#: word-stats.php:462
+msgid "Replace WordPress live word count with Word Stats word count."
+msgstr "Sustituir la cuenta de palabras en vivo de WordPress por la cuenta de palabras de Word Stats"
+
+#: word-stats.php:468
+msgid "Enable live character/word/sentence averages."
+msgstr "Mostrar las medias en vivo de caracteres/palabras/frases"
+
+#: word-stats.php:474
 msgid "Enable live keyword count."
 msgstr "Habilitar cuentas totales de palabras."
 
-#: word-stats.php:455
+#: word-stats.php:478
 msgid "Ignore these keywords (space separated):"
 msgstr "Ignorar estas palabras clave (separadas por espacios):"
 
-#: word-stats.php:460
+#: word-stats.php:483
 msgid "Save Changes"
 msgstr "Guardar cambios"
 

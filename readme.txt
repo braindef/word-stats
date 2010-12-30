@@ -2,22 +2,22 @@
 Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
-Requires at least: 2.9.0
+Requires at least: 3.0.0
 Tested up to: 3.0.4
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 
-Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
+Adds total words counts to the dashboard, provides a more accurate live word count, displays keywords and readability levels of each post.
 
 == Description ==
 
-Word Stats adds stats, keyword counts and readability level indexes for your blog posts.
+Word Stats adds stats, keyword counts and readability level indexes for your blog posts, and replaces the live word count from WordPress with a more accurate algorythm.
 
 It can count the number of words in each public post type in your blog, including any custom post types, and display the totals in your dashboard. You can also show them in your blog with a widget or the &#91;wordcounts&#93; shortcode.
 
 It adds too live statistics for the edit post panel:
 
 * Color coded legibility indexes: Automated Readability Index, Coleman-Liau Index and LIX. 
-* Total characters, alphanumeric characters, words and sentences
+* Total characters, alphanumeric characters, words and sentences.
 * Characters per word, characters per sentence, words per sentence
 * Relevant keywords, except those specified to be ignored
 
@@ -72,10 +72,6 @@ The values are cached once the post is saved. I'll add in the future an option t
 
 The calculations are refreshed every 15 seconds.
 
-= The word count from the plugin doesn't match the word count from WordPress! =
-
-The plugin uses a slightly more accurate word splitter.
-
 = How does Word Stats pick the relevant keywords? =
 
 It shows any keyword that appears at least three times and at least 1/5 times the top keyword.
@@ -114,6 +110,10 @@ The CSS classes are:
 3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 1.4.3 =
+* Replaces by default the live word count from WordPress.
+* Added missing translation strings.
+
 = 1.4.2 =
 * Option to disable live character/word/sentences averages.
 * Compatibility bump for WordPress 3.0.4
