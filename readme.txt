@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
 Tested up to: 3.0.4
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 
 Adds total words counts to the dashboard, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -110,6 +110,9 @@ The CSS classes are:
 3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 1.4.4 =
+* All HTML output converted to PHP strings.
+
 = 1.4.3 =
 * Replaces by default the live word count from WordPress.
 * Added missing translation strings.

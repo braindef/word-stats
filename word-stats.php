@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total words counts to the dashboard, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.4.3
+Version: 1.4.4
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -106,9 +106,7 @@ class widget_ws_word_counts extends WP_Widget {
 	function form($instance) {
 		// outputs the options form on admin
 		$title = esc_attr( $instance[ 'title' ] );
-		?>
-		<p><label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:', 'word-stats' ); ?> <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-		<?php
+		echo '<p><label for="', $this->get_field_id( 'title' ), '">', __( 'Title:', 'word-stats' ), ' <input class="widefat" id="', $this->get_field_id( 'title' ), '" name="', $this->get_field_name( 'title' ), '" type="text" value="', $title, '"" /></label></p>';
 	}
 
 	function update( $new_instance, $old_instance ) {
@@ -124,14 +122,13 @@ class widget_ws_word_counts extends WP_Widget {
 		$title = apply_filters( 'widget_title', $instance['title'] );
 		if ( !$title ) $title = __( 'Total Word Counts', 'word-stats' );
 		$title = esc_attr( strip_tags( $title ) );
-		?>
+		echo '
 		<li class="widget word-stats-counts-widget">
-			<h2 class="widgettitle word-stats-counts-title"><?php echo $title; ?></h2>
-			<ul class="word-stats-counts">
-			<?php echo ws_get_word_counts( 'list' ); ?>
-			</ul>
-		</li>
-	<?php
+			<h2 class="widgettitle word-stats-counts-title">', $title, '</h2>
+			<ul class="word-stats-counts">',
+				ws_get_word_counts( 'list' ), 
+			'</ul>
+		</li>';
 	}
 } // end class
 
@@ -152,37 +149,37 @@ if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '
 /* # Live post stats
 -------------------------------------------------------------- */
 // # Display post legibility
-function ws_readability() { ?>
-
+function ws_readability() { 
+	echo '
 	<script type="text/javascript">
 		function wsRefreshStats() {
-			var statusInfo = document.getElementById( 'post-status-info' );
+			var statusInfo = document.getElementById( "post-status-info" );
 			var allWords = document.getElementById("content").value;
-			allWords = allWords.replace( /\&lt;/gi, '<' );
-			allWords = allWords.replace ( /\&gt;/gi, '>' );
-			allWords = allWords.replace ( /\&nbsp;/gi, ' ' );
+			allWords = allWords.replace( /\&lt;/gi, "<" );
+			allWords = allWords.replace ( /\&gt;/gi, ">" );
+			allWords = allWords.replace ( /\&nbsp;/gi, " " );
 			allWords = allWords.replace(/<[^\s][^>]*[^\s]>/g , "");
 			var totalCharacters = 0;
 			var totalWords = 0;
 			var totalSentences = 0;
-			var wordArray = '';
-			var temp = '';
+			var wordArray = "";
+			var temp = "";
 			if ( allWords ) {
 				totalCharacters = allWords.length;	
 				temp = allWords.replace( /\W/gi, "");
 				totalAlphanumeric = temp.length;
-				temp = '';
-				temp = allWords.replace( /\!/g, '.' );
-				temp = temp.replace( /\?/g, '.' );
-				temp = temp.replace( /;/g, '.' );
-				temp = temp.replace ( /[A-Z]\./g, 'A' ); /* no dotted acronyms, thanks */
-				sentenceArray = temp.split( '.' );
+				temp = "";
+				temp = allWords.replace( /\!/g, "." );
+				temp = temp.replace( /\?/g, "." );
+				temp = temp.replace( /;/g, "." );
+				temp = temp.replace ( /[A-Z]\./g, "A" ); /* no dotted acronyms, thanks */
+				sentenceArray = temp.split( "." );
 				totalSentences = sentenceArray.length;
-				if ( sentenceArray[ sentenceArray.length - 1 ] == '' ) { totalSentences = totalSentences - 1; }
-				temp = temp.replace( /,/g, ' ' );
+				if ( sentenceArray[ sentenceArray.length - 1 ] == "" ) { totalSentences = totalSentences - 1; }
+				temp = temp.replace( /,/g, " " );
 				wordArray = temp.split( /[\s\.]+/ );
 				totalWords = wordArray.length;
-				if ( wordArray[ wordArray.length - 1 ] == '' ) { totalWords = totalWords - 1; }
+				if ( wordArray[ wordArray.length - 1 ] == "" ) { totalWords = totalWords - 1; }
 			}
 			if ( totalWords > 0 && totalSentences > 0 ) {
 				var charsPerWord = ( totalAlphanumeric / totalWords );
@@ -196,21 +193,21 @@ function ws_readability() { ?>
 				var ARI = 4.71 * ( totalAlphanumeric / totalWords ) + 0.5 * ( totalWords / totalSentences ) - 21.43;
 				var ARItext;
 				ARI = ARI.toFixed( 1 ); 
-				if ( ARI < 8 ) { ARItext = '<span style="color: #0c0;">' + ARI + '</span>'; }
-				if ( ARI > 7.9 && ARI < 12 ) { ARItext = '<span style="color: #aa0;">' + ARI + '</span>'; }
-				if ( ARI > 11.9 && ARI < 16 ) { ARItext = '<span style="color: #c60;">' + ARI + '</span>'; }
-				if ( ARI > 15.9 && ARI < 20 ) { ARItext = '<span style="color: #c00;">' + ARI + '</span>'; }
-				if ( ARI > 19.9 ) { ARItext = '<span style="color: #a0a;">' + ARI + '</span>'; }
+				if ( ARI < 8 ) { ARItext = \'<span style="color: #0c0;">\' + ARI + "</span>"; }
+				if ( ARI > 7.9 && ARI < 12 ) { ARItext = \'<span style="color: #aa0;">\' + ARI + "</span>"; }
+				if ( ARI > 11.9 && ARI < 16 ) { ARItext = \'<span style="color: #c60;">\' + ARI + "</span>"; }
+				if ( ARI > 15.9 && ARI < 20 ) { ARItext = \'<span style="color: #c00;">\' + ARI + "</span>"; }
+				if ( ARI > 19.9 ) { ARItext = \'<span style="color: #a0a;">\' + ARI + "</span>"; }
 
 				/* Coleman-Liau Index */
 				var CLI = 5.88 * ( totalAlphanumeric / totalWords ) - 29.6 * ( totalSentences / totalWords ) - 15.8;
 				var CLItext;
 				CLI = CLI.toFixed( 1 ); 
-				if ( CLI < 8 ) { CLItext = '<span style="color: #0c0;">' + CLI + '</span>'; }
-				if ( CLI > 7.9 && CLI < 12 ) { CLItext = '<span style="color: #aa0;">' + CLI + '</span>'; }
-				if ( CLI > 11.9 && CLI < 16 ) { CLItext = '<span style="color: #c60;">' + CLI + '</span>'; }
-				if ( CLI > 15.9 && CLI < 20 ) { CLItext = '<span style="color: #c00;">' + CLI + '</span>'; }
-				if ( CLI > 19.9 ) { CLItext = '<span style="color: #a0a;">' + CLI + '</span>'; }
+				if ( CLI < 8 ) { CLItext = \'<span style="color: #0c0;">\' + CLI + "</span>"; }
+				if ( CLI > 7.9 && CLI < 12 ) { CLItext = \'<span style="color: #aa0;">\' + CLI + "</span>"; }
+				if ( CLI > 11.9 && CLI < 16 ) { CLItext = \'<span style="color: #c60;">\' + CLI + "</span>"; }
+				if ( CLI > 15.9 && CLI < 20 ) { CLItext = \'<span style="color: #c00;">\' + CLI + "</span>"; }
+				if ( CLI > 19.9 ) { CLItext = \'<span style="color: #a0a;">\' + CLI + "</span>"; }
 
 				/* LIX */
 				var LIXlongwords = 0;
@@ -221,66 +218,84 @@ function ws_readability() { ?>
 				var LIX = totalWords / temp.length + ( LIXlongwords * 100 ) / totalWords;
 				var LIXtext;
 				LIX = LIX.toFixed( 1 ); 
-				if ( LIX < 30 ) { LIXtext = '<span style="color: #0c0;">' + LIX + '</span>'; }
-				if ( LIX > 29.9 && LIX < 40 ) { LIXtext = '<span style="color: #aa0;">' + LIX + '</span>'; }
-				if ( LIX > 39.9 && LIX < 50 ) { LIXtext = '<span style="color: #c60;">' + LIX + '</span>'; }
-				if ( LIX > 49.9 && LIX < 60 ) { LIXtext = '<span style="color: #c00;">' + LIX + '</span>'; }
-				if ( LIX > 59.9 ) { LIXtext = '<span style="color: #a0a;">' + LIX + '</span>'; }
+				if ( LIX < 30 ) { LIXtext = \'<span style="color: #0c0;">\' + LIX + "</span>"; }
+				if ( LIX > 29.9 && LIX < 40 ) { LIXtext = \'<span style="color: #aa0;">\' + LIX + "</span>"; }
+				if ( LIX > 39.9 && LIX < 50 ) { LIXtext = \'<span style="color: #c60;">\' + LIX + "</span>"; }
+				if ( LIX > 49.9 && LIX < 60 ) { LIXtext = \'<span style="color: #c00;">\' + LIX + "</span>"; }
+				if ( LIX > 59.9 ) { LIXtext = \'<span style="color: #a0a;">\' + LIX + "</span>"; }
 
-				temp = '';
-			<?php if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) { ?>
-				/* Find keywords */
-				var wordHash = new Array;
-				var topCount = 0;
-				var ignKeywords = "<?php echo '::', str_replace( ' ', '::', get_option( 'word_stats_ignore_keywords' ) ), '::';  ?>";
-				for (var i = 0; i < wordArray.length; i = i + 1) {
-					if ( ignKeywords.indexOf( wordArray[i] ) == '-1' ) {
-						if ( wordArray[i].length > 3 ) {
-							if ( !wordHash[ wordArray[i] ] ) { wordHash[ wordArray[i] ] = 0; }
-							wordHash[ wordArray[i] ] = wordHash[ wordArray[i] ] + 1;
-							if ( wordHash[ wordArray[i] ] > topCount ) { topCount = wordHash[ wordArray[i] ]; }
+				temp = ""';
+				if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) { 
+					echo '
+					/* Find keywords */
+					var wordHash = new Array;
+					var topCount = 0;
+					var ignKeywords = "' , '::', str_replace( ' ', '::', get_option( 'word_stats_ignore_keywords' ) ), '::' ,'";
+					for (var i = 0; i < wordArray.length; i = i + 1) {
+						if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) {
+							if ( wordArray[i].length > 3 ) {
+								if ( !wordHash[ wordArray[i] ] ) { wordHash[ wordArray[i] ] = 0; }
+								wordHash[ wordArray[i] ] = wordHash[ wordArray[i] ] + 1;
+								if ( wordHash[ wordArray[i] ] > topCount ) { topCount = wordHash[ wordArray[i] ]; }
+							}
 						}
 					}
-				}
 
-				/* Relevant keywords must have at least three appareances and half the appareances of the top keyword */
-				for ( var j in wordHash ) {
-					if ( wordHash[j] >= topCount/5 && wordHash[j] > 2 ) {
-						if ( wordHash[j] == topCount ) {
-							temp = temp + '<span style="font-weight:bold; color:#0c0;">' + j + ' (' + wordHash[j] + ')</span> ';
-						} else if ( wordHash[j] > topCount / 1.5 ) {
-							temp = temp + '<span style="color:#3c0;">' + j + ' (' + wordHash[j] + ')</span> ';
-						} else {
-							temp = temp + j + ' (' + wordHash[j] + ') ';
+					/* Relevant keywords must have at least three appareances and half the appareances of the top keyword */
+					for ( var j in wordHash ) {
+						if ( wordHash[j] >= topCount/5 && wordHash[j] > 2 ) {
+							if ( wordHash[j] == topCount ) {
+								temp = temp + \'<span style="font-weight:bold; color:#0c0;">\' + j + " (" + wordHash[j] + ")</span> ";
+							} else if ( wordHash[j] > topCount / 1.5 ) {
+								temp = temp + \'<span style="color:#3c0;">\' + j + " (" + wordHash[j] + ")</span> ";
+							} else {
+								temp = temp + j + " (" + wordHash[j] + ") ";
+							}
 						}
 					}
+					if ( temp == "" ) { 
+						temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>', esc_attr( __( 'No relevant keywords.', 'word-stats' ) ), '"; 
+					} else {
+						temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>" + temp;
+					}'; 
 				}
-				if ( temp == '' ) { 
-					temp = "<br><strong><?php _e( 'Keywords:', 'word-stats' ); ?></strong><br><?php _e( 'No relevant keywords.', 'word-stats' ); ?>"; 
-				} else {
-					temp = "<br><strong><?php _e( 'Keywords:', 'word-stats' ); ?></strong><br>" + temp;
-				} 
-			<?php } ?>
-
-				if ( statusInfo.innerHTML.indexOf( 'edit-word-stats' ) < 1 ) { 
-					statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id='edit-word-stats' style='padding-left:7px; padding-bottom:4px;' colspan='2'><strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext <?php if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { ?>+ "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; " + totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>." <?php } ?> + temp + "</td></tr></tbody>";
-				} else {
-				 	document.getElementById( "edit-word-stats").innerHTML = "<strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext <?php if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { ?>+ "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; "+ totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>."<?php } ?> + temp; 
+				echo 'if ( statusInfo.innerHTML.indexOf( "edit-word-stats" ) < 1 ) { 
+						statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id=\'edit-word-stats\' style=\'padding-left:7px; padding-bottom:4px;\' colspan=\'2\'><strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext '; 
+				if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { 
+					echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ), 
+						', " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ), 
+						', " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ), 
+						', " + totalSentences + " ', esc_attr( __( 'sentences', 'word-stats' ) ), 
+						'.<br>" + charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ), 
+						', " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ), 
+						', " + wordsPerSentence + " ', esc_attr( __( 'words per sentence', 'word-stats' ) ), '."'; 
 				}
+				echo ' + temp + "</td></tr></tbody>";
+					} else {
+					 	document.getElementById( "edit-word-stats").innerHTML = "<strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext '; 
+				if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { 
+					echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ), 
+						', " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ), 
+						', " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ), 
+						', " + totalSentences + " ', esc_attr( __( 'sentences', 'word-stats' ) ), 
+						'.<br>" + charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ), 
+						', " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ), 
+						', " + wordsPerSentence + " ', esc_attr( __( 'words per sentence', 'word-stats' ) ), '."'; 
+				}
+				echo ' + temp; 
+					} ';
 
-				<?php // Replace WordPress' word count
-				if ( get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) { ?>
-					document.getElementById( 'word-count').innerHTML = totalWords;
-				<?php } ?>
-			}
+				// Replace WordPress' word count
+				if ( get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
+					echo 'document.getElementById( "word-count").innerHTML = totalWords;';
+				}
+			echo '}
 		}
 
 		var statsTime = setInterval( "wsRefreshStats()", 10000 );
 		wsRefreshStats();
 
-	</script>
-
-	<?php
+	</script>';
 }
 
 // Load only when editing a post
@@ -436,60 +451,52 @@ function word_stats_settings_page() {
 
 	$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
-?>
+	echo '
 <div class="wrap">
-	<h2><?php _e( 'Word Stats Options', 'word-stats' ); ?></h2>
+	<h2>' , __( 'Word Stats Options', 'word-stats' ), '</h2>
 
 	<form method="post" action="options.php">
-		 <?php settings_fields( 'word-stats-settings-group' ); ?>
+		 ', settings_fields( 'word-stats-settings-group' ), '
 
 		<p>
 			<input type="hidden" name="word_stats_RI_column" value="0" />
-			<input type="checkbox" name="word_stats_RI_column" value="1" <?php if ( $opt_RI_column ) { ?>checked="checked"<?php } echo ' '; ?>/>
-			<?php _e( 'Display aggregate readability column in the manage posts list', 'word-stats' ); ?>	 	
+			<input type="checkbox" name="word_stats_RI_column" value="1" '; if ( $opt_RI_column ) { echo 'checked="checked"'; } echo ' />',
+			__( 'Display aggregate readability column in the manage posts list', 'word-stats' ), '	 	
 		</p>
 
 		<p>
 			<input type="hidden" name="word_stats_totals" value="0" />
-			<input type="checkbox" name="word_stats_totals" value="1" <?php if ( $opt_totals ) { ?>checked="checked"<?php } echo ' '; ?>/>
-			<?php _e( 'Enable total word counts.', 'word-stats' ); ?> 
-			<?php _e( 'This may slow down post saving in large blogs.', 'word-stats' ); ?> 
+			<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' />',
+			__( 'Enable total word counts.', 'word-stats' ),  
+			__( 'This may slow down post saving in large blogs.', 'word-stats' ), ' 
 		</p>
 
 		<p>
 			<input type="hidden" name="word_stats_replace_word_count" value="0" />
-			<input type="checkbox" name="word_stats_replace_word_count" value="1" <?php if ( $opt_replace_wc ) { ?>checked="checked"<?php } echo ' '; ?>/>
-			<?php _e( 'Replace WordPress live word count with Word Stats word count.', 'word-stats' ); ?> 
+			<input type="checkbox" name="word_stats_replace_word_count" value="1" '; if ( $opt_replace_wc ) { echo 'checked="checked"';  } echo ' />',
+			__( 'Replace WordPress live word count with Word Stats word count.', 'word-stats' ), ' 
 		</p>
 
 		<p>
 			<input type="hidden" name="word_stats_averages" value="0" />
-			<input type="checkbox" name="word_stats_averages" value="1" <?php if ( $opt_averages ) { ?>checked="checked"<?php } echo ' '; ?>/>
-			<?php _e( 'Enable live character/word/sentence averages.', 'word-stats' ); ?> 
+			<input type="checkbox" name="word_stats_averages" value="1" '; if ( $opt_averages ) { echo 'checked="checked"'; } echo ' />',
+			__( 'Enable live character/word/sentence averages.', 'word-stats' ), ' 
 		</p>
 
 		<p>
 			<input type="hidden" name="word_stats_show_keywords" value="0" />
-			<input type="checkbox" name="word_stats_show_keywords" value="1" <?php if ( $opt_show_keywords ) { ?>checked="checked"<?php } echo ' '; ?>/>
-			<?php _e( 'Enable live keyword count.', 'word-stats' ); ?> 
+			<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' />',
+			__( 'Enable live keyword count.', 'word-stats' ), ' 
 		</p>
 
 		<p>
-			<?php _e( 'Ignore these keywords (space separated):', 'word-stats' ); ?><br /> 
-			<textarea name="word_stats_ignore_keywords" cols="50" rows="10"><?php echo esc_attr( strip_tags( $opt_ignore_keywords ) ); ?></textarea>
+			', __( 'Ignore these keywords (space separated):', 'word-stats' ), '<br /> 
+			<textarea name="word_stats_ignore_keywords" cols="50" rows="10">', esc_attr( strip_tags( $opt_ignore_keywords ) ) ,'</textarea>
 		</p>
 
 		<p class="submit">
-			<input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
+			<input type="submit" class="button-primary" value="' ,__('Save Changes'), '" />
 		</p>
 	</form>
-</div>
-<?php } 
-
-// TODO:
-// Allow to select algorythms
-// Calculate all posts now
-// Delete readability metadata now
-// Paragraph counts
-// Word Stats Custom Index
-?>
+</div>';
+} ?>
