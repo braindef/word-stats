@@ -3,8 +3,8 @@ Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 2.9.0
-Tested up to: 3.0.3
-Stable tag: 1.4.1
+Tested up to: 3.0.4
+Stable tag: 1.4.2
 
 Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
 
@@ -114,6 +114,10 @@ The CSS classes are:
 3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 1.4.2 =
+* Option to disable live character/word/sentences averages.
+* Compatibility bump for WordPress 3.0.4
+
 = 1.4.1 =
 * Increased ignored keywords textarea size.
 * Increased minimum count for relevant keywords to 3 and lowered relevancy threshold to 1/5 of the top keyword.

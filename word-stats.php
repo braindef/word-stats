@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total words counts to the dashboard, keyword count to edit post page and readability levels to edit post page and posts list.
 Author: Fran Ontanaya
-Version: 1.4.1
+Version: 1.4.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -263,10 +263,11 @@ function ws_readability() { ?>
 			<?php } ?>
 
 				if ( statusInfo.innerHTML.indexOf( 'edit-word-stats' ) < 1 ) { 
-					statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id='edit-word-stats' style='padding-left:7px; padding-bottom:4px;' colspan='2'><strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext + "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; " + totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>." + temp + "</td></tr></tbody>";
+					statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id='edit-word-stats' style='padding-left:7px; padding-bottom:4px;' colspan='2'><strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext <?php if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { ?>+ "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; " + totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>." <?php } ?> + temp + "</td></tr></tbody>";
 				} else {
-				 document.getElementById( "edit-word-stats").innerHTML = "<strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext + "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; "+ totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>." + temp; 
+				 document.getElementById( "edit-word-stats").innerHTML = "<strong><?php _e( 'Readability:', 'word-stats' ); ?></strong><br><a title='Automated Readability Index'>ARI<a>: " + ARItext + "&nbsp; <a title='Coleman-Liau Index'>CLI</a>: " + CLItext + "&nbsp; <a title='Läsbarhetsindex'>LIX</a>: " + LIXtext <?php if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) { ?>+ "<br>" + totalCharacters + " <?php _e( 'characters', 'word-stats' ); ?>; " + totalAlphanumeric + " <?php _e( 'alphanumeric characters', 'word-stats' ); ?>; "+ totalWords + " <?php _e( 'words', 'word-stats' ); ?>; " + totalSentences + " <?php _e( 'sentences', 'word-stats' ); ?>.<br>" + charsPerWord + " <?php _e( 'characters per word', 'word-stats' ); ?>; " + charsPerSentence + " <?php _e( 'characters per sentence', 'word-stats' ); ?>; " + wordsPerSentence + " <?php _e( 'words per sentence', 'word-stats' ); ?>."<?php } ?> + temp; 
 				}
+
 			}
 		}
 
@@ -409,6 +410,7 @@ function register_word_stats_settings() {
 	//register our settings
 	register_setting( 'word-stats-settings-group', 'word_stats_RI_column' );
 	register_setting( 'word-stats-settings-group', 'word_stats_totals' );
+	register_setting( 'word-stats-settings-group', 'word_stats_averages' );
 	register_setting( 'word-stats-settings-group', 'word_stats_show_keywords' );
 	register_setting( 'word-stats-settings-group', 'word_stats_ignore_keywords' );
 }
@@ -420,6 +422,8 @@ function word_stats_settings_page() {
 	if ( $opt_RI_column == null ) { $opt_RI_column = 1; }
 	$opt_totals = get_option( 'word_stats_totals' );
 	if ( $opt_totals == null ) { $opt_totals = 1; }
+	$opt_averages = get_option( 'word_stats_averages' );
+	if ( $opt_averages == null ) { $opt_averages = 1; }
 	$opt_show_keywords = get_option( 'word_stats_show_keywords' );
 	if ( $opt_show_keywords == null ) { $opt_show_keywords = 1; }
 
@@ -443,6 +447,12 @@ function word_stats_settings_page() {
 			<input type="checkbox" name="word_stats_totals" value="1" <?php if ( $opt_totals ) { ?>checked="checked"<?php } echo ' '; ?>/>
 			<?php _e( 'Enable total word counts.', 'word-stats' ); ?> 
 			<?php _e( 'This may slow down post saving in large blogs.', 'word-stats' ); ?> 
+		</p>
+
+		<p>
+			<input type="hidden" name="word_stats_averages" value="0" />
+			<input type="checkbox" name="word_stats_averages" value="1" <?php if ( $opt_averages ) { ?>checked="checked"<?php } echo ' '; ?>/>
+			<?php _e( 'Enable live character/word/sentence averages.', 'word-stats' ); ?> 
 		</p>
 
 		<p>
