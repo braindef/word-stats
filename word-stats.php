@@ -471,13 +471,10 @@ function word_stats_settings_page() {
 		</p>
 	</form>
 </div>
-<?php } ?>
+<?php } 
 
-<?php
 // TODO:
 // Allow to select algorythms
-// Enable live readability
-// Enable extra readability stats
 // Calculate all posts now
 // Delete readability metadata now
 // Paragraph counts

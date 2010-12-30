@@ -117,6 +117,7 @@ The CSS classes are:
 = 1.4.2 =
 * Option to disable live character/word/sentences averages.
 * Compatibility bump for WordPress 3.0.4
+* Removed one line break outside the script.
 
 = 1.4.1 =
 * Increased ignored keywords textarea size.
