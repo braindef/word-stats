@@ -1,22 +1,27 @@
 === Plugin Name ===
 Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
-Tags: word count, dashboard
-Requires at least: 2.9.0
-Tested up to: 3.0.3
-Stable tag: 1.2.1
+Tags: word count, dashboard, readability, keywords
+Requires at least: 3.0.0
+Tested up to: 3.0.4
+Stable tag: 1.4.4
 
-Adds total word counts to your dashboard, a widget to show them, and live readability levels below the edit post text area.
+Adds total words counts to the dashboard, provides a more accurate live word count, displays keywords and readability levels of each post.
 
 == Description ==
 
-Word Stats counts the number of words in each public post type in your blog, including any custom post types, and displays the totals in your dashboard. You can also show them in your blog with a widget or the &#91;wordcounts&#93; shortcode.
+Word Stats adds stats, keyword counts and readability level indexes for your blog posts, and replaces the live word count from WordPress with a more accurate algorythm.
 
-It also displays live statistics in the footer of the edit post panel:
+It can count the number of words in each public post type in your blog, including any custom post types, and display the totals in your dashboard. You can also show them in your blog with a widget or the &#91;wordcounts&#93; shortcode.
+
+It adds too live statistics for the edit post panel:
 
 * Color coded legibility indexes: Automated Readability Index, Coleman-Liau Index and LIX. 
-* Total characters, alphanumeric characters, words and sentences
+* Total characters, alphanumeric characters, words and sentences.
 * Characters per word, characters per sentence, words per sentence
+* Relevant keywords, except those specified to be ignored
+
+You can also display optionally an extra column with the aggregated readability level of each post in the manage posts list.  
 
 It includes i18n translations to Spanish and Catalonian.
 
@@ -30,6 +35,7 @@ It includes i18n translations to Spanish and Catalonian.
 
 1. Install it from the plugins admin page or upload the zip with WordPress' built-in tool or unzip it to 'wp-content/plugins'.
 2. Activate it.
+3. Go to Settings | Word Stats and set up the optional features.
 
 == Frequently Asked Questions ==
 
@@ -39,7 +45,7 @@ For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level
 
 For LIX:
 
-* -25: Children's Books (green)
+* below 25: Children's Books (green)
 * 25 - 30: Simple texts (green)
 * 30 - 40: Normal Text / Fiction (yellow)
 * 40 - 50: Factual information, such as Wikipedia (orange)
@@ -58,13 +64,17 @@ Word Stats uses simple algorythms. For fairly ordinary English texts they will c
 
 They try to reflect how easy the text is to read, not to understand. You can write an article about relativity in simple English and it will be rated as low level. Also, poor writing skills can cheat the indexes; for example by abusing periods or commas.
 
-= Why the counters seem to lag? =
+= Why the readability index column doesn't show any value? =
 
-The calculations are refreshed every 5 seconds.
+The values are cached once the post is saved. I'll add in the future an option to recalculate all posts.
 
-= The word count from the plugin doesn't match the word count from WordPress! =
+= Why the live counters seem to lag? =
 
-Yup. Mine is better.
+The calculations are refreshed every 15 seconds.
+
+= How does Word Stats pick the relevant keywords? =
+
+It shows any keyword that appears at least three times and at least 1/5 times the top keyword.
 
 = How does Word Stats count sentences? =
 
@@ -74,17 +84,17 @@ Word Stats treats «?», «!», «;» and «.» as sentence limitators. It ignor
 
 It uses the sentence limitators plus blank spaces. 
 
-= Wait, these aren't all public post types =
+= The word counts don't include all public post types =
 
-'Attachment', 'nav_menu_item' and 'revision' are excluded, for probably obvious reasons.
+'Attachment', 'nav_menu_item' and 'revision' are excluded.
 
-= The anchors for the total word counts in the dashboard are blank! =
+= The anchors for the total word counts in the dashboard are blank =
 
-Yes, they are just for style consistence.
+They are just for style consistence.
 
 = Can I style the word counts lists? =
 
-Of course. The CSS classes are:
+The CSS classes are:
 
 * Container widget li: word-stats-counts-widget
 * h2 widget title: word-stats-counts-title
@@ -97,10 +107,39 @@ Of course. The CSS classes are:
 
 1. Total word counts in the dashboard.
 2. Live stats for the post being edited.
+3. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
-= 1.2.1 =
-* Removed a trailing line break in the source code and unicode section characters in the comments 
+= 1.4.4 =
+* All HTML output converted to PHP strings.
+
+= 1.4.3 =
+* Replaces by default the live word count from WordPress.
+* Added missing translation strings.
+
+= 1.4.2 =
+* Option to disable live character/word/sentences averages.
+* Compatibility bump for WordPress 3.0.4
+* Removed one line break outside the script.
+
+= 1.4.1 =
+* Increased ignored keywords textarea size.
+* Increased minimum count for relevant keywords to 3 and lowered relevancy threshold to 1/5 of the top keyword.
+* Fixed live stats not loading in new post page.
+
+= 1.4 =
+* Added keyword live count and ignore keywords option.
+* Live stats script now loads only when editing a post.
+* Now HTML no-break spaces are processed too.
+* Fixed typo in Spanish translation file.
+
+= 1.3 =
+* Stats are cached as post metadata when the post is saved.
+* Added a Readability Index column to the edit posts list that shows an aggregate of all indexes.
+* Fixed a short PHP open tag.
+* Added an options page.
+* Added option to disable R.I. column.
+* Added option to disable total word counts.
 
 = 1.2 =
 * Counts words from any registered public post type, including any custom post types.
