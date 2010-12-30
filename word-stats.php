@@ -224,7 +224,7 @@ function ws_readability() {
 				if ( LIX > 49.9 && LIX < 60 ) { LIXtext = \'<span style="color: #c00;">\' + LIX + "</span>"; }
 				if ( LIX > 59.9 ) { LIXtext = \'<span style="color: #a0a;">\' + LIX + "</span>"; }
 
-				temp = ""';
+				temp = "";';
 				if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) { 
 					echo '
 					/* Find keywords */
@@ -287,7 +287,9 @@ function ws_readability() {
 
 				// Replace WordPress' word count
 				if ( get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
-					echo 'document.getElementById( "word-count").innerHTML = totalWords;';
+					echo ' if ( document.getElementById( "word-count") != null ) {
+						document.getElementById( "word-count").innerHTML = totalWords;
+					}';
 				}
 			echo '}
 		}
