@@ -4,24 +4,24 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
 Tested up to: 3.0.4
-Stable tag: 1.4.4
+Stable tag: 1.5
 
-Adds total words counts to the dashboard, provides a more accurate live word count, displays keywords and readability levels of each post.
+Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
 == Description ==
 
-Word Stats adds stats, keyword counts and readability level indexes for your blog posts, and replaces the live word count from WordPress with a more accurate algorythm.
+Word Stats adds total and monthly per author word counts, stats, keyword counts and readability level indexes for your blog posts, and replaces the live word count from WordPress with a more accurate algorithm.
 
-It can count the number of words in each public post type in your blog, including any custom post types, and display the totals in your dashboard. You can also show them in your blog with a widget or the &#91;wordcounts&#93; shortcode.
+It counts the number of words in each public post type for each author and month and displays the totals in your dashboard. You can also show the total word counts in your blog with a widget or the &#91;wordcounts&#93; shortcode.
 
-It adds too live statistics for the edit post panel:
+Also, it provides live statistics for the edit post panel:
 
 * Color coded legibility indexes: Automated Readability Index, Coleman-Liau Index and LIX. 
 * Total characters, alphanumeric characters, words and sentences.
-* Characters per word, characters per sentence, words per sentence
-* Relevant keywords, except those specified to be ignored
+* Characters per word, characters per sentence, words per sentence.
+* Relevant keywords, except those specified to be ignored.
 
-You can also display optionally an extra column with the aggregated readability level of each post in the manage posts list.  
+You can display optionally an extra column with the aggregated readability level of each post in the manage posts list.  
 
 It includes i18n translations to Spanish and Catalonian.
 
@@ -58,7 +58,7 @@ These three indexes don't rely on syllable counting, which is a bit more complic
 
 = How accurate are the calculations of the readability indexes? =
 
-Word Stats uses simple algorythms. For fairly ordinary English texts they will closely match human counting; for example, the algorythm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
+Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
 
 = Do the readability indexes really reflect how easy is the text? = 
 
@@ -66,7 +66,7 @@ They try to reflect how easy the text is to read, not to understand. You can wri
 
 = Why the readability index column doesn't show any value? =
 
-The values are cached once the post is saved. I'll add in the future an option to recalculate all posts.
+The values are cached once the post is saved.
 
 = Why the live counters seem to lag? =
 
@@ -82,7 +82,7 @@ Word Stats treats «?», «!», «;» and «.» as sentence limitators. It ignor
 
 = How does Word Stats count words? =
 
-It uses the sentence limitators plus blank spaces. 
+For the live count, it uses the sentence limitators plus blank spaces. For the total word counts, it uses the PHP function str_word_count. 
 
 = The word counts don't include all public post types =
 
@@ -108,8 +108,13 @@ The CSS classes are:
 1. Total word counts in the dashboard.
 2. Live stats for the post being edited.
 3. Extra column showing an aggregate of the readability indexes.
+4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 1.5 =
+* Added stats page with monthly word counts per author.
+* Functions wrapped in classes to prevent name collisions.
+
 = 1.4.4 =
 * All HTML output converted to PHP strings.
 
