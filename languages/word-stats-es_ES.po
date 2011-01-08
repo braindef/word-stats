@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.2\n"
+"Project-Id-Version: Word Stats Plugin es_ES v.1.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-17 17:53+0100\n"
+"POT-Creation-Date: 2011-01-08 04:30+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -13,64 +13,117 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: word-stats.php:58
+#: word-stats.php:71
 msgid "Words"
 msgstr "Palabras"
 
-#: word-stats.php:64
+#: word-stats.php:77
 msgid "Total words"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
-#: word-stats.php:127
+#: word-stats.php:122
+#: word-stats.php:142
 msgid "Total Word Counts"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
+#: word-stats.php:122
 msgid "Displays the word counts of all public post types"
 msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 
-#: word-stats.php:112
+#: word-stats.php:128
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:272
+#: word-stats.php:274
+msgid "Keywords:"
+msgstr "Palabras clave:"
+
+#: word-stats.php:272
+msgid "No relevant keywords."
+msgstr "Ninguna palabra clave relevante."
+
+#: word-stats.php:278
+#: word-stats.php:290
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:280
+#: word-stats.php:292
 msgid "characters"
 msgstr "caracteres"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:281
+#: word-stats.php:293
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:282
+#: word-stats.php:294
 msgid "words"
 msgstr "palabras"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:283
+#: word-stats.php:295
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:284
+#: word-stats.php:296
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:285
+#: word-stats.php:297
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:286
+#: word-stats.php:298
 msgid "words per sentence"
 msgstr "palabras por frase"
+
+#: word-stats.php:390
+msgid "R.I."
+msgstr "I.L."
+
+#: word-stats.php:469
+msgid "Word Stats Options"
+msgstr "Opciones de Word Stats"
+
+#: word-stats.php:477
+msgid "Display aggregate readability column in the manage posts list"
+msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
+
+#: word-stats.php:483
+msgid "Enable total word counts."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: word-stats.php:484
+msgid "This may slow down post saving in large blogs."
+msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
+
+#: word-stats.php:490
+msgid "Replace WordPress live word count with Word Stats word count."
+msgstr "Sustituir la cuenta de palabras en vivo de WordPress por la cuenta de palabras de Word Stats"
+
+#: word-stats.php:496
+msgid "Enable live character/word/sentence averages."
+msgstr "Mostrar las medias en vivo de caracteres/palabras/frases"
+
+#: word-stats.php:502
+msgid "Enable live keyword count."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: word-stats.php:506
+msgid "Ignore these keywords (space separated):"
+msgstr "Ignorar estas palabras clave (separadas por espacios):"
+
+#: word-stats.php:511
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: word-stats.php:519
+msgid "Word Stats"
+msgstr "Word Stats"
 
