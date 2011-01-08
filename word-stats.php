@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5.1
+Version: 1.5.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -63,7 +63,7 @@ class word_stats_counts {
 					$word_count = str_word_count( strip_tags( get_post_field( 'post_content', $post->ID ) ) );
 					$total_count += $word_count;
 					// Multidimensional array, stores monthly words per author
-					$author_count[ $post->post_author ][ substr( $post->post_date, 0, 7 ) ] += $word_count;
+					$author_count[ $post->post_author ][ $post_type ][ substr( $post->post_date, 0, 7 ) ] += $word_count;
 				}
 				$num =  number_format_i18n( $total_count );
 
@@ -526,8 +526,11 @@ class word_stats_admin {
 				$i++;
 				$author_data = get_userdata( $id );
 				echo '<table width="24%" style="margin-top: 0.5em; float:left; margin-right: 1%;"><thead><td style="text-align:center; font-weight:bold;background:#666; color: #fff; padding: 2px 0 4px 0" colspan="2">', $author_data->nickname, '</td></thead>';
-				foreach ( $author as $month=>$count ) {
-					echo '<tr><td width="50%">', $month, '</td><td width="50%" style="text-align:right">', number_format_i18n( $count ), '</td></tr>';
+				foreach ( $author as $type=>$months ) {
+					echo '<tr><td width="50%" colspan="2" style="background: #eee; font-weight: bold; margin-top:2px; padding: 2px 0 4px 0; text-align:center;">', $type, '</td></tr>';	
+					foreach ( $months as $month=>$count ) {
+						echo '<tr><td width="50%">', $month, '</td><td width="50%" style="text-align:right">', number_format_i18n( $count ), '</td></tr>';
+					}
 				}
 				echo '</table>';
 				if ( $i == 4 ) { $i = 0; echo '<br style="clear:both;">'; } 
