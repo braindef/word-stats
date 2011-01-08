@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5
+Version: 1.5.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -518,6 +518,10 @@ class word_stats_admin {
 		echo '<h2>' , __( 'Word Stats', 'word-stats' ), '</h2>';
 		$author_stats = get_option( 'ws-monthly-counts-cache' );
 		if ( $author_stats ) {
+			word_stats_counts::cache_word_counts();
+			$author_stats = get_option( 'ws-monthly-counts-cache' );
+		}		
+		if ( $author_stats ) {
 			foreach ( $author_stats as $id=>$author ) {
 				$i++;
 				$author_data = get_userdata( $id );
@@ -530,7 +534,7 @@ class word_stats_admin {
 			}
 			echo '</div>';
 		} else {
-			echo 'No data available';
+			_e( 'Sorry, word counting failed for an unknown reason.', 'word-stats' );
 		}
 	}
 }
