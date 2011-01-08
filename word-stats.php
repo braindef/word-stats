@@ -159,7 +159,6 @@ if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '
 }
 add_shortcode( 'wordcounts', array( 'word_stats_counts', 'word_counts_sc' ) );
 
-
 /* # Live post stats
 -------------------------------------------------------------- */
 // Display post legibility
