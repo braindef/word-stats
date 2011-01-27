@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
 Tested up to: 3.0.4
-Stable tag: 1.5.2
+Stable tag: 1.5.3
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -76,6 +76,10 @@ The calculations are refreshed every 15 seconds.
 
 It shows any keyword that appears at least three times and at least 1/5 times the top keyword.
 
+= When tags are included in the live word count? =
+
+Currently they are included when you load the post. If you add new tags, save the post and reload it. 
+
 = How does Word Stats count sentences? =
 
 Word Stats treats «?», «!», «;» and «.» as sentence limitators. It ignores periods following a capital letter, as in «U.S.A.».
@@ -111,6 +115,10 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 1.5.3 =
+* Optionally adds the last saved tags to the live keyword count.
+* Removed separate counts for words with or without capitals.
+
 = 1.5.2 =
 * Lists the word counts per author and post type. Fixes unsorted dates issue.
 

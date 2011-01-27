@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5.2
+Version: 1.5.3
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -164,6 +164,7 @@ add_shortcode( 'wordcounts', array( 'word_stats_counts', 'word_counts_sc' ) );
 // Display post legibility
 class word_stats_readability {
 	function live_stats() { 
+		global $post;
 		echo '
 		<script type="text/javascript">
 			function wsRefreshStats() {
@@ -240,12 +241,14 @@ class word_stats_readability {
 
 					temp = "";';
 					if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) { 
+
 						echo '
 						/* Find keywords */
 						var wordHash = new Array;
 						var topCount = 0;
-						var ignKeywords = "' , '::', str_replace( ' ', '::', get_option( 'word_stats_ignore_keywords' ) ), '::' ,'";
+						var ignKeywords = "' , '::', strtolower( str_replace( ' ', '::', get_option( 'word_stats_ignore_keywords' ) ) ), '::' ,'";
 						for (var i = 0; i < wordArray.length; i = i + 1) {
+							wordArray[i] = wordArray[i].toLowerCase();
 							if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) {
 								if ( wordArray[i].length > 3 ) {
 									if ( !wordHash[ wordArray[i] ] ) { wordHash[ wordArray[i] ] = 0; }
@@ -253,8 +256,24 @@ class word_stats_readability {
 									if ( wordHash[ wordArray[i] ] > topCount ) { topCount = wordHash[ wordArray[i] ]; }
 								}
 							}
+						}';
+
+						// Add tags. Note $post has been declared global above.
+						if ( get_option( 'word_stats_add_tags' ) && get_the_tags( $post->ID ) ) {
+							echo '/* Add last saved tags */', "\n";
+							foreach ( get_the_tags( $post->ID ) as $tag ) {
+								$tag->name = strtolower( esc_attr( $tag->name ) ); 
+								if ( strlen( $tag->name ) > 3 ) {
+									echo '
+											if ( !wordHash[ "', $tag->name, '" ] ) { wordHash[ "', $tag->name, '" ] = 0; }
+											wordHash[ "', $tag->name, '" ] = wordHash[ "', $tag->name, '" ] + 1;
+											if ( wordHash[ "', $tag->name, '" ] > topCount ) { topCount = wordHash[ "', $tag->name, '" ]; }
+									';
+								}
+							}
 						}
 
+						echo '
 						/* Relevant keywords must have at least three appareances and half the appareances of the top keyword */
 						for ( var j in wordHash ) {
 							if ( wordHash[j] >= topCount/5 && wordHash[j] > 2 ) {
@@ -445,6 +464,7 @@ class word_stats_admin {
 		register_setting( 'word-stats-settings-group', 'word_stats_averages' );
 		register_setting( 'word-stats-settings-group', 'word_stats_show_keywords' );
 		register_setting( 'word-stats-settings-group', 'word_stats_ignore_keywords' );
+		register_setting( 'word-stats-settings-group', 'word_stats_add_tags' );
 	}
 
 	function settings_page() {
@@ -460,6 +480,8 @@ class word_stats_admin {
 		if ( $opt_averages == null ) { $opt_averages = 1; }
 		$opt_show_keywords = get_option( 'word_stats_show_keywords' );
 		if ( $opt_show_keywords == null ) { $opt_show_keywords = 1; }
+		$opt_add_tags = get_option( 'word_stats_add_tags' );
+		if ( $opt_add_tags == null ) { $opt_add_tags = 1; }
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
@@ -499,6 +521,12 @@ class word_stats_admin {
 				<input type="hidden" name="word_stats_show_keywords" value="0" />
 				<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' />',
 				__( 'Enable live keyword count.', 'word-stats' ), ' 
+			</p>
+
+			<p>
+				<input type="hidden" name="word_stats_add_tags" value="0" />
+				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' />',
+				__( 'Add the last saved tags to the keyword count.', 'word-stats' ), ' 
 			</p>
 
 			<p>
