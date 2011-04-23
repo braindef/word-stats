@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.2\n"
+"Project-Id-Version: Word Stats Plugin es_ES v.1.5.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-17 17:53+0100\n"
+"POT-Creation-Date: 2011-04-23 10:05+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -13,64 +13,129 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: word-stats.php:58
+#: word-stats.php:69
 msgid "Words"
 msgstr "Palabras"
 
-#: word-stats.php:64
+#: word-stats.php:75
 msgid "Total words"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
-#: word-stats.php:127
+#: word-stats.php:120
+#: word-stats.php:140
 msgid "Total Word Counts"
 msgstr "Palabras totales"
 
-#: word-stats.php:105
+#: word-stats.php:120
 msgid "Displays the word counts of all public post types"
 msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 
-#: word-stats.php:112
+#: word-stats.php:126
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:288
+#: word-stats.php:290
+msgid "Keywords:"
+msgstr "Palabras clave:"
+
+#: word-stats.php:288
+msgid "No relevant keywords."
+msgstr "Ninguna palabra clave relevante."
+
+#: word-stats.php:294
+#: word-stats.php:306
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:296
+#: word-stats.php:308
 msgid "characters"
 msgstr "caracteres"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:297
+#: word-stats.php:309
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:298
+#: word-stats.php:310
 msgid "words"
 msgstr "palabras"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:299
+#: word-stats.php:311
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:300
+#: word-stats.php:312
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:301
+#: word-stats.php:313
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: word-stats.php:225
-#: word-stats.php:227
+#: word-stats.php:302
+#: word-stats.php:314
 msgid "words per sentence"
 msgstr "palabras por frase"
+
+#: word-stats.php:406
+msgid "R.I."
+msgstr "I.L."
+
+#: word-stats.php:488
+msgid "Word Stats Options"
+msgstr "Opciones de Word Stats"
+
+#: word-stats.php:496
+msgid "Display aggregate readability column in the manage posts list"
+msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
+
+#: word-stats.php:502
+msgid "Enable total word counts."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: word-stats.php:503
+msgid "This may slow down post saving in large blogs."
+msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
+
+#: word-stats.php:509
+msgid "Replace WordPress live word count with Word Stats word count."
+msgstr "Sustituir la cuenta de palabras en vivo de WordPress por la cuenta de palabras de Word Stats"
+
+#: word-stats.php:515
+msgid "Enable live character/word/sentence averages."
+msgstr "Mostrar las medias en vivo de caracteres/palabras/frases"
+
+#: word-stats.php:521
+msgid "Enable live keyword count."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: word-stats.php:527
+msgid "Add the last saved tags to the keyword count."
+msgstr "Añadir las últimas etiquetas guardadas a la cuenta de palabras clave"
+
+#: word-stats.php:531
+msgid "Ignore these keywords (space separated):"
+msgstr "Ignorar estas palabras clave (separadas por espacios):"
+
+#: word-stats.php:536
+msgid "Save Changes"
+msgstr "Guardar cambios"
+
+#: word-stats.php:546
+msgid "Word Stats"
+msgstr "Word Stats"
+
+#: word-stats.php:570
+msgid "No stats available for the current user."
+msgstr "No hay estadísticas disponibles para el usuario actual."
+
+#: word-stats.php:573
+msgid "Sorry, word counting failed for an unknown reason."
+msgstr "Disculpas. La cuenta de palabras falló por un motivo desconocido."
 
