@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5.3
+Version: 1.5.4
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -46,18 +46,16 @@ class word_stats_counts {
 		$author_count = array();
 
 		// Get the post types
-		$args=array(
-			'public'   => true,
-		);
-
-		$post_types = get_post_types( $args );
+		$post_types = get_post_types();
 
 		foreach( $post_types as $post_type ) {
 			if ( $post_type != 'attachment' && $post_type != 'nav_menu_item' && $post_type != 'revision' ) {
 				$total_count = 0;
+				// post_status => any is necessary to count drafts and post pending review
 				$posts = get_posts( array(
 					'numberposts' => -1,
-					'post_type' => array( $post_type )
+					'post_type' => array( $post_type ),
+					'post_status' => 'any'
 				));
 				foreach( $posts as $post ) {
 					$word_count = str_word_count( strip_tags( get_post_field( 'post_content', $post->ID ) ) );
@@ -542,27 +540,34 @@ class word_stats_admin {
 	} 
 
 	function graphs_page() {
+		global $user_ID;
+		global $current_user;
 		echo '<div class="wrap">';
 		echo '<h2>' , __( 'Word Stats', 'word-stats' ), '</h2>';
 		$author_stats = get_option( 'ws-monthly-counts-cache' );
 		if ( $author_stats ) {
 			word_stats_counts::cache_word_counts();
 			$author_stats = get_option( 'ws-monthly-counts-cache' );
-		}		
+		}
 		if ( $author_stats ) {
+			$i = 0;
 			foreach ( $author_stats as $id=>$author ) {
-				$i++;
-				$author_data = get_userdata( $id );
-				echo '<table width="24%" style="margin-top: 0.5em; float:left; margin-right: 1%;"><thead><td style="text-align:center; font-weight:bold;background:#666; color: #fff; padding: 2px 0 4px 0" colspan="2">', $author_data->nickname, '</td></thead>';
-				foreach ( $author as $type=>$months ) {
-					echo '<tr><td width="50%" colspan="2" style="background: #eee; font-weight: bold; margin-top:2px; padding: 2px 0 4px 0; text-align:center;">', $type, '</td></tr>';	
-					foreach ( $months as $month=>$count ) {
-						echo '<tr><td width="50%">', $month, '</td><td width="50%" style="text-align:right">', number_format_i18n( $count ), '</td></tr>';
+				// Admin and Editor can view all stats, Author and Contributor can view only their stats.
+				if ( current_user_can( 'edit_others_posts' ) || $id == $user_ID ) {
+					$i++;
+					$author_data = get_userdata( $id );
+					echo '<table width="24%" style="margin-top: 0.5em; float:left; margin-right: 1%;"><thead><td style="text-align:center; font-weight:bold;background:#666; color: #fff; padding: 2px 0 4px 0" colspan="2">', $author_data->nickname, '</td></thead>';
+					foreach ( $author as $type=>$months ) {
+						echo '<tr><td width="50%" colspan="2" style="background: #eee; font-weight: bold; margin-top:2px; padding: 2px 0 4px 0; text-align:center;">', $type, '</td></tr>';	
+						foreach ( $months as $month=>$count ) {
+							echo '<tr><td width="50%">', $month, '</td><td width="50%" style="text-align:right">', number_format_i18n( $count ), '</td></tr>';
+						}
 					}
+					echo '</table>';
+					if ( $i == 4 ) { $i = 0; echo '<br style="clear:both;">'; } 
 				}
-				echo '</table>';
-				if ( $i == 4 ) { $i = 0; echo '<br style="clear:both;">'; } 
 			}
+			if ( $i == 0 ) { _e( 'No stats available for the current user.', 'word-stats' ); }
 			echo '</div>';
 		} else {
 			_e( 'Sorry, word counting failed for an unknown reason.', 'word-stats' );
@@ -574,7 +579,7 @@ function word_stats_create_menu() {
 	add_action( 'admin_init', array( 'word_stats_admin', 'register_settings' ) );
 	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'word_stats_admin', 'settings_page' ) );
 	if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
-		add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'manage_options', 'word-stats-graphs', array( 'word_stats_admin', 'graphs_page' ) );
+		add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'word_stats_admin', 'graphs_page' ) );
 	}
 }
 add_action( 'admin_menu', 'word_stats_create_menu' );

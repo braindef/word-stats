@@ -3,8 +3,8 @@ Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
-Tested up to: 3.0.4
-Stable tag: 1.5.3
+Tested up to: 3.1.1
+Stable tag: 1.5.4
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -115,6 +115,11 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 1.5.4 =
+* Now contributor and Author users can view their own monthly word stats. Admin and Editor can view monthly stats from all users.
+* Word count stats are calculated for drafts and pending posts too.
+* Tested with WP 3.1.1
+
 = 1.5.3 =
 * Optionally adds the last saved tags to the live keyword count.
 * Removed separate counts for words with or without capitals.
