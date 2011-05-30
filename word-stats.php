@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5.4
+Version: 1.5.5
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -51,12 +51,19 @@ class word_stats_counts {
 		foreach( $post_types as $post_type ) {
 			if ( $post_type != 'attachment' && $post_type != 'nav_menu_item' && $post_type != 'revision' ) {
 				$total_count = 0;
-				// post_status => any is necessary to count drafts and post pending review
-				$posts = get_posts( array(
-					'numberposts' => -1,
-					'post_type' => array( $post_type ),
-					'post_status' => 'any'
-				));
+				if ( get_option( 'word_stats_count_unpublished' ) ) {
+					// post_status => any is necessary to count drafts and post pending review
+					$posts = get_posts( array(
+						'numberposts' => -1,
+						'post_type' => array( $post_type ),
+						'post_status' => 'any'
+					));
+				} else {
+					$posts = get_posts( array(
+						'numberposts' => -1,
+						'post_type' => array( $post_type ),
+					));
+				}
 				foreach( $posts as $post ) {
 					$word_count = str_word_count( strip_tags( get_post_field( 'post_content', $post->ID ) ) );
 					$total_count += $word_count;
@@ -463,6 +470,7 @@ class word_stats_admin {
 		register_setting( 'word-stats-settings-group', 'word_stats_show_keywords' );
 		register_setting( 'word-stats-settings-group', 'word_stats_ignore_keywords' );
 		register_setting( 'word-stats-settings-group', 'word_stats_add_tags' );
+		register_setting( 'word-stats-settings-group', 'word_stats_count_unpublished' );
 	}
 
 	function settings_page() {
@@ -480,6 +488,8 @@ class word_stats_admin {
 		if ( $opt_show_keywords == null ) { $opt_show_keywords = 1; }
 		$opt_add_tags = get_option( 'word_stats_add_tags' );
 		if ( $opt_add_tags == null ) { $opt_add_tags = 1; }
+		$opt_count_unpublished = get_option( 'word_stats_count_unpublished' );
+		if ( $opt_count_unpublished == null ) { $opt_count_unpublished = 1; }
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
@@ -501,6 +511,12 @@ class word_stats_admin {
 				<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' />',
 				__( 'Enable total word counts.', 'word-stats' ),  
 				__( 'This may slow down post saving in large blogs.', 'word-stats' ), ' 
+			</p>
+
+			<p>
+				<input type="hidden" name="word_stats_count_unpublished" value="0" />
+				<input type="checkbox" name="word_stats_count_unpublished" value="1" ';  if ( $opt_count_unpublished ) { echo 'checked="checked"'; } echo ' />',
+				__( 'Count words from drafts and posts pending review.', 'word-stats' ),  '
 			</p>
 
 			<p>
@@ -545,7 +561,7 @@ class word_stats_admin {
 		echo '<div class="wrap">';
 		echo '<h2>' , __( 'Word Stats', 'word-stats' ), '</h2>';
 		$author_stats = get_option( 'ws-monthly-counts-cache' );
-		if ( $author_stats ) {
+		if ( !$author_stats ) {
 			word_stats_counts::cache_word_counts();
 			$author_stats = get_option( 'ws-monthly-counts-cache' );
 		}

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin ca_ES v1.5.4\n"
+"Project-Id-Version: Word Stats Plugin ca_ES v1.5.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-23 10:05+0200\n"
+"POT-Creation-Date: 2011-05-30 02:10+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
@@ -13,129 +13,133 @@ msgstr ""
 "X-Poedit-Language: Catalan\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: word-stats.php:69
+#: word-stats.php:76
 msgid "Words"
 msgstr "Paraules"
 
-#: word-stats.php:75
+#: word-stats.php:82
 msgid "Total words"
 msgstr "Paraules totals"
 
-#: word-stats.php:120
-#: word-stats.php:140
+#: word-stats.php:127
+#: word-stats.php:147
 msgid "Total Word Counts"
 msgstr "Paraules totals"
 
-#: word-stats.php:120
+#: word-stats.php:127
 msgid "Displays the word counts of all public post types"
 msgstr "Mostra els comptes de paraules de tots els tipus d'entrada públics"
 
-#: word-stats.php:126
+#: word-stats.php:133
 msgid "Title:"
 msgstr "Títol:"
 
-#: word-stats.php:288
-#: word-stats.php:290
+#: word-stats.php:295
+#: word-stats.php:297
 msgid "Keywords:"
 msgstr "Paraules claus:"
 
-#: word-stats.php:288
+#: word-stats.php:295
 msgid "No relevant keywords."
 msgstr "Cap paraula clau relevant."
 
-#: word-stats.php:294
-#: word-stats.php:306
+#: word-stats.php:301
+#: word-stats.php:313
 msgid "Readability:"
 msgstr "Llegibilitat:"
 
-#: word-stats.php:296
-#: word-stats.php:308
+#: word-stats.php:303
+#: word-stats.php:315
 msgid "characters"
 msgstr "caràcters"
 
-#: word-stats.php:297
-#: word-stats.php:309
+#: word-stats.php:304
+#: word-stats.php:316
 msgid "alphanumeric characters"
 msgstr "caràcters alfanumèrics"
 
-#: word-stats.php:298
-#: word-stats.php:310
+#: word-stats.php:305
+#: word-stats.php:317
 msgid "words"
 msgstr "paraules"
 
-#: word-stats.php:299
-#: word-stats.php:311
+#: word-stats.php:306
+#: word-stats.php:318
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:300
-#: word-stats.php:312
+#: word-stats.php:307
+#: word-stats.php:319
 msgid "characters per word"
 msgstr "caràcters per paraula"
 
-#: word-stats.php:301
-#: word-stats.php:313
+#: word-stats.php:308
+#: word-stats.php:320
 msgid "characters per sentence"
 msgstr "caràcters per frase"
 
-#: word-stats.php:302
-#: word-stats.php:314
+#: word-stats.php:309
+#: word-stats.php:321
 msgid "words per sentence"
 msgstr "paraules per frase"
 
-#: word-stats.php:406
+#: word-stats.php:413
 msgid "R.I."
 msgstr "I.Ll."
 
-#: word-stats.php:488
+#: word-stats.php:498
 msgid "Word Stats Options"
 msgstr "Opcions de Word Stats"
 
-#: word-stats.php:496
+#: word-stats.php:506
 msgid "Display aggregate readability column in the manage posts list"
 msgstr "Mostrar col·lumna de llegibilitat agregada en la lista de administració d'entrades "
 
-#: word-stats.php:502
+#: word-stats.php:512
 msgid "Enable total word counts."
 msgstr "Habilitar els comptes totals de paraules."
 
-#: word-stats.php:503
+#: word-stats.php:513
 msgid "This may slow down post saving in large blogs."
 msgstr "Això pot ralentir el guardat de les entrades en blocs grans."
 
-#: word-stats.php:509
+#: word-stats.php:519
+msgid "Count words from drafts and posts pending review."
+msgstr "Contar paraules de esborralls i entrades pendents de revisiò."
+
+#: word-stats.php:525
 msgid "Replace WordPress live word count with Word Stats word count."
 msgstr "Sustituir el compte de paraules en viu de WordPress per el compte de paraules de Word Stats."
 
-#: word-stats.php:515
+#: word-stats.php:531
 msgid "Enable live character/word/sentence averages."
 msgstr "Mostrar les mitjanes en viu de caracters/paraules/frases."
 
-#: word-stats.php:521
+#: word-stats.php:537
 msgid "Enable live keyword count."
 msgstr "Habilitar el compte en viu de paraules claus."
 
-#: word-stats.php:527
+#: word-stats.php:543
 msgid "Add the last saved tags to the keyword count."
 msgstr "Afegir les últimes etiquetes guardades al compte de paraules."
 
-#: word-stats.php:531
+#: word-stats.php:547
 msgid "Ignore these keywords (space separated):"
 msgstr "Ignorar aquestes paraules claus (separades per espais):"
 
-#: word-stats.php:536
+#: word-stats.php:552
 msgid "Save Changes"
 msgstr "Guardar canvis"
 
-#: word-stats.php:546
+#: word-stats.php:562
 msgid "Word Stats"
 msgstr "Word Stats"
 
-#: word-stats.php:570
+#: word-stats.php:586
 msgid "No stats available for the current user."
 msgstr "No hi ha estadístiques disponibles per al usuari actual."
 
-#: word-stats.php:573
+#: word-stats.php:589
 msgid "Sorry, word counting failed for an unknown reason."
 msgstr "Disculpes, el compte de paraules ha fallat per una raó desconeguda."
 
