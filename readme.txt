@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
 Tested up to: 3.2
-Stable tag: 1.5.5
+Stable tag: 1.5.6
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -115,6 +115,9 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 1.5.6 =
+* Fix: Missing before_widget and after_widget support.
+
 = 1.5.5 =
 * Added option to disable counting words from drafts and posts pending review.
 * Fixed bug when counting words for the first time.
