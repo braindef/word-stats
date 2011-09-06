@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 2.1
+Version: 2.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -361,7 +361,7 @@ class word_stats_readability {
 		// Count
 		if ( $allText ) {
 			$stats = bst_split_text( $allText );
-			$totalAlphanumeric = strlen( $stats[ 'alphanumeric' ] );
+			$totalAlphanumeric = mb_strlen( $stats[ 'alphanumeric' ] );
 			$totalSentences = count( $stats[ 'sentences' ] );
 			$totalWords = count( $stats[ 'words' ] );
 			$wordArray = $stats[ 'words' ];
@@ -372,7 +372,6 @@ class word_stats_readability {
 				$charsPerWord = intval( $totalAlphanumeric / $totalWords );
 				$charsPerSentence = intval( $totalAlphanumeric / $totalSentences );
 				$wordsPerSentence = intval( $totalWords / $totalSentences );
-
 				// Automated Readability Index
 				$ARI = round( 4.71 * ( $totalAlphanumeric / $totalWords ) + 0.5 * ( $totalWords / $totalSentences ) - 21.43, 1);
 
@@ -382,7 +381,7 @@ class word_stats_readability {
 				// LIX
 				$LIXlongwords = 0;
 				for ($i = 0; $i < count( $wordArray ); $i = $i + 1 ) {
-					if ( strlen( $wordArray[ $i ] ) > 6 ) { $LIXlongwords++; }
+					if ( mb_strlen( $wordArray[ $i ] ) > 6 ) { $LIXlongwords++; }
 				}
 				$temp = preg_split( '/[,;\.\(\:]/', $allText );
 				$LIX = round( $totalWords / count( $temp ) + ( $LIXlongwords * 100 ) / $totalWords, 1) ;

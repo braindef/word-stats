@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
-Tags: word count, dashboard, readability, keywords
+Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 2.1
+Stable tag: 2.2
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -124,8 +124,11 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 2.2 =
+* Fix: Wrong values in Readability Index column (missing multibyte support).
+
 = 2.1 =
-* Fix broken upgrade.
+* Fix: Broken upgrade.
 
 = 2.0 =
 * Fix: Readability Index column values were being displayed in all custom columns.
