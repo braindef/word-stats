@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 2.0
+Stable tag: 2.1
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
@@ -124,6 +124,9 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 2.1 =
+* Fix broken upgrade.
+
 = 2.0 =
 * Fix: Readability Index column values were being displayed in all custom columns.
 * Fix: Word count replacement for WP +3.2.

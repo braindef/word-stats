@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 2.0
+Version: 2.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
