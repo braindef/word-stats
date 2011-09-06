@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 Author: Fran Ontanaya
-Version: 1.5.6
+Version: 2.0
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -31,16 +31,19 @@ Thanks to Allan Ellegaard for testing and input.
 -------------------------------------------------------------- */
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
 
+/* # Basic string tools class
+-------------------------------------------------------------- */
+require_once( 'basic-string-tools.php' );
+
 // Delete deprecated options
 if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'ws-counts-cache' ); }
 
-// Classes are used to avoid function name collisions
-
-// Word Counts class
+/* # Functions to count and cache total words
+-------------------------------------------------------------- */
 class word_stats_counts {
 
 	// Count words from all post types and cache the output
-	function cache_word_counts() {
+	public function cache_word_counts() {
 		$total_count = 0;
 		$cache = '';
 		$author_count = array();
@@ -65,12 +68,15 @@ class word_stats_counts {
 					));
 				}
 				foreach( $posts as $post ) {
-					$word_count = str_word_count( strip_tags( get_post_field( 'post_content', $post->ID ) ) );
+					$stats = bst_split_text( get_post_field( 'post_content', $post->ID ) );
+					$word_count = 0;
+					$word_count = count( $stats[ 'words' ] );
+	
 					$total_count += $word_count;
 					// Multidimensional array, stores monthly words per author
 					$author_count[ $post->post_author ][ $post_type ][ substr( $post->post_date, 0, 7 ) ] += $word_count;
 				}
-				$num =  number_format_i18n( $total_count );
+				$num = number_format_i18n( $total_count );
 
 				// This adds the word count for each post type to the stats portion of the Right Now box
 				$text = __( 'Words', 'word-stats' ) . ' (' . $post_type . ')';
@@ -88,7 +94,7 @@ class word_stats_counts {
 	}
 
 	// Output the cached word counts with the proper HTML tags
-	function get_word_counts( $mode ) {
+	public function get_word_counts( $mode ) {
 
 		if ( !get_option( 'ws-total-counts-cache' ) ) {
 			$cached = word_stats_counts::cache_word_counts();
@@ -110,12 +116,12 @@ class word_stats_counts {
 		return $cached;
 	}
 
-	function total_word_counts() {
+	public function total_word_counts() {
 		echo word_stats_counts::get_word_counts( 'table' );
 	}
 
 	// Shortcode to output word counts
-	function word_counts_sc( $atts = null, $content = null ) {
+	public function word_counts_sc( $atts = null, $content = null ) {
 		return '<ul class="word-stats-counts">' . word_stats_counts::get_word_counts( 'list' ) . '</ul>'; 
 	}
 }
@@ -168,38 +174,32 @@ add_shortcode( 'wordcounts', array( 'word_stats_counts', 'word_counts_sc' ) );
 -------------------------------------------------------------- */
 // Display post legibility
 class word_stats_readability {
-	function live_stats() { 
+
+	public function live_stats() { 
 		global $post;
+		bst_js_string_tools();
+
 		echo '
 		<script type="text/javascript">
 			function wsRefreshStats() {
 				var statusInfo = document.getElementById( "post-status-info" );
-				var allWords = document.getElementById("content").value;
-				allWords = allWords.replace( /\&lt;/gi, "<" );
-				allWords = allWords.replace ( /\&gt;/gi, ">" );
-				allWords = allWords.replace ( /\&nbsp;/gi, " " );
-				allWords = allWords.replace(/<[^\s][^>]*[^\s]>/g , "");
+				var allText = document.getElementById("content").value;
+				allText = bstHtmlStripper( allText );
 				var totalCharacters = 0;
 				var totalWords = 0;
 				var totalSentences = 0;
-				var wordArray = "";
+				var wordArray = new Array();
+				var stats = new Array();
 				var temp = "";
-				if ( allWords ) {
-					totalCharacters = allWords.length;	
-					temp = allWords.replace( /\W/gi, "");
-					totalAlphanumeric = temp.length;
-					temp = "";
-					temp = allWords.replace( /\!/g, "." );
-					temp = temp.replace( /\?/g, "." );
-					temp = temp.replace( /;/g, "." );
-					temp = temp.replace ( /[A-Z]\./g, "A" ); /* no dotted acronyms, thanks */
-					sentenceArray = temp.split( "." );
-					totalSentences = sentenceArray.length;
-					if ( sentenceArray[ sentenceArray.length - 1 ] == "" ) { totalSentences = totalSentences - 1; }
-					temp = temp.replace( /,/g, " " );
-					wordArray = temp.split( /[\s\.]+/ );
-					totalWords = wordArray.length;
-					if ( wordArray[ wordArray.length - 1 ] == "" ) { totalWords = totalWords - 1; }
+				if ( allText ) {
+					totalCharacters = allText.length;	
+					stats = bstSplitText( allText );
+					allText = stats[ "text" ];
+					totalAlphanumeric = stats[ "alphanumeric"].length;
+					totalSentences = stats[ "sentences" ].length;
+					totalWords = stats[ "words" ].length;
+					wordArray = stats[ "words"].slice( 0 ); /* array copy kludge */
+					delete stats;
 				}
 				if ( totalWords > 0 && totalSentences > 0 ) {
 					var charsPerWord = ( totalAlphanumeric / totalWords );
@@ -234,7 +234,7 @@ class word_stats_readability {
 					for (var i = 0; i < wordArray.length; i=i+1 ) {
 						if ( wordArray[ i ].length > 6 ) { LIXlongwords = LIXlongwords + 1; }
 					}
-					temp = allWords.split( /[,;\.\(\:]/ );
+					temp = allText.split( /[,;\.\(\:]/ );
 					var LIX = totalWords / temp.length + ( LIXlongwords * 100 ) / totalWords;
 					var LIXtext;
 					LIX = LIX.toFixed( 1 ); 
@@ -324,8 +324,12 @@ class word_stats_readability {
 						} ';
 
 					// Replace WordPress' word count
-					if ( get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
-						echo ' if ( document.getElementById( "word-count") != null ) {
+					if ( true || get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
+						echo '
+						if ( document.getElementById( "wp-word-count") != null ) { /* WP 3.2 */
+							document.getElementById( "wp-word-count").innerHTML = "' . __( 'Word count:' ) . ' " + totalWords + " <small>' . __( '(Word Stats plugin)</small>', 'word-stats' ) . '";
+						}
+						if ( document.getElementById( "word-count") != null ) { /* WP 3.0 */
 							document.getElementById( "word-count").innerHTML = totalWords;
 						}';
 					}
@@ -341,7 +345,7 @@ class word_stats_readability {
 	/* # Static post stats
 	-------------------------------------------------------------- */
 	// Calculate stats the PHP way and store them.
-	function cache_stats( $id = null ) {
+	public function cache_stats( $id = null ) {
 		if ( !$id ) {
 			global $post;
 			if ( !$post->ID ) {
@@ -352,25 +356,17 @@ class word_stats_readability {
 		$thepost = get_post( $id );
 
 		// Strip tags
-		$allWords = strip_tags( $thepost->post_content );
+		$allText = bst_html_stripper( $thepost->post_content );
 
 		// Count
-		if ( $allWords ) {
-			$totalCharacters = strlen( $allWords );
-			$temp = preg_replace( '/\W/', '', $allWords );
-			$totalAlphanumeric = strlen( $temp );
-			$temp = str_replace( '!', '.', $allWords );
-			$temp = str_replace( '?', '.', $temp );
-			$temp = str_replace( ';', '.', $temp );
-			$temp = str_replace( '&nbsp;', ' ', $temp );
-			$temp = preg_replace( '/[A-Z]\./', 'A', $temp );
-			$sentenceArray = explode( '.', $temp );
-			$totalSentences = count( $sentenceArray );
-			if ( $sentenceArray[ $totalSentences - 1 ] == '' ) { $totalSentences = $totalSentences - 1; }
-			$wordArray = preg_split( '/[\s\.]+/', $temp );
-			$totalWords = count( $wordArray );
-			if ( $wordArray[ $totalWords - 1 ] == '' ) { $totalWords = $totalWords - 1; }
-
+		if ( $allText ) {
+			$stats = bst_split_text( $allText );
+			$totalAlphanumeric = strlen( $stats[ 'alphanumeric' ] );
+			$totalSentences = count( $stats[ 'sentences' ] );
+			$totalWords = count( $stats[ 'words' ] );
+			$wordArray = $stats[ 'words' ];
+			$allText = $stats[ 'text' ];
+			//Debug: echo '<pre>'; var_dump( $stats ); echo '</pre>'; exit();
 			// Do the calcs if we aren't going to divide by zero
 			if ( $totalWords > 0 && $totalSentences > 0 ) {
 				$charsPerWord = intval( $totalAlphanumeric / $totalWords );
@@ -388,7 +384,7 @@ class word_stats_readability {
 				for ($i = 0; $i < count( $wordArray ); $i = $i + 1 ) {
 					if ( strlen( $wordArray[ $i ] ) > 6 ) { $LIXlongwords++; }
 				}
-				$temp = preg_split( '/[,;\.\(\:]/', $allWords );
+				$temp = preg_split( '/[,;\.\(\:]/', $allText );
 				$LIX = round( $totalWords / count( $temp ) + ( $LIXlongwords * 100 ) / $totalWords, 1) ;
 			} else {
 				$ARI = '0';
@@ -402,6 +398,7 @@ class word_stats_readability {
 		}
 
 		// Create/update the post meta fields for readability
+		//Debug: echo $ARI, '::', $CLI, '::', $LIX; exit();
 		update_post_meta( $id, 'readability_ARI', $ARI );
 		update_post_meta( $id, 'readability_CLI', $CLI );
 		update_post_meta( $id, 'readability_LIX', $LIX );
@@ -409,42 +406,43 @@ class word_stats_readability {
 
 	/* # Add a column to the post management list
 	-------------------------------------------------------------- */
-	function add_posts_list_column( $defaults ) {
+	public function add_posts_list_column( $defaults ) {
 		 $defaults[ 'readability' ] = __( 'R.I.', 'word-stats' );
 		 return $defaults;
 	}
 
-	function create_posts_list_column() {
+	public function create_posts_list_column( $name ) {
 		global $post;
-		$ARI = get_post_meta( $post->ID, 'readability_ARI', true );
-		$CLI = get_post_meta( $post->ID, 'readability_CLI', true );
-		$LIX = get_post_meta( $post->ID, 'readability_LIX', true );
+		if ( $name == 'readability' ) {
+			$ARI = get_post_meta( $post->ID, 'readability_ARI', true );
+			$CLI = get_post_meta( $post->ID, 'readability_CLI', true );
+			$LIX = get_post_meta( $post->ID, 'readability_LIX', true );
 
-		if ( !$ARI ) {
-			// If there is no data or the post is blank
-			echo '<span style="color:#999;">--</span>';
-		} else {
-			// Trying to aggregate the indexes in a meaningful way.
-			$r_avg = ( floatval( $ARI ) + floatval( $CLI ) + ( ( floatval( $LIX ) - 10 ) / 2 ) ) / 3;
-			if ( $r_avg < 8 ) { echo '<span style="color: #0c0;">', round( $r_avg, 1 ), '</span>'; }
-			if ( $r_avg > 7.9 && $r_avg < 12 ) { echo '<span style="color: #aa0;">', round( $r_avg, 1 ), '</span>'; }
-			if ( $r_avg > 11.9 && $r_avg < 16 ) { echo '<span style="color: #c60;">', round( $r_avg, 1 ), '</span>'; }
-			if ( $r_avg > 15.9 && $r_avg < 20 ) { echo '<span style="color: #c00;">', round( $r_avg, 1 ), '</span>'; }
-			if ( $r_avg > 19.9 ) { echo '<span style="color: #a0a;">', round( $r_avg, 1 ), '</span>'; }
+			if ( !$ARI ) {
+				// If there is no data or the post is blank
+				echo '<span style="color:#999;">--</span>';
+			} else {
+				// Trying to aggregate the indexes in a meaningful way.
+				$r_avg = ( floatval( $ARI ) + floatval( $CLI ) + ( ( floatval( $LIX ) - 10 ) / 2 ) ) / 3;
+				if ( $r_avg < 8 ) { echo '<span style="color: #0c0;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg > 7.9 && $r_avg < 12 ) { echo '<span style="color: #aa0;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg > 11.9 && $r_avg < 16 ) { echo '<span style="color: #c60;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg > 15.9 && $r_avg < 20 ) { echo '<span style="color: #c00;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg > 19.9 ) { echo '<span style="color: #a0a;">', round( $r_avg, 1 ), '</span>'; }
+			}
 		}
 	}
 
 	// Load style for the column
-	function style_column() {
+	public function style_column() {
 		wp_register_style( 'word-stats-css', plugins_url() . '/word-stats/word-stats.css' );
 		wp_enqueue_style( 'word-stats-css' );
 	}
-
-}
+} // end class word_stats_readability
 
 // Hook live stats. Load only when editing a post
-if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER['SCRIPT_FILENAME'], 'post-new.php' ) === false ) {
-	add_action('admin_footer', array( 'word_stats_readability' , 'live_stats' ) );
+if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER[ 'SCRIPT_FILENAME' ], 'post-new.php' ) === false ) {
+	add_action( 'admin_footer', array( 'word_stats_readability' , 'live_stats' ) );
 }
 
 // Hook cached stats

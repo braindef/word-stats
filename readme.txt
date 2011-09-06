@@ -3,33 +3,38 @@ Contributors: Fran_Ontanaya
 Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords
 Requires at least: 3.0.0
-Tested up to: 3.2
-Stable tag: 1.5.6
+Tested up to: 3.2.1
+Stable tag: 2.0
 
 Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
 
 == Description ==
 
-Word Stats adds total and monthly per author word counts, stats, keyword counts and readability level indexes for your blog posts, and replaces the live word count from WordPress with a more accurate algorithm.
+Word Stats adds a whole slew of linguistic statistics to help you keep track of your content and improve its quality.
 
-It counts the number of words in each public post type for each author and month and displays the totals in your dashboard. You can also show the total word counts in your blog with a widget or the &#91;wordcounts&#93; shortcode.
+It counts the number of words in each public post type (including bbForum plugin posts) for each author and month. The results are displayed in an admin page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
 
-Also, it provides live statistics for the edit post panel:
+It extends the info area of the post edit form with these live stats:
 
-* Color coded legibility indexes: Automated Readability Index, Coleman-Liau Index and LIX. 
+* Relevant keywords; common words can be blacklisted in the settings page.
+* A more accurate word count.
+* Color coded readability tests: Automated Readability Index, Coleman-Liau Index and LIX. 
 * Total characters, alphanumeric characters, words and sentences.
 * Characters per word, characters per sentence, words per sentence.
-* Relevant keywords, except those specified to be ignored.
 
-You can display optionally an extra column with the aggregated readability level of each post in the manage posts list.  
+The aggregated readability level of each post can be displayed in an extra column in the manage posts list.
 
-It includes i18n translations to Spanish and Catalonian.
+Since version 2.0, Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese. Mileage may vary.
 
-= About the legibility indexes =
+Spanish and Catalan translations are bundled with the plugin.
+
+= About the readability tests =
 
 * ARI is based on word length and words per sentence.
-* CLI is based on alphanumeric characters per 100 words and sentences per 100 words
+* CLI is based on characters per 100 words, excluding non-word characters, and sentences per 100 words
 * LIX is based on average words between pauses (periods, colons, semicolons, etc.) and average words longer than 6 characters.
+
+Check [http://en.wikipedia.org/wiki/Readability_test](http://en.wikipedia.org/wiki/Readability_test) for more information.
 
 == Installation ==
 
@@ -39,7 +44,9 @@ It includes i18n translations to Spanish and Catalonian.
 
 == Frequently Asked Questions ==
 
-= What do the numbers and colors of the readability indexes mean? =
+= About the readability tests = 
+
+**What do the numbers and colors mean?**
 
 For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level 1 corresponds to ages 6-8, grade 8 to 14 years old, grade 12 to 17 years old. The color code is 0-8: green; 8-12: yellow; 12-16: orange; 16-20: red; +20: purple.
 
@@ -52,51 +59,53 @@ For LIX:
 * 50 - 60: Technical texts (red)
 * over 60: Specialist texts / research / dissertations (purple)
 
-= Why didn't you include other common readability indexes? =
+**Why other common tests aren't included?**
 
-These three indexes don't rely on syllable counting, which is a bit more complicated and language dependent. I may try to add them in future versions.
+These three tests don't rely on syllable counting, which is a bit more complicated and language dependent. I may try to add them in future versions.
 
-= How accurate are the calculations of the readability indexes? =
+**How accurate are the tests?**
 
 Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
 
-= Do the readability indexes really reflect how easy is the text? = 
+**Do the tests really reflect how easy is the text?** 
 
-They try to reflect how easy the text is to read, not to understand. You can write an article about relativity in simple English and it will be rated as low level. Also, poor writing skills can cheat the indexes; for example by abusing periods or commas.
+They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level. Also, poor writing skills can cheat the indexes; for example by abusing periods or commas.
 
-= Why the readability index column doesn't show any value? =
+**The readability index column doesn't show any value after installing the plugin**
 
-The values are cached once the post is saved.
+The values are cached once each post is saved. A feature to recalculate all manually is already in the To Do list. 
 
-= Why the live counters seem to lag? =
+= About the live stats =
+
+**Why the live counters seem to lag?**
 
 The calculations are refreshed every 15 seconds.
 
-= How does Word Stats pick the relevant keywords? =
+**How does Word Stats pick the relevant keywords?**
 
-It shows any keyword that appears at least three times and at least 1/5 times the top keyword.
+It shows any keyword that appears at least three times and at least 1/5 times the top keyword. Words blacklisted in the settings page are excluded.
 
-= When tags are included in the live word count? =
+Post tags can be counted optionally as keywords. They are added when the post is loaded. If you add new tags, save the post and reload it. 
 
-Currently they are included when you load the post. If you add new tags, save the post and reload it. 
+= About the counting algorithm =
 
-= How does Word Stats count sentences? =
+**Why the live word count doesn't match the saved stats?**
 
-Word Stats treats «?», «!», «;» and «.» as sentence limitators. It ignores periods following a capital letter, as in «U.S.A.».
+The live count uses the JavaScript regex engine (ECMA-262), while the saved stats uses PHP's Perl Compatible Regular Expressions. Also the JavaScript code uses the browser to strip HTML tags, while the PHP code uses an internal function. There are small differences on how they process the text. 
 
-= How does Word Stats count words? =
+This may be fixed in future versions by replacing the JavaScript functions with AJAX calls.
 
-For the live count, it uses the sentence limitators plus blank spaces. For the total word counts, it uses the PHP function str_word_count. 
-
-= The word counts don't include all public post types =
+**The word counts don't include all public post types**
 
 'Attachment', 'nav_menu_item' and 'revision' are excluded.
 
-= The anchors for the total word counts in the dashboard are blank =
+= About the statistics displays =
+
+**The anchors for the total word counts in the dashboard are blank**
 
 They are just for style consistence.
 
-= Can I style the word counts lists? =
+**How do I style the count lists?**
 
 The CSS classes are:
 
@@ -115,6 +124,13 @@ The CSS classes are:
 4. Stats page displaying monthly words per author.
 
 == Changelog ==
+= 2.0 =
+* Fix: Readability Index column values were being displayed in all custom columns.
+* Fix: Word count replacement for WP +3.2.
+* Added code to deal with non-Latin Unicode scripts.
+* Upgraded text splitting functions.
+* Updated readme.txt.
+
 = 1.5.6 =
 * Fix: Missing before_widget and after_widget support.
 
@@ -169,7 +185,7 @@ The CSS classes are:
 * Stats are cached as post metadata when the post is saved.
 * Added a Readability Index column to the edit posts list that shows an aggregate of all indexes.
 * Fixed a short PHP open tag.
-* Added an options page.
+* Added a settings page.
 * Added option to disable R.I. column.
 * Added option to disable total word counts.
 
@@ -189,8 +205,5 @@ The CSS classes are:
 * First release. 
 
 == Upgrade Notice ==
-= 1.2 =
-The plugin has been renamed to Word Stats. If you were using Bestseller Total Words, don't forget to delete it.
-
-= 1.0 =
-First release. You don't need to use this plugin if you are using Bestseller Theme for WordPress 0.5.0.
+= 2.0 =
+Please, note that the new text splitting code makes a more intensive use of regex and the performance hasn't been tested in stressful conditions
