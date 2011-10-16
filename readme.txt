@@ -6,11 +6,11 @@ Requires at least: 3.0.0
 Tested up to: 3.2.1
 Stable tag: 3.0
 
-A suit of word counters, keyword counters and readability analysis displays for your blog.
+A suite of word counters, keyword counters and readability analysis displays for your blog.
 
 == Description ==
 
-Word Stats adds a suit of linguistic statistics to help you keep track of your content and improve its quality.
+Word Stats adds a suite of linguistic statistics to help you keep track of your content and improve its quality.
 
 It counts the number of words in each public post type for each author and month. The results are displayed in an analytics page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
 
