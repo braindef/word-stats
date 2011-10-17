@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0
+Version: 3.0.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -454,13 +454,13 @@ class word_stats_admin {
 
 	function settings_page() {
 		// Default values
-		$opt_RI_column = get_option( 'word_stats_RI_column' ) ?: 1;
-		$opt_totals = get_option( 'word_stats_totals' ) ?: 1;
-		$opt_replace_wc = get_option( 'word_stats_replace_word_count') ?: 1;
-		$opt_averages = get_option( 'word_stats_averages' ) ?: 1;
-		$opt_show_keywords = get_option( 'word_stats_show_keywords' ) ?: 1;
-		$opt_add_tags = get_option( 'word_stats_add_tags' ) ?: 1;
-		$opt_count_unpublished = get_option( 'word_stats_count_unpublished' ) ?: 1;
+		$opt_RI_column = get_option( 'word_stats_RI_column' ) ? get_option( 'word_stats_RI_column' ) : 1;
+		$opt_totals = get_option( 'word_stats_totals' ) ?  get_option( 'word_stats_totals' ) : 1;
+		$opt_replace_wc = get_option( 'word_stats_replace_word_count') ? get_option( 'word_stats_replace_word_count') : 1;
+		$opt_averages = get_option( 'word_stats_averages' ) ? get_option( 'word_stats_averages' ) : 1;
+		$opt_show_keywords = get_option( 'word_stats_show_keywords' ) ? get_option( 'word_stats_show_keywords' ) : 1;
+		$opt_add_tags = get_option( 'word_stats_add_tags' ) ? get_option( 'word_stats_add_tags' ) : 1;
+		$opt_count_unpublished = get_option( 'word_stats_count_unpublished' ) ? get_option( 'word_stats_count_unpublished' ) : 1;
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
@@ -519,10 +519,27 @@ class word_stats_admin {
 	// Analyze the posts database and output the data set for the stats page
 	public function load_report_stats( $author_graph, $period_start, $period_end ) {
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
+
 		// $report contains all the data needed to render the stats page
 		$report[ 'total_keywords' ] = $report[ 'recent_posts_rows' ] = array();
 		$report[ 'totals_readability' ][ 0 ] = $report[ 'totals_readability' ][ 1 ] = $report[ 'totals_readability' ][ 2 ] = 0;
 		$cur_author = get_userdata( $author_graph );
+
+		// Validate dates
+		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
+		$period_end = date( 'Y-m-d', strtotime( $period_end ) );
+
+		/* For next version
+		$can_write_csv = is_writable( plugins_url( 'word-stats/csv' ) );
+		if ( $can_write_csv ) {
+			// CSV file to export the data
+			$csv_file = 'word-stats/csv/' . $period_start . '_' . $period_end;
+			if ( get_option( 'word_stats_count_unpublished' ) ) { $csv_file .= '_all'; } else { $csv_file .= '_published'; }
+			$csv_file .= '.csv';
+			$csv_handle = fopen( plugins_url( $csv_file ), 'w');
+		}
+		*/
+
 		// Loop requested posts by type
 		foreach( $wp_post_types as $post_type ) {
 			// Load only content and custom post types
@@ -589,9 +606,20 @@ class word_stats_admin {
 					$row = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-index\'>' . round( $ws_index_n ) . '</td>';
 					$report[ 'recent_posts_rows' ][ $post_type->name ][ $rp_table_row ] = $row;
 					$rp_table_row++;
+
+					/* For next version
+					if ( $can_write_csv ) {
+						// Store CSV data
+						$csv = array( $post->ID, $post->title, $post->post_date, $post_word_count, $ws_index_n, implode( ' ', array_keys( $keywords ) ) );
+						fputcsv( $csv_handle, $csv );
+					}
+					*/
 				}
 			}
 		}
+
+		/* if ( $can_write_csv ) { fclose( $csv_handle ); } */
+
 		// Sort keywords by frequency, descending
 		asort( $report[ 'total_keywords' ] );
 		$report[ 'total_keywords' ] = array_reverse( $report[ 'total_keywords' ], true );
@@ -600,6 +628,7 @@ class word_stats_admin {
 		if ( count( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'post' ] ); }
 		if ( count( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'page' ] ); }
 		if ( count( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ); }
+
 		return $report;
 	}
 
@@ -609,8 +638,8 @@ class word_stats_admin {
 		global $wp_post_types;
 		global $wpdb;
 
-		if( $_GET[ 'view-all' ] ) { $period_start = '1900-01-01'; } else { $period_start = $_GET[ 'period-start' ] ?: date( 'Y-m-d', time() - 15552000 ); }
-		if( $_GET[ 'view-all' ] ) { $period_end = date( 'Y-m-d' ); } else { $period_end = $_GET[ 'period-end' ] ?: date( 'Y-m-d' ); }
+		if( $_GET[ 'view-all' ] ) { $period_start = '1900-01-01'; } else { $period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 ); }
+		if( $_GET[ 'view-all' ] ) { $period_end = date( 'Y-m-d' ); } else { $period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' ); }
 
 		if ( $_GET[ 'author-tab' ] ) {
 			$author_graph = intval( $_GET[ 'author-tab' ] );
@@ -850,7 +879,7 @@ class word_stats_admin {
 				echo '</td><td class="ws-table-block">', __( 'date', 'word-stats' ), '</td><td class="ws-table-block ws-table-count">', __( 'words', 'word-stats' ), '</td><td class="ws-table-block ws-table-index">', __( 'readability', 'word-stats' ), '</td></tr>';
 				$even = false;
 				foreach( $rows as $row ) {
-					echo '<tr', ( $even ) ?: ' class="ws-row-even" ', '>';
+					echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
 					$even = !$even;
 					echo $row, '</tr>';
 				}
