@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin 3.0 ca_ES\n"
+"Project-Id-Version: Word Stats Plugin 3.0.2 ca_ES\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-14 19:25+0200\n"
-"PO-Revision-Date: 2011-10-14 19:26+0100\n"
+"POT-Creation-Date: 2011-10-18 01:29+0200\n"
+"PO-Revision-Date: 2011-10-18 01:30+0100\n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language: \n"
@@ -101,7 +101,7 @@ msgstr "caràcters alfanumèrics"
 
 #: word-stats.php:284
 #: word-stats.php:296
-#: word-stats.php:850
+#: word-stats.php:909
 msgid "words"
 msgstr "paraules"
 
@@ -181,102 +181,113 @@ msgstr "Ignorar aquestes paraules clau (una per llínea):"
 msgid "Save Changes"
 msgstr "Guardar canvis"
 
-#: word-stats.php:650
-#: word-stats.php:656
+#: word-stats.php:681
+#: word-stats.php:687
 msgid "Thanks for your contribution!"
 msgstr "Gràcies per la teua contribució!"
 
-#: word-stats.php:650
-#: word-stats.php:653
+#: word-stats.php:681
+#: word-stats.php:684
 msgid "Word Stats Plugin is now upgraded to Premium!"
 msgstr "El plugin Word Stats es ara actualitzat a Premium!"
 
-#: word-stats.php:653
+#: word-stats.php:684
 msgid "Please, use the donation button to express your support."
 msgstr "Per favor, usa el butó de donacions per a expressar el teu suport."
 
-#: word-stats.php:656
+#: word-stats.php:687
 msgid "With your support we can bring you even more premium features!"
 msgstr "Amb el teu suport podem portar-te encara més característiques premium!"
 
-#: word-stats.php:679
+#: word-stats.php:710
 msgid "View author:"
 msgstr "Veure autor:"
 
-#: word-stats.php:688
+#: word-stats.php:719
 msgid "Period:"
 msgstr "Període:"
 
-#: word-stats.php:691
+#: word-stats.php:720
+msgid "all time"
+msgstr "tot"
+
+#: word-stats.php:722
 msgid "View"
 msgstr "Veure"
 
-#: word-stats.php:711
+#: word-stats.php:742
 #, php-format
 msgid "%1$swords%2$s between %3$s and %4$s"
 msgstr "%1$sparaules%2$s entre %3$s i %4$s"
 
-#: word-stats.php:715
+#: word-stats.php:746
 msgid "Posts"
 msgstr "Entrades"
 
-#: word-stats.php:716
+#: word-stats.php:747
 msgid "Pages"
 msgstr "Pàgines"
 
-#: word-stats.php:717
+#: word-stats.php:748
 msgid "Custom"
 msgstr "Altres"
 
-#: word-stats.php:718
+#: word-stats.php:749
 msgid "All"
 msgstr "Totes"
 
-#: word-stats.php:724
+#: word-stats.php:755
 msgid "Readability level"
 msgstr "Índex de llegibilitat"
 
-#: word-stats.php:727
+#: word-stats.php:758
 msgid "Share of total words"
 msgstr "Percentage de les paraules totals"
 
-#: word-stats.php:733
+#: word-stats.php:764
 msgid "Keywords"
 msgstr "Paraules clau"
 
-#: word-stats.php:794
+#: word-stats.php:801
+#: word-stats.php:821
+#: word-stats.php:843
+#: word-stats.php:918
+msgid "No data"
+msgstr "No hi ha data"
+
+#: word-stats.php:835
 msgid "Basic"
 msgstr "Bàsic"
 
-#: word-stats.php:795
+#: word-stats.php:836
 msgid "Intermediate"
 msgstr "In"
 
-#: word-stats.php:796
+#: word-stats.php:837
 msgid "Advanced"
 msgstr "Avanzat"
 
-#: word-stats.php:836
+#: word-stats.php:894
 msgid "The Most Recent Entries"
 msgstr "Els continguts més recents"
 
-#: word-stats.php:846
+#: word-stats.php:905
 msgid "post"
 msgstr "entrada"
 
-#: word-stats.php:847
+#: word-stats.php:906
 msgid "page"
 msgstr "pàgina"
 
-#: word-stats.php:850
+#: word-stats.php:909
 msgid "date"
 msgstr "data"
 
-#: word-stats.php:850
+#: word-stats.php:909
 msgid "readability"
 msgstr "llegibilitat"
 
-#: word-stats.php:865
+#: word-stats.php:926
 msgid "Sorry, word counting failed for an unknown reason."
 msgstr "Disculpes, el compte de paraules ha fallat per una raó desconeguda."
 

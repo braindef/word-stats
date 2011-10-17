@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0.1
+Version: 3.0.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -568,9 +568,11 @@ class word_stats_admin {
 					$keywords = bst_keywords( $post->post_content, $ignore, 999, 0 );
 
 					// Aggregate the keywords
-					foreach( $keywords as $key=>$value ) {
-						if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
-						$report[ 'total_keywords' ][ $key ] += $value;
+					if ( $keywords && is_array( $keywords ) ) {
+						foreach( $keywords as $key=>$value ) {
+							if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
+							$report[ 'total_keywords' ][ $key ] += $value;
+						}
 					}
 
 					// Get the readability index
@@ -705,7 +707,7 @@ class word_stats_admin {
 			echo '<div id="ws-forms-wrapper">
 			<form id="authors-form" name="select-author" action="index.php" method="get">
 				<input type="hidden" name="page" value="word-stats-graphs" />',
-				__( 'View author:', 'word-stats' ), '<select name="author-tab" id="authors-list">';
+				__( 'View author:', 'word-stats' ), ' <select name="author-tab" id="authors-list">';
 
 			foreach ( $report[ 'author_count' ] as $id=>$post_type ) {
 				// Admin and Editor can view all stats, Author and Contributor can view only their stats.
@@ -715,7 +717,7 @@ class word_stats_admin {
 			echo '</select>
 
 			', __( 'Period:', 'word-stats' ), ' <input type="text" name="period-start" id="period-start" value="', $period_start, '" /> - <input type="text" name="period-end" id="period-end" value="', $period_end, '" />
-<input type="checkbox" id="view-all" name="view-all"', ( $_GET[ 'view-all' ] ) ? ' checked="checked" ' : '', ' /> all time
+<input type="checkbox" id="view-all" name="view-all"', ( $_GET[ 'view-all' ] ) ? ' checked="checked" ' : '', ' /> ', __( 'all time', 'word-stats' ), '
 
 <input id="ws-period-submit" type="submit" name="ws-submit" value="', __( 'View', 'word-stats' ), '" />
 		</form>
@@ -776,23 +778,27 @@ class word_stats_admin {
 			// Words per Month
 			$series = '[ ';
 			$z = 0;
-			foreach ( $report[ 'author_count' ][ $author_graph ] as $type=>$months ) {
+			if ( count( $report[ 'author_count' ][ $author_graph ] ) ) {
+				foreach ( $report[ 'author_count' ][ $author_graph ] as $type=>$months ) {
 
-				if ( $z ) { $series .= ', '; }
-				$z++;
-				$series .= '{ label: "' . $type . '", data: d' . $z . ' }';
-				$comma = false;
-				foreach ( $months as $month=>$count ) {
-					$total_per_type[ $type ] += $count;
-					//$month = str_replace( '-', '-01-', $month);
-					$month .= '-01';
-					$month = strtotime( $month ) * 1000;
-					// ToDo: Zero months with no words
-					if ( $comma ) { $data[ $z ] .= ', '; }
-					$data[ $z ] .= "[ $month, $count ]"; // Add a data point to the series
-					$comma = true;
+					if ( $z ) { $series .= ', '; }
+					$z++;
+					$series .= '{ label: "' . $type . '", data: d' . $z . ' }';
+					$comma = false;
+					foreach ( $months as $month=>$count ) {
+						$total_per_type[ $type ] += $count;
+						//$month = str_replace( '-', '-01-', $month);
+						$month .= '-01';
+						$month = strtotime( $month ) * 1000;
+						// ToDo: Zero months with no words
+						if ( $comma ) { $data[ $z ] .= ', '; }
+						$data[ $z ] .= "[ $month, $count ]"; // Add a data point to the series
+						$comma = true;
+					}
+					echo "var d$z = [",  $data[ $z ], "];\n"; // Create the data array for each post type
 				}
-				echo "var d$z = [",  $data[ $z ], "];\n"; // Create the data array for each post type
+			} else {
+				$series .= '{ label: "' . __( 'No data', 'word-stats' ). '", data: 100, color: "#666" }';
 			}
 			$series .= ' ]';
 			echo "jQuery.plot(jQuery(\"#ws-graph-timeline\"), $series, ", ws_graph_options( 'timeline' ), ");\n";
@@ -804,28 +810,37 @@ class word_stats_admin {
 			foreach ( $report[ 'type_count' ] as $type=>$count ) {
 				$total_sum += $count;
 			}
-			foreach ( $total_per_type as $type=>$count ) {
-				$z++;
-				if ( $comma ) { $series .= ', '; }
-				$series .= '{ label: "' . $type . '", data: ' . $count . ' }';
-				$comma = true;
+			if ( count( $total_per_type ) ) {
+				foreach ( $total_per_type as $type=>$count ) {
+					$z++;
+					if ( $comma ) { $series .= ', '; }
+					$series .= '{ label: "' . $type . '", data: ' . $count . ' }';
+					$comma = true;
+				}
+			} else {
+				$series .= '{ label: "' . __( 'No data', 'word-stats' ) . '", data: 100, color: "#666" }';
 			}
+
 			$series .= ' ]';
 			echo "jQuery.plot(jQuery(\"#ws-graph-total-pc\"), $series,", ws_graph_options( 'type' ), " );\n";
 
 			$series = '[ ';
 			$z = 0;
 			$comma = false;
-			foreach ( $report[ 'totals_readability' ] as $index=>$count ) {
-					$z++;
-					if ( $comma ) { $series .= ', '; }
-					switch( $index ) {
-						case 0: $label = __( 'Basic', 'word-stats' ); $color = '#19c'; break;
-						case 1: $label = __( 'Intermediate', 'word-stats' ); $color = '#1c9'; break;
-						case 2: $label = __( 'Advanced', 'word-stats' ); $color = '#c36'; break;
-					}
-					$series .= '{ label: "' . $label . '", data: ' . $count . ', color: \'' . $color . '\' }';
-					$comma = true;
+			if ( array_sum( $report[ 'totals_readability' ] ) ) {
+				foreach ( $report[ 'totals_readability' ] as $index=>$count ) {
+						$z++;
+						if ( $comma ) { $series .= ', '; }
+						switch( $index ) {
+							case 0: $label = __( 'Basic', 'word-stats' ); $color = '#19c'; break;
+							case 1: $label = __( 'Intermediate', 'word-stats' ); $color = '#1c9'; break;
+							case 2: $label = __( 'Advanced', 'word-stats' ); $color = '#c36'; break;
+						}
+						$series .= '{ label: "' . $label . '", data: ' . $count . ', color: \'' . $color . '\' }';
+						$comma = true;
+				}
+			} else {
+				$series .= '{ label: "' . __( 'No data', 'word-stats' ) . '", data: 100, color: "#666" }';
 			}
 			$series .= ' ]';
 			echo "jQuery.plot(jQuery(\"#ws-graph-index-pc\"), $series,", ws_graph_options( 'readability' ), " );\n";
@@ -835,14 +850,27 @@ class word_stats_admin {
 			$series = '[ { label: "keywords", data: kw1, color: \'#38c\' } ]';
 			$comma = false;
 			$z = 0;
-			foreach ( $report[ 'total_keywords' ] as $key=>$value ) {
+			if( count( $report[ 'total_keywords' ] ) ) {
+				foreach ( $report[ 'total_keywords' ] as $key=>$value ) {
+						if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
+						$kw_data .= "[  $value, $z ]";
+						$var_kw_ticks .= '"' . $key . '"';
+						$comma = true;
+						$z++;
+						if ( $z == 20 ) { break; }
+				}
+			}
+			// Fill the blanks
+			if ( $z < 20 ) {
+				for( $i = 1; 20 - $z; $i++ ) {
 					if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
-					$kw_data .= "[  $value, $z ]";
-					$var_kw_ticks .= '"' . $key . '"';
+					$kw_data .= "[  0, $z ]";
+					$var_kw_ticks .= '""';
 					$comma = true;
 					$z++;
-					if ( $z == 20 ) { break; }
+				}
 			}
+
 			echo "var kw1 = [",  $kw_data, "];\n"; // Create the data array for each post type
 			echo "var kw_ticks = new Array(",  $var_kw_ticks, ");\n"; // Create the data array for each post type
 
@@ -854,10 +882,11 @@ class word_stats_admin {
 			$total_pages = count( $report[ 'author_count' ][ $author_graph ][ 'page' ] );
 			$total_custom = count( $report[ 'author_count' ][ $author_graph ][ 'custom' ] );
 			$total_all_types = $total_posts + $total_pages + $total_custom;
+			if ( !$total_all_types ) { $total_all_types = 1; }
 			echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $bar_max_width * ( $total_posts / $total_all_types ) + 1, 'px\'></div> ', $total_posts, '");';
 			echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $bar_max_width * ( $total_pages / $total_all_types ) + 1, 'px\'></div> ', $total_pages, '");';
 			echo '	jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $bar_max_width * ( $total_custom / $total_all_types ) + 1, 'px\'></div> ', $total_custom, '");';
-			echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $bar_max_width + 1, 'px\'></div> ', $total_all_types, '");';
+			echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $bar_max_width + 1, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");';
 
 			echo '</script>
 
@@ -867,24 +896,27 @@ class word_stats_admin {
 						<table id="ws-recent-entries">';
 
 			// Recent posts table
-			foreach ( $report[ 'recent_posts_rows' ] as $type=>$rows) {
-				// Clip rows array
-				if ( count( $rows ) > 15 ) { $rows = array_slice( $rows, 0, 15 ); }
-				echo "<tr><td class='ws-table-block'>";
-				switch( $type ) {
-					case 'post': _e( 'post', 'word-stats' ); break;
-					case 'page': _e( 'page', 'word-stats' ); break;
-					default: echo $type; break;
+			if ( count( $report[ 'recent_posts_rows' ] ) ) {
+				foreach ( $report[ 'recent_posts_rows' ] as $type=>$rows) {
+					// Clip rows array
+					if ( count( $rows ) > 15 ) { $rows = array_slice( $rows, 0, 15 ); }
+					echo "<tr><td class='ws-table-block'>";
+					switch( $type ) {
+						case 'post': _e( 'post', 'word-stats' ); break;
+						case 'page': _e( 'page', 'word-stats' ); break;
+						default: echo $type; break;
+					}
+					echo '</td><td class="ws-table-block">', __( 'date', 'word-stats' ), '</td><td class="ws-table-block ws-table-count">', __( 'words', 'word-stats' ), '</td><td class="ws-table-block ws-table-index">', __( 'readability', 'word-stats' ), '</td></tr>';
+					$even = false;
+					foreach( $rows as $row ) {
+						echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
+						$even = !$even;
+						echo $row, '</tr>';
+					}
 				}
-				echo '</td><td class="ws-table-block">', __( 'date', 'word-stats' ), '</td><td class="ws-table-block ws-table-count">', __( 'words', 'word-stats' ), '</td><td class="ws-table-block ws-table-index">', __( 'readability', 'word-stats' ), '</td></tr>';
-				$even = false;
-				foreach( $rows as $row ) {
-					echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
-					$even = !$even;
-					echo $row, '</tr>';
-				}
+			} else {
+				echo "<tr><td class='ws-row-even'>", __( 'No data', 'word-stats' ), '</td></tr>';
 			}
-
 			echo '</table>
 					</div>
 				</div>

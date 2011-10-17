@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 
 A suite of word counters, keyword counters and readability analysis displays for your blog.
 
@@ -113,6 +113,10 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.0.2 =
+* Fix: Covered some analytics page error cases when there is no data within the period.
+* Fix: Missing translation string.
+
 = 3.0.1 =
 * Fix: Removed operator ?: unsupported in older PHP 5 versions.
 * Fix: Description typo.
