@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0.2
+Version: 3.0.3
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -454,13 +454,13 @@ class word_stats_admin {
 
 	function settings_page() {
 		// Default values
-		$opt_RI_column = get_option( 'word_stats_RI_column' ) ? get_option( 'word_stats_RI_column' ) : 1;
-		$opt_totals = get_option( 'word_stats_totals' ) ?  get_option( 'word_stats_totals' ) : 1;
-		$opt_replace_wc = get_option( 'word_stats_replace_word_count') ? get_option( 'word_stats_replace_word_count') : 1;
-		$opt_averages = get_option( 'word_stats_averages' ) ? get_option( 'word_stats_averages' ) : 1;
-		$opt_show_keywords = get_option( 'word_stats_show_keywords' ) ? get_option( 'word_stats_show_keywords' ) : 1;
-		$opt_add_tags = get_option( 'word_stats_add_tags' ) ? get_option( 'word_stats_add_tags' ) : 1;
-		$opt_count_unpublished = get_option( 'word_stats_count_unpublished' ) ? get_option( 'word_stats_count_unpublished' ) : 1;
+		$opt_RI_column = ( get_option( 'word_stats_RI_column' ) === null ) ? 1 : get_option( 'word_stats_RI_column' );
+		$opt_totals = ( get_option( 'word_stats_totals' )  === null ) ?  1 : get_option( 'word_stats_totals' ) ;
+		$opt_replace_wc = ( get_option( 'word_stats_replace_word_count' ) === null ) ? 1 : get_option( 'word_stats_replace_word_count') ;
+		$opt_averages = ( get_option( 'word_stats_averages' )  === null ) ? 1 : get_option( 'word_stats_averages' );
+		$opt_show_keywords = ( get_option( 'word_stats_show_keywords' )  === null ) ? 1 : get_option( 'word_stats_show_keywords' );
+		$opt_add_tags = ( get_option( 'word_stats_add_tags' )  === null ) ? 1 : get_option( 'word_stats_add_tags' );
+		$opt_count_unpublished = ( get_option( 'word_stats_count_unpublished' )  === null ) ? 1 : get_option( 'word_stats_count_unpublished' );
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
@@ -528,7 +528,6 @@ class word_stats_admin {
 		// Validate dates
 		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
 		$period_end = date( 'Y-m-d', strtotime( $period_end ) );
-
 		/* For next version
 		$can_write_csv = is_writable( plugins_url( 'word-stats/csv' ) );
 		if ( $can_write_csv ) {
@@ -541,6 +540,7 @@ class word_stats_admin {
 		*/
 
 		// Loop requested posts by type
+		$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
 		foreach( $wp_post_types as $post_type ) {
 			// Load only content and custom post types
 			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
@@ -549,18 +549,16 @@ class word_stats_admin {
 				// Load the posts
 				$query = "SELECT * FROM $wpdb->posts WHERE ";
 				if ( !get_option( 'word_stats_count_unpublished' ) ) {
-					$query .= "post_status = 'publish'";
+					$query .= "post_status = 'publish' AND ";
 				}
-				$query .= " AND post_type = '" . $post_type->name . "' AND post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' ORDER BY post_date DESC";
+				$query .= " post_type = '" . $post_type->name . "' AND post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' ORDER BY post_date DESC";
 				$posts = $wpdb->get_results( $query, OBJECT );
-
 				// Counts per type. Custom post types are aggregated.
 				if ( $post_type->name != 'post' && $post_type->name != 'page' ) {
 					$report[ 'type_count' ][ 'custom' ] += count( $posts );
 				} else {
 					$report[ 'type_count' ][ $post_type->name ] = count( $posts );
 				}
-				$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
 
 				foreach( $posts as $post ) {
 
@@ -642,6 +640,8 @@ class word_stats_admin {
 
 		if( $_GET[ 'view-all' ] ) { $period_start = '1900-01-01'; } else { $period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 ); }
 		if( $_GET[ 'view-all' ] ) { $period_end = date( 'Y-m-d' ); } else { $period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' ); }
+
+
 
 		if ( $_GET[ 'author-tab' ] ) {
 			$author_graph = intval( $_GET[ 'author-tab' ] );

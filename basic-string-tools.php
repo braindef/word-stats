@@ -166,7 +166,7 @@ function bst_js_string_tools() {
 // Return keywords with thresholds
 function bst_keywords( $text, $ignore, $top_ratio = 0, $minimum = 0 ) {
 	if ( !$text ) { return false; }
-	if ( $ignore == null ) { $ignore = array(); }
+	if ( !$ignore ) { $ignore = array(); }
 
 	$text = bst_html_stripper( $text );
 
