@@ -4,27 +4,27 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 2.2
+Stable tag: 3.0.4
 
-Adds total and monthly per author word counts, provides a more accurate live word count, displays keywords and readability levels of each post.
+A suite of word counters, keyword counters and readability analysis displays for your blog.
 
 == Description ==
 
-Word Stats adds a whole slew of linguistic statistics to help you keep track of your content and improve its quality.
+Word Stats adds a suite of linguistic statistics to help you keep track of your content and improve its quality.
 
-It counts the number of words in each public post type (including bbForum plugin posts) for each author and month. The results are displayed in an admin page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
+It counts the number of words in each public post type for each author and month. The results are displayed in an analytics page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
 
 It extends the info area of the post edit form with these live stats:
 
 * Relevant keywords; common words can be blacklisted in the settings page.
 * A more accurate word count.
-* Color coded readability tests: Automated Readability Index, Coleman-Liau Index and LIX. 
+* Color coded readability tests: Automated Readability Index, Coleman-Liau Index and LIX.
 * Total characters, alphanumeric characters, words and sentences.
 * Characters per word, characters per sentence, words per sentence.
 
 The aggregated readability level of each post can be displayed in an extra column in the manage posts list.
 
-Since version 2.0, Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese. Mileage may vary.
+Since version 2.0, Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese (mileage may vary).
 
 Spanish and Catalan translations are bundled with the plugin.
 
@@ -44,7 +44,7 @@ Check [http://en.wikipedia.org/wiki/Readability_test](http://en.wikipedia.org/wi
 
 == Frequently Asked Questions ==
 
-= About the readability tests = 
+= About the readability tests =
 
 **What do the numbers and colors mean?**
 
@@ -67,13 +67,13 @@ These three tests don't rely on syllable counting, which is a bit more complicat
 
 Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
 
-**Do the tests really reflect how easy is the text?** 
+**Do the tests really reflect how easy is the text?**
 
 They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level. Also, poor writing skills can cheat the indexes; for example by abusing periods or commas.
 
 **The readability index column doesn't show any value after installing the plugin**
 
-The values are cached once each post is saved. A feature to recalculate all manually is already in the To Do list. 
+The values are cached once each post is saved. A feature to recalculate all manually is already in the To Do list.
 
 = About the live stats =
 
@@ -85,13 +85,13 @@ The calculations are refreshed every 15 seconds.
 
 It shows any keyword that appears at least three times and at least 1/5 times the top keyword. Words blacklisted in the settings page are excluded.
 
-Post tags can be counted optionally as keywords. They are added when the post is loaded. If you add new tags, save the post and reload it. 
+Post tags can be counted optionally as keywords. They are added when the post is loaded. If you add new tags, save the post and reload it.
 
 = About the counting algorithm =
 
 **Why the live word count doesn't match the saved stats?**
 
-The live count uses the JavaScript regex engine (ECMA-262), while the saved stats uses PHP's Perl Compatible Regular Expressions. Also the JavaScript code uses the browser to strip HTML tags, while the PHP code uses an internal function. There are small differences on how they process the text. 
+The live count uses the JavaScript regex engine (ECMA-262), while the saved stats uses PHP's Perl Compatible Regular Expressions. Also the JavaScript code uses the browser to strip HTML tags, while the PHP code uses an internal function. There are small differences on how they process the text.
 
 This may be fixed in future versions by replacing the JavaScript functions with AJAX calls.
 
@@ -105,25 +105,35 @@ This may be fixed in future versions by replacing the JavaScript functions with 
 
 They are just for style consistence.
 
-**How do I style the count lists?**
-
-The CSS classes are:
-
-* Container widget li: word-stats-counts-widget
-* h2 widget title: word-stats-counts-title
-* Widget and shortcode ul of counts: word-stats-counts
-* li of all count items (widget and shortcode): word-stats-count
-* li of the total word count (widget and shortcode): word-stats-list-total
-* li of the total word count (dashboard): word-stats-dash-total
-
 == Screenshots ==
 
-1. Total word counts in the dashboard.
-2. Live stats for the post being edited.
-3. Extra column showing an aggregate of the readability indexes.
-4. Stats page displaying monthly words per author.
+1. Analytics page.
+2. Total word counts in the dashboard.
+3. Live stats for the post being edited.
+4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.0.4 =
+* Fix: Broken live count.
+
+= 3.0.3 =
+* Fix: Bug in stats page query when 'Count words from drafts and posts pending review' option was off.
+* Fix: Bug displaying saved options.
+
+= 3.0.2 =
+* Fix: Covered some analytics page error cases when there is no data within the period.
+* Fix: Missing translation string.
+
+= 3.0.1 =
+* Fix: Removed operator ?: unsupported in older PHP 5 versions.
+* Fix: Description typo.
+
+= 3.0 =
+* New premium stats page.
+* Allowed all users with access to the stats page to see stats for all authors.
+* Readability Index column is calculated when viewing the posts list.
+* Fix: Duplicated readability index value when number was a round integer.
+
 = 2.2 =
 * Fix: Wrong values in Readability Index column (missing multibyte support).
 
@@ -208,7 +218,7 @@ The CSS classes are:
 * Counts words from stories custom post type.
 
 = 1.0 =
-* First release. 
+* First release.
 
 == Upgrade Notice ==
 = 2.0 =
