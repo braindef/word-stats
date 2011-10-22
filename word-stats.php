@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0.4
+Version: 3.0.5
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -541,7 +541,11 @@ class word_stats_admin {
 
 		// Loop requested posts by type
 		$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
+
+		$report[ 'type_count' ][ 'custom' ] = 0;
 		foreach( $wp_post_types as $post_type ) {
+			$report[ 'type_count' ][ $post_type->name ] = 0;
+
 			// Load only content and custom post types
 			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
 				$rp_table_row = 0;
@@ -553,12 +557,6 @@ class word_stats_admin {
 				}
 				$query .= " post_type = '" . $post_type->name . "' AND post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' ORDER BY post_date DESC";
 				$posts = $wpdb->get_results( $query, OBJECT );
-				// Counts per type. Custom post types are aggregated.
-				if ( $post_type->name != 'post' && $post_type->name != 'page' ) {
-					$report[ 'type_count' ][ 'custom' ] += count( $posts );
-				} else {
-					$report[ 'type_count' ][ $post_type->name ] = count( $posts );
-				}
 
 				foreach( $posts as $post ) {
 
@@ -573,8 +571,16 @@ class word_stats_admin {
 						}
 					}
 
-					// Get the readability index
 					if ( $post->post_author == $author_graph ) {
+
+						// Counts per type. Custom post types are aggregated.
+						if ( $post_type->name != 'post' && $post_type->name != 'page' ) {
+							$report[ 'type_count' ][ 'custom' ]++;
+						} else {
+							$report[ 'type_count' ][ $post_type->name ]++;
+						}
+
+						// Get the readability index
 						$ARI = get_post_meta( $post->ID, 'readability_ARI', true ); $CLI = get_post_meta( $post->ID, 'readability_CLI', true ); $LIX = get_post_meta( $post->ID, 'readability_LIX', true );
 
 						// Calculate stats if they aren't cached
@@ -602,11 +608,12 @@ class word_stats_admin {
 					$report[ 'all_total_words' ] += $post_word_count;
 
 					// Store rows for the recent posts table
-					$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' . htmlentities( $post->post_title, null, 'utf-8' ) . '</a>' : htmlentities( $post->post_title, null, 'utf-8' );
-					$row = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-index\'>' . round( $ws_index_n ) . '</td>';
-					$report[ 'recent_posts_rows' ][ $post_type->name ][ $rp_table_row ] = $row;
-					$rp_table_row++;
-
+					if ( $post->post_author == $author_graph ) {
+						$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' . htmlentities( $post->post_title, null, 'utf-8' ) . '</a>' : htmlentities( $post->post_title, null, 'utf-8' );
+						$row = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-index\'>' . round( $ws_index_n ) . '</td>';
+						$report[ 'recent_posts_rows' ][ $post_type->name ][ $rp_table_row ] = $row;
+						$rp_table_row++;
+					}
 					/* For next version
 					if ( $can_write_csv ) {
 						// Store CSV data
@@ -878,10 +885,11 @@ class word_stats_admin {
 
 			// Post type counts
 			$bar_max_width = 125;
-			$total_posts = count( $report[ 'author_count' ][ $author_graph ][ 'post' ] );
-			$total_pages = count( $report[ 'author_count' ][ $author_graph ][ 'page' ] );
-			$total_custom = count( $report[ 'author_count' ][ $author_graph ][ 'custom' ] );
+			$total_posts =  $report[ 'type_count' ][ 'post' ];
+			$total_pages =  $report[ 'type_count' ][ 'page' ];
+			$total_custom = $report[ 'type_count' ][ 'custom' ];
 			$total_all_types = $total_posts + $total_pages + $total_custom;
+
 			if ( !$total_all_types ) { $total_all_types = 1; }
 			echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $bar_max_width * ( $total_posts / $total_all_types ) + 1, 'px\'></div> ', $total_posts, '");';
 			echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $bar_max_width * ( $total_pages / $total_all_types ) + 1, 'px\'></div> ', $total_pages, '");';
