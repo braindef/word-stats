@@ -1,5 +1,5 @@
 <?php
-/* 
+/*
 Basic String Tools
 by: Fran Ontanaya <email@franontanaya.com>
 Version: 0.1
@@ -12,8 +12,22 @@ function bst_html_stripper ( $text ) {
 		            '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
 		            '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
 		            '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments including CDATA
-	); 
+	);
 	return preg_replace( $search, ' ', $text );
+}
+
+function bst_array_first( $array ) {
+	if( !is_array( $array ) || !count( $array ) ) return false;
+	return array_shift( array_keys( $array ) );
+}
+
+function bst_array_last( $array ) {
+	if( !is_array( $array ) || !count( $array ) ) return false;
+	return array_pop( array_keys( $array ) );
+}
+
+function bst_Ym_to_unix( $month ) {
+	if ( !$month ) { return time(); } else { return strtotime( $month . '-01' ); }
 }
 
 // REQUIRES PHP 5 and UTF-8
@@ -114,7 +128,7 @@ function bst_trim_text( $text ) {
 	// Trim spaces
 	$text = preg_replace( '/[ ]+[\.\n]/u', '', $text );
 	return trim( $text );
-} 
+}
 
 function bst_split_sentences( $text ) {
 	return bst_trim_array( preg_split( '/[\.\n]+/', $text ) );
@@ -122,6 +136,11 @@ function bst_split_sentences( $text ) {
 
 function bst_split_words( $text ) {
 	return bst_trim_array( preg_split( '/[ ,\.\n]+/', $text ) );
+}
+
+function bst_count_words( $text ) {
+	$simplified = bst_simple_boundaries( $text );
+	return count( bst_split_words( $simplified[ 'text' ] ) );
 }
 
 function bst_split_text( $text ) {
@@ -142,5 +161,42 @@ function bst_js_string_tools() {
 		return true;
 	}
 	return false;
+}
+
+// Return keywords with thresholds
+function bst_keywords( $text, $ignore, $top_ratio = 0, $minimum = 0 ) {
+	if ( !$text ) { return false; }
+	if ( !$ignore ) { $ignore = array(); }
+
+	$text = bst_html_stripper( $text );
+
+	$word_hash = array();
+	$top_word_count = 0;
+	$stats = bst_split_text( $text );
+	$word_array = $stats[ 'words' ];
+	// Count keywords
+	foreach ( $word_array as $word ) {
+		$word = strtolower( $word );
+		if ( !in_array( $word, $ignore ) ) {
+			if ( strlen( $word ) > 3 ) {
+				if ( !$word_hash[ $word ] ) { $word_hash[ $word ] = 0; }
+				$word_hash[ $word ]++;
+				if ( $word_hash[ $word ] > $top_word_count ) { $top_word_count = $word_hash[ $word ]; }
+			}
+		}
+	}
+
+	if( $top_ratio && $minimum ) {
+		// Filter
+		$filtered_result = array();
+		foreach ( $word_hash as $keyword => $appareances ) {
+			if ( $appareances >= $top_word_count / $top_ratio && $appareances > $minimum ) {
+				$filtered_result[ $word ] = $appareances;
+			}
+		}
+		return $filtered_result;
+	} else {
+		return $word_hash;
+	}
 }
 ?>
