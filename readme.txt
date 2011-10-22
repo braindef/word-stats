@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 
 A suite of word counters, keyword counters and readability analysis displays for your blog.
 
@@ -113,6 +113,9 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.0.4 =
+* Fix: Broken live count.
+
 = 3.0.3 =
 * Fix: Bug in stats page query when 'Count words from drafts and posts pending review' option was off.
 * Fix: Bug displaying saved options.

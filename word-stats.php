@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0.3
+Version: 3.0.4
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -230,7 +230,7 @@ class word_stats_readability {
 						/* Find keywords */
 						var wordHash = new Array;
 						var topCount = 0;
-						var ignKeywords = "' , '::', strtolower( str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ), '::' ,'";
+						var ignKeywords = "' , '::', strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) ), '::' ,'";
 						for (var i = 0; i < wordArray.length; i = i + 1) {
 							wordArray[i] = wordArray[i].toLowerCase();
 							if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) {
