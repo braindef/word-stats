@@ -1,145 +1,385 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin es_ES v.1.5.5\n"
+"Project-Id-Version: Word Stats Plugin 3.1.0 es_ES\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-30 02:10+0200\n"
-"PO-Revision-Date: \n"
+"POT-Creation-Date: 2011-12-01 04:48+0100\n"
+"PO-Revision-Date: 2011-12-01 05:07+0100\n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: word-stats.php:76
-msgid "Words"
-msgstr "Palabras"
+#: premium.php:10
+msgid "Unlock this screen"
+msgstr "Desbloquea esta página"
 
-#: word-stats.php:82
-msgid "Total words"
-msgstr "Palabras totales"
+#: premium.php:11
+msgid "Get access to this screen and future premium features with a single contribution."
+msgstr "Accede a esta página y a futuras características premium con una sola contribución."
 
-#: word-stats.php:127
-#: word-stats.php:147
+#: premium.php:12
+#, php-format
+msgid "Problems activating the premium features? %sClick here%s"
+msgstr "¿Problemas activando las características premium? %sHaz clic aquí%s"
+
+#: premium.php:22
+msgid "Your rating"
+msgstr "Tu puntuación"
+
+#: premium.php:23
+msgid "Meh, whatever"
+msgstr "Bleh, lo que sea"
+
+#: premium.php:23
+#: premium.php:24
+#: premium.php:25
+#, php-format
+msgid "€%1$s.%2$s"
+msgstr "%1$s,%2$s€"
+
+#: premium.php:24
+msgid "Good plugin!"
+msgstr "¡Buen plugin!"
+
+#: premium.php:25
+msgid "Awesomesauce!"
+msgstr "¡La pera limonera!"
+
+#: word-counts-widget.php:6
+#: word-counts-widget.php:26
 msgid "Total Word Counts"
 msgstr "Palabras totales"
 
-#: word-stats.php:127
+#: word-counts-widget.php:6
 msgid "Displays the word counts of all public post types"
 msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 
-#: word-stats.php:133
+#: word-counts-widget.php:12
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:295
-#: word-stats.php:297
+#: word-stats.php:130
+msgid "Words"
+msgstr "Palabras"
+
+#: word-stats.php:136
+msgid "Total words"
+msgstr "Palabras totales"
+
+#: word-stats.php:311
+#: word-stats.php:313
 msgid "Keywords:"
 msgstr "Palabras clave:"
 
-#: word-stats.php:295
+#: word-stats.php:311
 msgid "No relevant keywords."
 msgstr "Ninguna palabra clave relevante."
 
-#: word-stats.php:301
-#: word-stats.php:313
+#: word-stats.php:317
+#: word-stats.php:329
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: word-stats.php:303
-#: word-stats.php:315
+#: word-stats.php:319
+#: word-stats.php:331
 msgid "characters"
 msgstr "caracteres"
 
-#: word-stats.php:304
-#: word-stats.php:316
+#: word-stats.php:320
+#: word-stats.php:332
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: word-stats.php:305
-#: word-stats.php:317
+#: word-stats.php:321
+#: word-stats.php:333
+#: word-stats.php:978
 msgid "words"
 msgstr "palabras"
 
-#: word-stats.php:306
-#: word-stats.php:318
+#: word-stats.php:322
+#: word-stats.php:334
 msgid "sentences"
 msgstr "frases"
 
-#: word-stats.php:307
-#: word-stats.php:319
+#: word-stats.php:323
+#: word-stats.php:335
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: word-stats.php:308
-#: word-stats.php:320
+#: word-stats.php:324
+#: word-stats.php:336
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: word-stats.php:309
-#: word-stats.php:321
+#: word-stats.php:325
+#: word-stats.php:337
 msgid "words per sentence"
 msgstr "palabras por frase"
 
-#: word-stats.php:413
+#: word-stats.php:346
+msgid "Word count:"
+msgstr "Cuenta de palabras:"
+
+#: word-stats.php:346
+msgid "(Word Stats plugin)"
+msgstr "(plugin Word Stats)"
+
+#: word-stats.php:423
 msgid "R.I."
 msgstr "I.L."
 
-#: word-stats.php:498
+#: word-stats.php:506
 msgid "Word Stats Options"
 msgstr "Opciones de Word Stats"
 
-#: word-stats.php:506
-msgid "Display aggregate readability column in the manage posts list"
-msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas"
-
-#: word-stats.php:512
-msgid "Enable total word counts."
-msgstr "Habilitar cuentas totales de palabras."
+#: word-stats.php:509
+msgid "Readabilty"
+msgstr "Legibilidad"
 
 #: word-stats.php:513
+msgid "Display aggregate readability column in the manage posts list."
+msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas."
+
+#: word-stats.php:515
+msgid "Total word counts"
+msgstr "Palabras totales"
+
+#: word-stats.php:519
+msgid "Enable total word counts (dashboard, widget and shortcode)."
+msgstr "Habilitar cuentas totales de palabras (escritorio, widget y shortcode)."
+
+#: word-stats.php:520
 msgid "This may slow down post saving in large blogs."
 msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
 
-#: word-stats.php:519
+#: word-stats.php:525
 msgid "Count words from drafts and posts pending review."
 msgstr "Contar palabras de borradores y entradas pendientes de revisión."
 
-#: word-stats.php:525
+#: word-stats.php:527
+msgid "Live stats"
+msgstr "Estadísticas en vivo"
+
+#: word-stats.php:531
 msgid "Replace WordPress live word count with Word Stats word count."
 msgstr "Sustituir la cuenta de palabras en vivo de WordPress por la cuenta de palabras de Word Stats"
 
-#: word-stats.php:531
-msgid "Enable live character/word/sentence averages."
-msgstr "Mostrar las medias en vivo de caracteres/palabras/frases"
+#: word-stats.php:536
+msgid "Display live character/word/sentence averages."
+msgstr "Mostrar las medias en vivo de caracteres/palabras/frases."
 
-#: word-stats.php:537
-msgid "Enable live keyword count."
+#: word-stats.php:541
+msgid "Display live keyword count."
 msgstr "Habilitar cuentas totales de palabras."
 
 #: word-stats.php:543
+#: word-stats.php:832
+msgid "Keywords"
+msgstr "Palabras clave"
+
+#: word-stats.php:547
 msgid "Add the last saved tags to the keyword count."
 msgstr "Añadir las últimas etiquetas guardadas a la cuenta de palabras clave"
 
-#: word-stats.php:547
-msgid "Ignore these keywords (space separated):"
-msgstr "Ignorar estas palabras clave (separadas por espacios):"
-
 #: word-stats.php:552
+#, php-format
+msgid "One %1$sregular expression%2$s per line, without slashes."
+msgstr "Una %1$sexpresión regular%2$s por línea, sin barras."
+
+#: word-stats.php:553
+msgid "Example: ^apples?$ = good, /^apples?$/ = bad."
+msgstr "Ejemplo: ^apples?$ = bien, /^apples?$/ = mal."
+
+#: word-stats.php:561
+msgid "Writing basic regular expressions:"
+msgstr "Escribiendo expresiones regulares básicas:"
+
+#: word-stats.php:562
+msgid "^ matches the beggining of the word."
+msgstr "^ coincide con el principio de la palabra."
+
+#: word-stats.php:562
+msgid "Example: \"^where\" matches \"wherever\" but not \"anywhere\"."
+msgstr "Ejemplo: \"^donde\" coincide con \"dondequiera\" pero no \"adonde\"."
+
+#: word-stats.php:563
+msgid "$ matches the end of the word."
+msgstr "$ coincide con el final de la palabra."
+
+#: word-stats.php:563
+msgid "Example: \"where$\" matches \"anywhere\" but not \"wherever\"."
+msgstr "Ejemplo: \"donde$\" coincide con \"adonde\" pero no con \"dondequiera\"."
+
+#: word-stats.php:564
+msgid "^keyword$ matches only the whole keyword."
+msgstr "^palabra$ coincide sólo con la palabra completa."
+
+#: word-stats.php:564
+msgid "Example: \"^where$\" matches \"where\" but not \"anywhere\" or \"wherever\"."
+msgstr "Ejemplo: \"^donde$\" coincide con \"donde\" pero no con \"dondequiera\" o \"adonde\"."
+
+#: word-stats.php:565
+msgid "? matches the previous character zero or one time."
+msgstr "? coincide con el carácter anterior cero o una vez."
+
+#: word-stats.php:565
+msgid "Example: \"^apples?$\" matches \"apple\" and \"apples\"."
+msgstr "Ejemplo: \"^manzanas?$\" coincide con \"manzana\" y \"manzanas\"."
+
+#: word-stats.php:566
+msgid "* matches the previous character zero or more times."
+msgstr "* coincide con el carácter anterior cero o más veces."
+
+#: word-stats.php:566
+msgid "Example: \"^10*$\" matches \"1\", \"10\", \"1000000\", etc."
+msgstr "Ejemplo: \"^10*$\" coincide con \"1\", \"10\", \"1000000\", etc."
+
+#: word-stats.php:567
+msgid "+ matches the previous character one or more times."
+msgstr "+ coincide con el carácter anterior una o más veces."
+
+#: word-stats.php:567
+msgid "Example: \"^10+$\" matches \"10\", \"1000000\", etc., but not \"1\"."
+msgstr "Ejemplo: \"^10+$\" coincide con \"10\", \"1000000\", etc., pero no con \"1\"."
+
+#: word-stats.php:568
+msgid "[] matches any of the characters between the brackets."
+msgstr "[] coincide con cualquiera de los caracteres entre los corchetes."
+
+#: word-stats.php:568
+msgid "Example: \"^take[ns]?$\" matches \"take\", \"taken\" and \"takes\"."
+msgstr "Ejemplo: \"^toma[ns]?$\" coincide con \"toma\", \"tomas\" y \"toman\"."
+
+#: word-stats.php:574
 msgid "Save Changes"
 msgstr "Guardar cambios"
 
-#: word-stats.php:562
-msgid "Word Stats"
-msgstr "Word Stats"
+#: word-stats.php:749
+#: word-stats.php:755
+msgid "Thanks for your contribution!"
+msgstr "¡Gracias por tu contribución!"
 
-#: word-stats.php:586
-msgid "No stats available for the current user."
-msgstr "No hay estadísticas disponibles para el usuario actual."
+#: word-stats.php:749
+#: word-stats.php:752
+msgid "Word Stats Plugin is now upgraded to Premium!"
+msgstr "¡Word Stats Plugin está ahora actualizado a Premium!"
 
-#: word-stats.php:589
+#: word-stats.php:752
+msgid "Please, use the donation button to express your support."
+msgstr "Por favor, usa el botón de donaciones para expresar tu apoyo."
+
+#: word-stats.php:755
+msgid "With your support we can bring you even more premium features!"
+msgstr "¡Con tu apoyo podemos traer aún más características premium!"
+
+#: word-stats.php:778
+msgid "View author:"
+msgstr "Ver autor:"
+
+#: word-stats.php:787
+msgid "Period:"
+msgstr "Periodo:"
+
+#: word-stats.php:788
+msgid "all time"
+msgstr "todo"
+
+#: word-stats.php:790
+msgid "View"
+msgstr "Ver"
+
+#: word-stats.php:810
+#, php-format
+msgid "%1$swords%2$s between %3$s and %4$s"
+msgstr "%1$spalabras%2$s entre %3$s y %4$s"
+
+#: word-stats.php:814
+msgid "Posts"
+msgstr "Entradas"
+
+#: word-stats.php:815
+msgid "Pages"
+msgstr "Páginas"
+
+#: word-stats.php:816
+msgid "Custom"
+msgstr "Otras"
+
+#: word-stats.php:817
+msgid "All"
+msgstr "Todas"
+
+#: word-stats.php:823
+msgid "Readability level"
+msgstr "Nivel de legibilidad"
+
+#: word-stats.php:826
+msgid "Share of total words"
+msgstr "Porción de las palabras totales"
+
+#: word-stats.php:869
+#: word-stats.php:889
+#: word-stats.php:911
+#: word-stats.php:987
+msgid "No data"
+msgstr "No hay datos"
+
+#: word-stats.php:903
+msgid "Basic"
+msgstr "Básico"
+
+#: word-stats.php:904
+msgid "Intermediate"
+msgstr "Intermedio"
+
+#: word-stats.php:905
+msgid "Advanced"
+msgstr "Avanzado"
+
+#: word-stats.php:963
+msgid "The Most Recent Entries"
+msgstr "Contenidos más recientes"
+
+#: word-stats.php:974
+msgid "post"
+msgstr "entrada"
+
+#: word-stats.php:975
+msgid "page"
+msgstr "página"
+
+#: word-stats.php:978
+msgid "date"
+msgstr "fecha"
+
+#: word-stats.php:978
+msgid "readability"
+msgstr "legibilidad"
+
+#: word-stats.php:995
 msgid "Sorry, word counting failed for an unknown reason."
 msgstr "Disculpas. La cuenta de palabras falló por un motivo desconocido."
 
+#~ msgid "Enable total word counts."
+#~ msgstr "Habilitar cuentas totales de palabras."
+
+#~ msgid "Ignore these keywords (one per line):"
+#~ msgstr "Ignorar estas palabras clave (una por línea):"
+
+#~ msgid "Ignore these keywords (space separated):"
+#~ msgstr "Ignorar estas palabras clave (separadas por espacios):"
+
+#~ msgid "Word Stats"
+#~ msgstr "Word Stats"
+
+#~ msgid "No stats available for the current user."
+#~ msgstr "No hay estadísticas disponibles para el usuario actual."
