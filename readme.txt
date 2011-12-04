@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 3.0.5
+Stable tag: 3.1.0
 
 A suite of word counters, keyword counters and readability analysis displays for your blog.
 
@@ -16,7 +16,7 @@ It counts the number of words in each public post type for each author and month
 
 It extends the info area of the post edit form with these live stats:
 
-* Relevant keywords; common words can be blacklisted in the settings page.
+* Relevant keywords; common words can be blacklisted with regular expressions in the settings page.
 * A more accurate word count.
 * Color coded readability tests: Automated Readability Index, Coleman-Liau Index and LIX.
 * Total characters, alphanumeric characters, words and sentences.
@@ -113,6 +113,12 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.1.0 =
+* Feature: Ignored words list now uses regular expressions. Old plain keywords are updated on upgrade.
+* Design: Taller ignored words list textbox.
+* Design: Options organized by category.
+* Fix: Some underscore versus hyphen inconsistencies for internal option names.
+
 = 3.0.5 =
 * Fix: Inaccurate total counts on stats page.
 

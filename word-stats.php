@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.0.5
+Version: 3.1.0
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -30,10 +30,10 @@ Thanks to Allan Ellegaard for testing and input.
 /* # Activate premium.
 -------------------------------------------------------------- */
 // No special checks. This is open source, you could hack around it easily (if your time is less valuable than €2).
-if( $_GET[ 'word-stats-action' ] == 'basic' ) { update_option( 'ws-premium', 0 ); }
-if( $_GET[ 'word-stats-action' ] == 'alternative') {	update_option( 'ws-premium', 1 ); }
-if( $_GET[ 'word-stats-action' ] == 'payment') {	update_option( 'ws-premium', 2 ); }
-if( $_GET[ 'word-stats-action' ] == 'donation' ) { update_option( 'ws-premium', 3 ); }
+if ( $_GET[ 'word-stats-action' ] == 'basic' ) { update_option( 'word_stats_premium', 0 ); }
+if ( $_GET[ 'word-stats-action' ] == 'alternative') {	update_option( 'word_stats_premium', 1 ); }
+if ( $_GET[ 'word-stats-action' ] == 'payment') {	update_option( 'word_stats_premium', 2 ); }
+if ( $_GET[ 'word-stats-action' ] == 'donation' ) { update_option( 'word_stats_premium', 3 ); }
 
 /* # Word Counts
 -------------------------------------------------------------- */
@@ -43,8 +43,41 @@ load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/
 -------------------------------------------------------------- */
 require_once( 'basic-string-tools.php' );
 
-/* # Delete deprecated options
+/* # Check version. Perform upgrades.
 -------------------------------------------------------------- */
+// Note: version_compare is the PHP for checking versions.
+
+// pre 3.1.0 versions have no word_stats_version
+if ( !get_option( 'word_stats_version' ) ) {
+
+	// fix inconsistent naming for some options
+	if ( get_option( 'ws-premium' ) ) {
+		update_option( 'word_stats_premium', get_option( 'ws-premium' ) );
+		delete_option( 'ws-premium' );
+	}
+	if ( get_option( 'ws-total-counts-cache' ) ) {
+		update_option( 'word_stats_total_counts_cache', get_option( 'ws-total-counts-cache' ) );
+		delete_option( 'ws-total-counts-cache' );
+	}
+	if ( get_option( 'ws-monthly-counts-cache' ) ) {
+		update_option( 'word_stats_monthly_counts_cache', get_option( 'ws-monthly-counts-cache' ) );
+		delete_option( 'ws-monthly-counts-cache' );
+	}
+
+	// convert ignored keywords list to regular expressions
+	$keywords_to_upgrade = explode( "\n", str_replace( "\r", '', get_option( 'word_stats_ignore_keywords' ) ) );
+	if ( count( $keywords_to_upgrade ) ) {
+		for ( $i = 0; $i < count( $keywords_to_upgrade ); $i++ ) {
+			$keywords_to_upgrade[ $i ] =  '^' . $keywords_to_upgrade[ $i ] . '$';
+		}
+		$i = null;
+		update_option( 'word_stats_ignore_keywords', implode( "\n", $keywords_to_upgrade ) );
+	}
+	update_option( 'word_stats_version', '3.1.0' );
+}
+
+
+//  Deprecated option
 if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'ws-counts-cache' ); }
 
 /* # Functions to count and cache total words
@@ -103,14 +136,14 @@ class word_stats_counts {
 		$text = __( 'Total words', 'word-stats' );
 		$total_num =  number_format_i18n( $total_num );
 		$cache = $cache . "::totalopentag::{$total_num}::separator::{$text}::closetag::";
-		update_option( 'ws-total-counts-cache', $cache );
-		update_option( 'ws-monthly-counts-cache', $author_count );
+		update_option( 'word_stats_total_counts_cache', $cache );
+		update_option( 'word_stats_monthly_counts_cache', $author_count );
 		return $cache;
 	}
 
 	// Output the cached word counts with the proper HTML tags
 	public function get_word_counts( $mode ) {
-		$cached = get_option( 'ws-total-counts-cache' );
+		$cached = get_option( 'word_stats_total_counts_cache' );
 		//echo $cached;
 		if ( !$cached ) {
 			$cached = word_stats_counts::cache_word_counts();
@@ -230,10 +263,14 @@ class word_stats_readability {
 						/* Find keywords */
 						var wordHash = new Array;
 						var topCount = 0;
-						var ignKeywords = "' , '::', strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) ), '::' ,'";
+						 var ignKeywords = "' , strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) ), '";
+						ignKeywords = ignKeywords.split( "::" );
 						for (var i = 0; i < wordArray.length; i = i + 1) {
 							wordArray[i] = wordArray[i].toLowerCase();
-							if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) {
+
+							/* if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) { */
+
+							if ( !bstMatchRegArray( ignKeywords, wordArray[i] ) ) {
 								if ( wordArray[i].length > 3 ) {
 									if ( !wordHash[ wordArray[i] ] ) { wordHash[ wordArray[i] ] = 0; }
 									wordHash[ wordArray[i] ] = wordHash[ wordArray[i] ] + 1;
@@ -455,7 +492,7 @@ class word_stats_admin {
 	function settings_page() {
 		// Default values
 		$opt_RI_column = ( get_option( 'word_stats_RI_column' ) === null ) ? 1 : get_option( 'word_stats_RI_column' );
-		$opt_totals = ( get_option( 'word_stats_totals' )  === null ) ?  1 : get_option( 'word_stats_totals' ) ;
+		$opt_totals = ( get_option( 'word_stats_totals' )  === null ) ?  1 : get_option( 'word_stats_totals' );
 		$opt_replace_wc = ( get_option( 'word_stats_replace_word_count' ) === null ) ? 1 : get_option( 'word_stats_replace_word_count') ;
 		$opt_averages = ( get_option( 'word_stats_averages' )  === null ) ? 1 : get_option( 'word_stats_averages' );
 		$opt_show_keywords = ( get_option( 'word_stats_show_keywords' )  === null ) ? 1 : get_option( 'word_stats_show_keywords' );
@@ -469,46 +506,70 @@ class word_stats_admin {
 		<h2>' , __( 'Word Stats Options', 'word-stats' ), '</h2>
 		<form method="post" action="options.php">
 			 ', settings_fields( 'word-stats-settings-group' ), '
+ 			<h3>', __( 'Readabilty', 'word-stats' ), '</h3>
 			<p>
 				<input type="hidden" name="word_stats_RI_column" value="0" />
-				<input type="checkbox" name="word_stats_RI_column" value="1" '; if ( $opt_RI_column ) { echo 'checked="checked"'; } echo ' />',
-				__( 'Display aggregate readability column in the manage posts list', 'word-stats' ), '
+				<input type="checkbox" name="word_stats_RI_column" value="1" '; if ( $opt_RI_column ) { echo 'checked="checked"'; } echo ' /> ',
+				__( 'Display aggregate readability column in the manage posts list.', 'word-stats' ), '
 			</p>
+			<h3>', __( 'Total word counts', 'word-stats' ), '</h3>
 			<p>
 				<input type="hidden" name="word_stats_totals" value="0" />
-				<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' />',
-				__( 'Enable total word counts.', 'word-stats' ),
+				<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' /> ',
+				__( 'Enable total word counts (dashboard, widget and shortcode).', 'word-stats' ), ' ',
 				__( 'This may slow down post saving in large blogs.', 'word-stats' ), '
 			</p>
 			<p>
 				<input type="hidden" name="word_stats_count_unpublished" value="0" />
-				<input type="checkbox" name="word_stats_count_unpublished" value="1" ';  if ( $opt_count_unpublished ) { echo 'checked="checked"'; } echo ' />',
+				<input type="checkbox" name="word_stats_count_unpublished" value="1" ';  if ( $opt_count_unpublished ) { echo 'checked="checked"'; } echo ' /> ',
 				__( 'Count words from drafts and posts pending review.', 'word-stats' ),  '
 			</p>
+			<h3>', __( 'Live stats', 'word-stats' ), '</h3>
 			<p>
 				<input type="hidden" name="word_stats_replace_word_count" value="0" />
-				<input type="checkbox" name="word_stats_replace_word_count" value="1" '; if ( $opt_replace_wc ) { echo 'checked="checked"';  } echo ' />',
+				<input type="checkbox" name="word_stats_replace_word_count" value="1" '; if ( $opt_replace_wc ) { echo 'checked="checked"';  } echo ' /> ',
 				__( 'Replace WordPress live word count with Word Stats word count.', 'word-stats' ), '
 			</p>
 			<p>
 				<input type="hidden" name="word_stats_averages" value="0" />
-				<input type="checkbox" name="word_stats_averages" value="1" '; if ( $opt_averages ) { echo 'checked="checked"'; } echo ' />',
-				__( 'Enable live character/word/sentence averages.', 'word-stats' ), '
+				<input type="checkbox" name="word_stats_averages" value="1" '; if ( $opt_averages ) { echo 'checked="checked"'; } echo ' /> ',
+				__( 'Display live character/word/sentence averages.', 'word-stats' ), '
 			</p>
 			<p>
 				<input type="hidden" name="word_stats_show_keywords" value="0" />
-				<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' />',
-				__( 'Enable live keyword count.', 'word-stats' ), '
+				<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' /> ',
+				__( 'Display live keyword count.', 'word-stats' ), '
 			</p>
+			<h3>', __( 'Keywords', 'word-stats' ), '</h3>
 			<p>
 				<input type="hidden" name="word_stats_add_tags" value="0" />
-				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' />',
+				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' /> ',
 				__( 'Add the last saved tags to the keyword count.', 'word-stats' ), '
 			</p>
+
+			<h4 style="padding: 0;margin: 0;">Ignore these keywords:</h4>
 			<p>
-				', __( 'Ignore these keywords (one per line):', 'word-stats' ), '<br />
-				<textarea name="word_stats_ignore_keywords" cols="50" rows="10">', esc_attr( strip_tags( $opt_ignore_keywords ) ) ,'</textarea>
-			</p>
+				', sprintf( __( 'One %1$sregular expression%2$s per line, without slashes.', 'word-stats' ), '<a href="https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions">', '</a>' ),  '<br />
+				 <small><em>', __( 'Example: ^apples?$ = good, /^apples?$/ = bad.', 'word-stats' ), '</em></small><br />
+
+
+<div style="float: left; margin-right: 20px;">
+				<textarea name="word_stats_ignore_keywords" cols="40" rows="25">', esc_attr( strip_tags( $opt_ignore_keywords ) ) ,'</textarea></div>
+
+				<div style="float: left;">
+
+				<strong>', __( 'Writing basic regular expressions:', 'word-stats' ), '</strong><br /><br /><ul><li>',
+				__( '^ matches the beggining of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where" matches "wherever" but not "anywhere".', 'word-stats' ), '</em></small></li><li>',
+				__( '$ matches the end of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "where$" matches "anywhere" but not "wherever".', 'word-stats' ), '</em></small></li><li>',
+				__( '^keyword$ matches only the whole keyword.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where$" matches "where" but not "anywhere" or "wherever".', 'word-stats' ), '</em></small></li><li>',
+				__( '? matches the previous character zero or one time.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^apples?$" matches "apple" and "apples".', 'word-stats' ), '</em></small></li><li>',
+				__( '* matches the previous character zero or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10*$" matches "1", "10", "1000000", etc.', 'word-stats' ), '</em></small></li><li>',
+				__( '+ matches the previous character one or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10+$" matches "10", "1000000", etc., but not "1".', 'word-stats' ), '</em></small></li><li>',
+				__( '[] matches any of the characters between the brackets.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^take[ns]?$" matches "take", "taken" and "takes".', 'word-stats' ), '</em></small></li></ul>',
+
+				'</div><br style="clear:both;">',
+
+			'</p>
 			<p class="submit">
 				<input type="submit" class="button-primary" value="' ,__( 'Save Changes' ), '" />
 			</p>
@@ -698,7 +759,7 @@ class word_stats_admin {
 				echo '<div id="ws-message">', $ws_message, '</div>';
 			}
 
-			if( !get_option( 'ws-premium' ) ) {
+			if( !get_option( 'word_stats_premium' ) ) {
 				include ( 'premium.php' );
 			}
 
