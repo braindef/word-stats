@@ -34,4 +34,5 @@ class widget_ws_word_counts extends WP_Widget {
 		echo $after_widget;
 	}
 } // end class
-?>
+
+/* EOF */

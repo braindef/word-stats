@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.1.0
+Version: 3.1.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -574,6 +574,7 @@ class word_stats_admin {
 				<input type="submit" class="button-primary" value="' ,__( 'Save Changes' ), '" />
 			</p>
 		</form>
+		<div id="ws-feedback-links" style="font-size: 16px; clear:both;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
 	</div>';
 	}
 
@@ -989,6 +990,7 @@ class word_stats_admin {
 			echo '</table>
 					</div>
 				</div>
+				<div id="ws-feedback-links" style="clear:both; padding-top: 2em;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
 			</div>';
 			echo '<br style="clear:both;"></div>'; // End wrap
 		} else {
@@ -1019,4 +1021,5 @@ function word_stats_create_menu() {
 }
 add_action( 'admin_init', 'word_stats_report_init' );
 add_action( 'admin_menu', 'word_stats_create_menu' );
-?>
+
+/* EOF */

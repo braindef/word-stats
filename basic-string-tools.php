@@ -216,4 +216,5 @@ function bst_keywords( $text, $ignore, $top_ratio = 0, $minimum = 0 ) {
 		return $word_hash;
 	}
 }
-?>
+
+/* EOF */

@@ -101,4 +101,5 @@ function ws_graph_options( $option ) {
 			break;
 	}
 }
-?>
+
+/* EOF */

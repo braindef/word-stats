@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.2.1
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 
 A suite of word counters, keyword counters and readability analysis displays for your blog.
 
@@ -12,7 +12,7 @@ A suite of word counters, keyword counters and readability analysis displays for
 
 Word Stats adds a suite of linguistic statistics to help you keep track of your content and improve its quality.
 
-It counts the number of words in each public post type for each author and month. The results are displayed in an analytics page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
+It counts the number of words in each public post type for each author. The results are displayed in an analytics page, and can be added to your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
 
 It extends the info area of the post edit form with these live stats:
 
@@ -24,7 +24,7 @@ It extends the info area of the post edit form with these live stats:
 
 The aggregated readability level of each post can be displayed in an extra column in the manage posts list.
 
-Since version 2.0, Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese (mileage may vary).
+Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese (mileage may vary).
 
 Spanish and Catalan translations are bundled with the plugin.
 
@@ -61,7 +61,7 @@ For LIX:
 
 **Why other common tests aren't included?**
 
-These three tests don't rely on syllable counting, which is a bit more complicated and language dependent. I may try to add them in future versions.
+These three tests don't rely on syllable counting, which is a bit more complicated and language dependent.
 
 **How accurate are the tests?**
 
@@ -69,11 +69,7 @@ Word Stats uses simple algorithms. For fairly ordinary English texts they will c
 
 **Do the tests really reflect how easy is the text?**
 
-They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level. Also, poor writing skills can cheat the indexes; for example by abusing periods or commas.
-
-**The readability index column doesn't show any value after installing the plugin**
-
-The values are cached once each post is saved. A feature to recalculate all manually is already in the To Do list.
+They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level.
 
 = About the live stats =
 
@@ -93,8 +89,6 @@ Post tags can be counted optionally as keywords. They are added when the post is
 
 The live count uses the JavaScript regex engine (ECMA-262), while the saved stats uses PHP's Perl Compatible Regular Expressions. Also the JavaScript code uses the browser to strip HTML tags, while the PHP code uses an internal function. There are small differences on how they process the text.
 
-This may be fixed in future versions by replacing the JavaScript functions with AJAX calls.
-
 **The word counts don't include all public post types**
 
 'Attachment', 'nav_menu_item' and 'revision' are excluded.
@@ -113,6 +107,11 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.1.1 =
+* PHP close tags removed to prevent accidental submission of headers.
+* Support links added at the bottom of the analytics and options pages.
+* Updated Readme.txt.
+
 = 3.1.0 =
 * Feature: Ignored words list now uses regular expressions. Old plain keywords are updated on upgrade.
 * Design: Taller ignored words list textbox.
@@ -143,92 +142,4 @@ They are just for style consistence.
 * Readability Index column is calculated when viewing the posts list.
 * Fix: Duplicated readability index value when number was a round integer.
 
-= 2.2 =
-* Fix: Wrong values in Readability Index column (missing multibyte support).
-
-= 2.1 =
-* Fix: Broken upgrade.
-
-= 2.0 =
-* Fix: Readability Index column values were being displayed in all custom columns.
-* Fix: Word count replacement for WP +3.2.
-* Added code to deal with non-Latin Unicode scripts.
-* Upgraded text splitting functions.
-* Updated readme.txt.
-
-= 1.5.6 =
-* Fix: Missing before_widget and after_widget support.
-
-= 1.5.5 =
-* Added option to disable counting words from drafts and posts pending review.
-* Fixed bug when counting words for the first time.
-* Tested on WordPress 3.2-beta2
-
-= 1.5.4 =
-* Now contributor and Author users can view their own monthly word stats. Admin and Editor can view monthly stats from all users.
-* Word count stats are calculated for drafts and pending posts too.
-* Tested with WP 3.1.1
-
-= 1.5.3 =
-* Optionally adds the last saved tags to the live keyword count.
-* Removed separate counts for words with or without capitals.
-
-= 1.5.2 =
-* Lists the word counts per author and post type. Fixes unsorted dates issue.
-
-= 1.5.1 =
-* Forces a word count if the stats page is viewed before any post has been saved.
-
-= 1.5 =
-* Added stats page with monthly word counts per author.
-* Functions wrapped in classes to prevent name collisions.
-
-= 1.4.4 =
-* All HTML output converted to PHP strings.
-
-= 1.4.3 =
-* Replaces by default the live word count from WordPress.
-* Added missing translation strings.
-
-= 1.4.2 =
-* Option to disable live character/word/sentences averages.
-* Compatibility bump for WordPress 3.0.4.
-* Removed one line break outside the script.
-
-= 1.4.1 =
-* Increased ignored keywords textarea size.
-* Increased minimum count for relevant keywords to 3 and lowered relevancy threshold to 1/5 of the top keyword.
-* Fixed live stats not loading in new post page.
-
-= 1.4 =
-* Added keyword live count and ignore keywords option.
-* Live stats script now loads only when editing a post.
-* Now HTML no-break spaces are processed too.
-* Fixed typo in Spanish translation file.
-
-= 1.3 =
-* Stats are cached as post metadata when the post is saved.
-* Added a Readability Index column to the edit posts list that shows an aggregate of all indexes.
-* Fixed a short PHP open tag.
-* Added a settings page.
-* Added option to disable R.I. column.
-* Added option to disable total word counts.
-
-= 1.2 =
-* Counts words from any registered public post type, including any custom post types.
-* Displays word counts per post type, plus the total word count.
-* Added widget to display the word counts.
-* Added shortcode to display the word counts.
-* Renamed to Word Stats.
-* Added statistics and readability indexes to the edit post panel.
-* Added new screenshots.
-
-= 1.1 =
-* Counts words from stories custom post type.
-
-= 1.0 =
-* First release.
-
 == Upgrade Notice ==
-= 2.0 =
-Please, note that the new text splitting code makes a more intensive use of regex and the performance hasn't been tested in stressful conditions
