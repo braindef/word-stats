@@ -1,10 +1,24 @@
 <?php
-/* 
+/*
 Basic String Tools
 by: Fran Ontanaya <email@franontanaya.com>
 Version: 0.1
 License: GPLv2
 -------------------------------------------------------------- */
+
+// Find if there is a match for a word in an array of regular expressions
+function bst_match_regarray( $regexArray, $text ) {
+	foreach( $regexArray as $r ) {
+		// Remove unnecessary regexp wrapper
+		$r = trim( $r, '/' );
+		if ( preg_match( '/\/[g,i]/', substr( $r, strlen( $r ) - 2, 2) ) ) { $r = substr( $r, 0, strlen( $r - 2 ) ); }
+		if ( preg_match( '/\/[g,i][g,i]/', substr( $r, strlen( $r ) - 3, 3) ) ) { $r = substr( $r, 0, strlen( $r - 3 ) ); }
+
+		$regex = '/' . $r  . '/i';
+		if ( preg_match( $regex,  $text ) ) return true;
+	}
+	return false;
+}
 
 // Strip html tags without gluing words.
 function bst_html_stripper ( $text ) {
@@ -12,8 +26,22 @@ function bst_html_stripper ( $text ) {
 		            '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
 		            '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
 		            '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments including CDATA
-	); 
+	);
 	return preg_replace( $search, ' ', $text );
+}
+
+function bst_array_first( $array ) {
+	if( !is_array( $array ) || !count( $array ) ) return false;
+	return array_shift( array_keys( $array ) );
+}
+
+function bst_array_last( $array ) {
+	if( !is_array( $array ) || !count( $array ) ) return false;
+	return array_pop( array_keys( $array ) );
+}
+
+function bst_Ym_to_unix( $month ) {
+	if ( !$month ) { return time(); } else { return strtotime( $month . '-01' ); }
 }
 
 // REQUIRES PHP 5 and UTF-8
@@ -62,7 +90,7 @@ function bst_simple_boundaries( $text ) {
 				'\x{3040}-\x{3096}' . // Hiragana
 				'\x{30A1}-\x{30FA}' . // Katakana
 				'\x{00C0}-\x{00D6}\x{00D8}-\x{00F6}\x{00F9}-\x{00FF}' . // Latin-1 Supplement
-				'\x{0100}-\x{017F}' . // Latin Extended-A
+				'\x{0100}-\x{017F}' . // Latin Extended-Aignore
 				'\x{1E00}-\x{1EFF}' . // Latin Extended Additional
 				'\x{0180}-\x{024F}' . // Latin Extended-B
 				'\x{2C60}-\x{2C7F}' . // Latin Extended-C
@@ -105,8 +133,8 @@ function bst_simple_boundaries( $text ) {
 
 function bst_trim_array( $array ) {
 	// Remove the last item if it's empty
-	if ( $array[ 0 ] == "" ) { $array = array_slice( $array, 1, count( $array )  ); }
-	if ( $array[ count( $array ) - 1 ] == "" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
+	if ( $array[ 0 ] == "" || $array[ 0 ] == "\n" ) { $array = array_slice( $array, 1, count( $array )  ); }
+	if ( $array[ count( $array ) - 1 ] == "" || $array[ count( $array ) - 1 ] == "\n" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
 	return $array;
 }
 
@@ -114,7 +142,7 @@ function bst_trim_text( $text ) {
 	// Trim spaces
 	$text = preg_replace( '/[ ]+[\.\n]/u', '', $text );
 	return trim( $text );
-} 
+}
 
 function bst_split_sentences( $text ) {
 	return bst_trim_array( preg_split( '/[\.\n]+/', $text ) );
@@ -122,6 +150,11 @@ function bst_split_sentences( $text ) {
 
 function bst_split_words( $text ) {
 	return bst_trim_array( preg_split( '/[ ,\.\n]+/', $text ) );
+}
+
+function bst_count_words( $text ) {
+	$simplified = bst_simple_boundaries( $text );
+	return count( bst_split_words( $simplified[ 'text' ] ) );
 }
 
 function bst_split_text( $text ) {
@@ -143,4 +176,45 @@ function bst_js_string_tools() {
 	}
 	return false;
 }
-?>
+
+// Return keywords with thresholds
+// $ignore is an array of regular expressions
+function bst_keywords( $text, $ignore, $top_ratio = 0, $minimum = 0 ) {
+	if ( !$text ) { return false; }
+	if ( !$ignore ) { $ignore = array(); }
+
+	$text = bst_html_stripper( $text );
+
+	$word_hash = array();
+	$top_word_count = 0;
+	$stats = bst_split_text( $text );
+	$word_array = $stats[ 'words' ];
+	// Count keywords
+	foreach ( $word_array as $word ) {
+		$word = strtolower( $word );
+
+		//if ( !in_array( $word, $ignore ) ) {
+		if( !bst_match_regarray( $ignore, $word ) ) {
+			if ( strlen( $word ) > 3 ) {
+				if ( !$word_hash[ $word ] ) { $word_hash[ $word ] = 0; }
+				$word_hash[ $word ]++;
+				if ( $word_hash[ $word ] > $top_word_count ) { $top_word_count = $word_hash[ $word ]; }
+			}
+		}
+	}
+
+	if( $top_ratio && $minimum ) {
+		// Filter
+		$filtered_result = array();
+		foreach ( $word_hash as $keyword => $appareances ) {
+			if ( $appareances >= $top_word_count / $top_ratio && $appareances > $minimum ) {
+				$filtered_result[ $word ] = $appareances;
+			}
+		}
+		return $filtered_result;
+	} else {
+		return $word_hash;
+	}
+}
+
+/* EOF */

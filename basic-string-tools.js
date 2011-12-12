@@ -1,4 +1,4 @@
-/* 
+/*
 Javascript version of basic_string_tools
 by: Fran Ontanaya <email@franontanaya.com>
 Version: 0.1
@@ -20,7 +20,7 @@ var bstAllCombiningMarks =
 	// * This list is incomplete.
 
 // ToDo: Add option to enable only selected blocks for better performance?
-var bstAllWordChars = 
+var bstAllWordChars =
 	"A-Za-z0-9" + // Basic Latin
 	"\uFB00-\uFB4F" + // Alphabetic Presentation Forms (ToDo: Split ligated forms)
 	"\u0621-\u064A\u0660-\u0669\u066E-\u06D3\u06D5\u06EE-\u06FF"+ // Arabic
@@ -59,7 +59,17 @@ var bstAllShortPauses =
 	"\u00B7\u0387]"; // Greek
 // * This list is incomplete
 
-function bstHtmlStripper( text ) {	
+function bstMatchRegArray( regexArray, text ) {
+	var regex;
+	var r;
+	for( r in regexArray ) {
+		regex = new RegExp( regexArray[ r ], "i" );
+		if ( text.match( regex ) !== null ) { return true; }
+	}
+	return false;
+}
+
+function bstHtmlStripper( text ) {
 	/* Use the browser's parser to strip tags */
 	var div = document.createElement( "div" );
 	div.innerHTML = text;
@@ -101,14 +111,14 @@ function bstSimpleBoundaries( text ) {
 
  function bstTrimArray( array ) {
 	/* Remove the first and last items if they are empty */
-	if ( array[ 0 ] == "" ) { array.slice( 1, array.length ); }
-	if ( array[ array.length - 1 ] == "" ) { array.slice( 0, array.length - 1 ); }
-	return array;	
+	if ( array[ 0 ] == "" || array[ 0 ] == "\n" ) { array = array.slice( 1, array.length ); }
+	if ( array[ array.length - 1 ] == "" || array[ array.length -1 ] == "\n" ) { array = array.slice( 0, array.length - 1 ); }
+	return array;
 }
 
 function trim( s ) {
 	var l = 0; var r = s.length - 1;
-	while( l < s.length && s[ l ] == ' ' ) {	
+	while( l < s.length && s[ l ] == ' ' ) {
 		l++;
 	}
 	while( r > l && s[ r ] == ' ' ) {
@@ -121,7 +131,7 @@ function bstTrimText( text ) {
 	// Trim spaces
 	text = text.replace( new RegExp( "[ ]+[\.\n]", "g"), '' );
 	return trim( text );
-} 
+}
 
 function bstSplitSentences( text ) {
 	text = bstTrimArray( text.split( /[\.\n]+/ ) );
@@ -134,12 +144,19 @@ function bstSplitWords( text ) {
 }
 
 function bstSplitText( text ) {
-	var simplified = bstSimpleBoundaries( text );
 	var stats = new Array();
-	stats[ "text" ] = simplified[ "text" ];
-	simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
-	stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
-	stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
-	stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	if ( text == "" ) {
+		stats[ "text" ] = "";
+		stats[ "sentences" ] = "";
+		stats[ "words" ] = "";
+		stats[ "alphanumeric" ] = "";
+	} else {
+		var simplified = bstSimpleBoundaries( text );
+		stats[ "text" ] = simplified[ "text" ];
+		simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
+		stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
+		stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
+		stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	}
 	return stats;
 }
