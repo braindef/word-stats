@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.1.1
+Version: 3.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -26,6 +26,13 @@ http://bestseller.franontanaya.com/?p=101
 
 Thanks to Allan Ellegaard for testing and input.
 */
+define( 'CURRENT_VERSION', '3.2' );
+define( 'DEFAULT_TOO_SHORT', '140' );
+define( 'DEFAULT_TOO_LONG', '1500' );
+define( 'DEFAULT_TOO_DIFFICULT', '17' );
+define( 'DEFAULT_TOO_SIMPLE', '6' );
+define( 'DEFAULT_NO_KEYWORDS', '2' );
+define( 'DEFAULT_SPAMMED_KEYWORDS', '9' );
 
 /* # Activate premium.
 -------------------------------------------------------------- */
@@ -45,11 +52,9 @@ require_once( 'basic-string-tools.php' );
 
 /* # Check version. Perform upgrades.
 -------------------------------------------------------------- */
-// Note: version_compare is the PHP for checking versions.
-
-// pre 3.1.0 versions have no word_stats_version
+/* Pre 3.1 */
+// Note: pre 3.1 versions have no word_stats_version option
 if ( !get_option( 'word_stats_version' ) ) {
-
 	// fix inconsistent naming for some options
 	if ( get_option( 'ws-premium' ) ) {
 		update_option( 'word_stats_premium', get_option( 'ws-premium' ) );
@@ -73,9 +78,13 @@ if ( !get_option( 'word_stats_version' ) ) {
 		$i = null;
 		update_option( 'word_stats_ignore_keywords', implode( "\n", $keywords_to_upgrade ) );
 	}
-	update_option( 'word_stats_version', '3.1.0' );
 }
+/* End pre 3.1.0 */
 
+// Update version
+if ( !get_option( 'word_stats_version' ) || version_compare( get_option( 'word_stats_version' ), CURRENT_VERSION ) ) {
+	update_option( 'word_stats_version', CURRENT_VERSION );
+}
 
 //  Deprecated option
 if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'ws-counts-cache' ); }
@@ -88,20 +97,9 @@ class word_stats_counts {
 	public function ws_get_posts( $post_type_name ) {
 		global $wpdb;
 		if ( get_option( 'word_stats_count_unpublished' ) ) {
-			$query = "SELECT * FROM $wpdb->posts WHERE post_type = '" . $post_type_name . "' ORDER BY ID DESC";
-
-			// post_status => any is necessary to count drafts and post pending review
-			/*$posts = get_posts( array(
-				'numberposts' => -1,
-				'post_type' => array( $post_type->name ),
-				'post_status' => 'any'
-			));*/
+			$query = "SELECT * FROM $wpdb->posts WHERE post_type = '" . mysql_real_escape_string ( $post_type_name ) . "' ORDER BY ID DESC";
 		} else {
-			$query = "SELECT * FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = '" . $post_type_name . "' ORDER BY ID DESC";
-			/*$posts = get_posts( array(
-				'numberposts' => -1,
-				'post_type' => array( $post_type->name ),
-			));*/
+			$query = "SELECT * FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = '" . mysql_real_escape_string ( $post_type_name ) . "' ORDER BY ID DESC";
 		}
 		$posts = $wpdb->get_results( $query, OBJECT );
 		return $posts;
@@ -188,6 +186,8 @@ add_shortcode( 'wordcounts', array( 'word_stats_counts', 'word_counts_sc' ) );
 class word_stats_readability {
 
 	public function live_stats() {
+
+		// ToDo: Separate View from Model
 		global $post;
 		bst_js_string_tools();
 
@@ -200,6 +200,13 @@ class word_stats_readability {
 				var totalCharacters = 0;
 				var totalWords = 0;
 				var totalSentences = 0;
+				var totalAlphanumeric = 0;
+				var charsPerWord = 0;
+				var charsPerSentence = 0;
+				var wordsPerSentence = 0;
+				var ARItext = 0;
+				var CLItext = 0;
+				var LIXtext = 0;
 				var wordArray = new Array();
 				var stats = new Array();
 				var temp = "";
@@ -214,16 +221,15 @@ class word_stats_readability {
 					delete stats;
 				}
 				if ( totalWords > 0 && totalSentences > 0 ) {
-					var charsPerWord = ( totalAlphanumeric / totalWords );
+					charsPerWord = ( totalAlphanumeric / totalWords );
 					charsPerWord = charsPerWord.toFixed( 0 );
-					var charsPerSentence = ( totalAlphanumeric / totalSentences );
+					charsPerSentence = ( totalAlphanumeric / totalSentences );
 					charsPerSentence = charsPerSentence.toFixed( 0 );
-					var wordsPerSentence = ( totalWords / totalSentences );
+					wordsPerSentence = ( totalWords / totalSentences );
 					wordsPerSentence = wordsPerSentence.toFixed( 0 );
 
 					/* Automated Readability Index */
 					var ARI = 4.71 * ( totalAlphanumeric / totalWords ) + 0.5 * ( totalWords / totalSentences ) - 21.43;
-					var ARItext;
 					ARI = ARI.toFixed( 1 );
 					if ( ARI < 8 ) { ARItext = \'<span style="color: #0c0;">\' + ARI + "</span>"; }
 					if ( ARI > 7.9 && ARI < 12 ) { ARItext = \'<span style="color: #aa0;">\' + ARI + "</span>"; }
@@ -233,7 +239,6 @@ class word_stats_readability {
 
 					/* Coleman-Liau Index */
 					var CLI = 5.88 * ( totalAlphanumeric / totalWords ) - 29.6 * ( totalSentences / totalWords ) - 15.8;
-					var CLItext;
 					CLI = CLI.toFixed( 1 );
 					if ( CLI < 8 ) { CLItext = \'<span style="color: #0c0;">\' + CLI + "</span>"; }
 					if ( CLI > 7.9 && CLI < 12 ) { CLItext = \'<span style="color: #aa0;">\' + CLI + "</span>"; }
@@ -248,7 +253,6 @@ class word_stats_readability {
 					}
 					temp = allText.split( /[,;\.\(\:]/ );
 					var LIX = totalWords / temp.length + ( LIXlongwords * 100 ) / totalWords;
-					var LIXtext;
 					LIX = LIX.toFixed( 1 );
 					if ( LIX < 30 ) { LIXtext = \'<span style="color: #0c0;">\' + LIX + "</span>"; }
 					if ( LIX > 29.9 && LIX < 40 ) { LIXtext = \'<span style="color: #aa0;">\' + LIX + "</span>"; }
@@ -285,7 +289,9 @@ class word_stats_readability {
 							foreach ( get_the_tags( $post->ID ) as $tag ) {
 								$tag->name = strtolower( esc_attr( $tag->name ) );
 								if ( strlen( $tag->name ) > 3 ) {
-									echo '
+									echo 'charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ),
+							'; " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ),
+							'; " + wordsPerSentence
 											if ( !wordHash[ "', $tag->name, '" ] ) { wordHash[ "', $tag->name, '" ] = 0; }
 											wordHash[ "', $tag->name, '" ] = wordHash[ "', $tag->name, '" ] + 1;
 											if ( wordHash[ "', $tag->name, '" ] > topCount ) { topCount = wordHash[ "', $tag->name, '" ]; }
@@ -304,17 +310,19 @@ class word_stats_readability {
 									temp = temp + \'<span style="color:#3c0;">\' + j + " (" + wordHash[j] + ")</span> ";
 								} else {
 									temp = temp + j + " (" + wordHash[j] + ") ";
-								}
+								}charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ),
+							'; " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ),
+							'; " + wordsPerSentence
 							}
 						}
 						if ( temp == "" ) {
 							temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>', esc_attr( __( 'No relevant keywords.', 'word-stats' ) ), '";
 						} else {
 							temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>" + temp;
-						}';
+						} }';
 					}
-					echo 'if ( statusInfo.innerHTML.indexOf( "edit-word-stats" ) < 1 ) {
-							statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id=\'edit-word-stats\' style=\'padding-left:7px; padding-bottom:4px;\' colspan=\'2\'><strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
+					echo '	if ( statusInfo.innerHTML.indexOf( "edit-word-stats" ) < 1 ) {
+							statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id=\'edit-word-stats\' style=\'padding-left:7px; padding-bottom:4px;\' colspan=\'2\'><strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI</a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
 					if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) {
 						echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
 							'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
@@ -326,7 +334,7 @@ class word_stats_readability {
 					}
 					echo ' + temp + "</td></tr></tbody>";
 						} else {
-						 	document.getElementById( "edit-word-stats").innerHTML = "<strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
+						 	document.getElementById( "edit-word-stats").innerHTML = "<strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI</a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
 					if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) {
 						echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
 							'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
@@ -337,7 +345,7 @@ class word_stats_readability {
 							'; " + wordsPerSentence + " ', esc_attr( __( 'words per sentence', 'word-stats' ) ), '."';
 					}
 					echo ' + temp;
-						} ';
+						}';
 
 					// Replace WordPress' word count
 					if ( true || get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
@@ -349,10 +357,10 @@ class word_stats_readability {
 							document.getElementById( "word-count").innerHTML = totalWords;
 						}';
 					}
-				echo '}
+				echo '
 			}
 
-			var statsTime = setInterval( "wsRefreshStats()", 10000 );
+			var statsTime = setInterval( "wsRefreshStats()", 5000 );
 			wsRefreshStats();
 
 		</script>';
@@ -473,20 +481,18 @@ if ( get_option( 'word_stats_RI_Column' ) || get_option( 'word_stats_RI_Column' 
 	add_action( 'admin_init', array( 'word_stats_readability', 'style_column' ) );
 }
 
-/* § Construct the options page
+/* § Construct the options and reports pages
 -------------------------------------------------------------- */
-// create custom plugin settings menu
+
+// Create custom plugin settings menu
 class word_stats_admin {
-	function register_settings() {
-		//register our settings
-		register_setting( 'word-stats-settings-group', 'word_stats_RI_column' );
-		register_setting( 'word-stats-settings-group', 'word_stats_totals' );
-		register_setting( 'word-stats-settings-group', 'word_stats_replace_word_count' );
-		register_setting( 'word-stats-settings-group', 'word_stats_averages' );
-		register_setting( 'word-stats-settings-group', 'word_stats_show_keywords' );
-		register_setting( 'word-stats-settings-group', 'word_stats_ignore_keywords' );
-		register_setting( 'word-stats-settings-group', 'word_stats_add_tags' );
-		register_setting( 'word-stats-settings-group', 'word_stats_count_unpublished' );
+	function register_settings( $settings ) {
+		foreach( $settings as $setting ) { 	register_setting( 'word-stats-settings-group', $setting ); }
+	}
+
+	function init_settings() {
+		// Register our settings
+		word_stats_admin::register_settings( array( 'word_stats_RI_column', 'word_stats_totals', 'word_stats_replace_word_count', 'word_stats_averages', 'word_stats_show_keywords', 'word_stats_ignore_keywords', 'word_stats_add_tags', 'word_stats_count_unpublished', 'word_stats_diagnostic_thresholds', 'word_stats_diagnostic_too_short', 'word_stats_diagnostic_too_long', 'word_stats_diagnostic_too_difficult', 'word_stats_diagnostic_too_simple', 'word_stats_diagnostic_no_keywords', 'word_stats_diagnostic_spammed_keywords' ) );
 	}
 
 	function settings_page() {
@@ -501,81 +507,17 @@ class word_stats_admin {
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
-		echo '
-	<div class="wrap">
-		<h2>' , __( 'Word Stats Options', 'word-stats' ), '</h2>
-		<form method="post" action="options.php">
-			 ', settings_fields( 'word-stats-settings-group' ), '
- 			<h3>', __( 'Readabilty', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_RI_column" value="0" />
-				<input type="checkbox" name="word_stats_RI_column" value="1" '; if ( $opt_RI_column ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display aggregate readability column in the manage posts list.', 'word-stats' ), '
-			</p>
-			<h3>', __( 'Total word counts', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_totals" value="0" />
-				<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Enable total word counts (dashboard, widget and shortcode).', 'word-stats' ), ' ',
-				__( 'This may slow down post saving in large blogs.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_count_unpublished" value="0" />
-				<input type="checkbox" name="word_stats_count_unpublished" value="1" ';  if ( $opt_count_unpublished ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Count words from drafts and posts pending review.', 'word-stats' ),  '
-			</p>
-			<h3>', __( 'Live stats', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_replace_word_count" value="0" />
-				<input type="checkbox" name="word_stats_replace_word_count" value="1" '; if ( $opt_replace_wc ) { echo 'checked="checked"';  } echo ' /> ',
-				__( 'Replace WordPress live word count with Word Stats word count.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_averages" value="0" />
-				<input type="checkbox" name="word_stats_averages" value="1" '; if ( $opt_averages ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display live character/word/sentence averages.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_show_keywords" value="0" />
-				<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display live keyword count.', 'word-stats' ), '
-			</p>
-			<h3>', __( 'Keywords', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_add_tags" value="0" />
-				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Add the last saved tags to the keyword count.', 'word-stats' ), '
-			</p>
+		$opt_diagnostic_thresholds = array(
+			'too_short' => ( get_option( 'word_stats_diagnostic_too_short' ) === null ) ? DEFAULT_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' ),
+			'too_long' => ( get_option( 'word_stats_diagnostic_too_long' ) === null ) ? DEFAULT_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' ),
+			'too_difficult' => ( get_option( 'word_stats_diagnostic_too_difficult' ) === null ) ? DEFAULT_TOO_DIFFICULT : get_option( 'word_stats_diagnostic_too_difficult' ),
+			'too_simple' => ( get_option( 'word_stats_diagnostic_too_simple' ) === null ) ? DEFAULT_TOO_SIMPLE : get_option( 'word_stats_diagnostic_too_simple' ),
+			'no_keywords' => ( get_option( 'word_stats_diagnostic_no_keywords' ) === null ) ? DEFAULT_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_keywords' ),
+			'spammed_keywords' => ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === null ) ? DEFAULT_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_keywords' )
+		);
 
-			<h4 style="padding: 0;margin: 0;">Ignore these keywords:</h4>
-			<p>
-				', sprintf( __( 'One %1$sregular expression%2$s per line, without slashes.', 'word-stats' ), '<a href="https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions">', '</a>' ),  '<br />
-				 <small><em>', __( 'Example: ^apples?$ = good, /^apples?$/ = bad.', 'word-stats' ), '</em></small><br />
-
-
-<div style="float: left; margin-right: 20px;">
-				<textarea name="word_stats_ignore_keywords" cols="40" rows="25">', esc_attr( strip_tags( $opt_ignore_keywords ) ) ,'</textarea></div>
-
-				<div style="float: left;">
-
-				<strong>', __( 'Writing basic regular expressions:', 'word-stats' ), '</strong><br /><br /><ul><li>',
-				__( '^ matches the beggining of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where" matches "wherever" but not "anywhere".', 'word-stats' ), '</em></small></li><li>',
-				__( '$ matches the end of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "where$" matches "anywhere" but not "wherever".', 'word-stats' ), '</em></small></li><li>',
-				__( '^keyword$ matches only the whole keyword.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where$" matches "where" but not "anywhere" or "wherever".', 'word-stats' ), '</em></small></li><li>',
-				__( '? matches the previous character zero or one time.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^apples?$" matches "apple" and "apples".', 'word-stats' ), '</em></small></li><li>',
-				__( '* matches the previous character zero or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10*$" matches "1", "10", "1000000", etc.', 'word-stats' ), '</em></small></li><li>',
-				__( '+ matches the previous character one or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10+$" matches "10", "1000000", etc., but not "1".', 'word-stats' ), '</em></small></li><li>',
-				__( '[] matches any of the characters between the brackets.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^take[ns]?$" matches "take", "taken" and "takes".', 'word-stats' ), '</em></small></li></ul>',
-
-				'</div><br style="clear:both;">',
-
-			'</p>
-			<p class="submit">
-				<input type="submit" class="button-primary" value="' ,__( 'Save Changes' ), '" />
-			</p>
-		</form>
-		<div id="ws-feedback-links" style="font-size: 16px; clear:both;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
-	</div>';
+		// Output the page.
+		include( 'view-settings.php' );
 	}
 
 	// Analyze the posts database and output the data set for the stats page
@@ -589,28 +531,29 @@ class word_stats_admin {
 
 		// Validate dates
 		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
-		$period_end = date( 'Y-m-d', strtotime( $period_end ) );
-		/* For next version
-		$can_write_csv = is_writable( plugins_url( 'word-stats/csv' ) );
-		if ( $can_write_csv ) {
-			// CSV file to export the data
-			$csv_file = 'word-stats/csv/' . $period_start . '_' . $period_end;
-			if ( get_option( 'word_stats_count_unpublished' ) ) { $csv_file .= '_all'; } else { $csv_file .= '_published'; }
-			$csv_file .= '.csv';
-			$csv_handle = fopen( plugins_url( $csv_file ), 'w');
-		}
-		*/
+		$period_end = date( 'Y-m-d', strtotime( $period_end ) + 86400 ); // Last day included
 
-		// Loop requested posts by type
+		// Load and explode the list of ignored keywords
 		$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
 
+		// Load diagnostics thresholds
+		$threshold_too_short = ( get_option( 'word_stats_diagnostic_too_short' ) === null ) ? DEFAULT_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' );
+		$threshold_too_long = ( get_option( 'word_stats_diagnostic_too_long' ) === null ) ? DEFAULT_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' );
+		$threshold_too_difficult = ( get_option( 'word_stats_diagnostic_too_difficult' ) === null ) ? DEFAULT_TOO_DIFFICULT : get_option( 'word_stats_diagnostic_too_difficult' );
+		$threshold_too_simple = ( get_option( 'word_stats_diagnostic_too_simple' ) === null ) ? DEFAULT_TOO_SIMPLE : get_option( 'word_stats_diagnostic_too_simple' );
+		$threshold_no_keywords = ( get_option( 'word_stats_diagnostic_no_keywords' ) === null ) ? DEFAULT_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_keywords' );
+		$threshold_spammed_keywords = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === null ) ? DEFAULT_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_keywords' );
+
 		$report[ 'type_count' ][ 'custom' ] = 0;
+
+		// Initialize row counters for the diagnostics tables arrays
+		$dg_difficult_row = $dg_simple_row = $dg_short_row = $dg_long_row = $dg_no_keywords_row = 0;
+
 		foreach( $wp_post_types as $post_type ) {
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 
 			// Load only content and custom post types
 			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
-				$rp_table_row = 0;
 
 				// Load the posts
 				$query = "SELECT * FROM $wpdb->posts WHERE ";
@@ -622,14 +565,24 @@ class word_stats_admin {
 
 				foreach( $posts as $post ) {
 
+					// Reset keyword diagnostics count
+					$dg_relevant_keywords = array();
+					$dg_spammed_keywords = array();
+
 					// Fetch keywords
 					$keywords = bst_keywords( $post->post_content, $ignore, 999, 0 );
 
-					// Aggregate the keywords
+					// Aggregate the keywords and count how many are relevant
 					if ( $keywords && is_array( $keywords ) ) {
 						foreach( $keywords as $key=>$value ) {
 							if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
 							$report[ 'total_keywords' ][ $key ] += $value;
+
+							// Flag the keyword as relevant
+							if ( !array_key_exists( $key, $dg_relevant_keywords ) && $value > intval( $threshold_no_keywords ) ) { $dg_relevant_keywords[ $key ] = true; }
+							// Flag the keyword as spammed
+							if ( !array_key_exists( $key, $dg_spammed_keywords ) && $value > intval( $threshold_spammed_keywords ) ) { $dg_spammed_keywords[ $key ] = $value; }
+
 						}
 					}
 
@@ -664,30 +617,54 @@ class word_stats_admin {
 
 					// Count words per author. Group per month.
 					$post_month = mysql2date( 'Y-m', $post->post_date );
-					//if ( !$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] ) { $report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] = 0; }
 					$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] += $post_word_count;
 					$report[ 'author_count_total' ][ $post->post_author ] += $post_word_count;
 					$report[ 'all_total_words' ] += $post_word_count;
 
-					// Store rows for the recent posts table
+					// Diagnostics.
 					if ( $post->post_author == $author_graph ) {
+
 						$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' . htmlentities( $post->post_title, null, 'utf-8' ) . '</a>' : htmlentities( $post->post_title, null, 'utf-8' );
-						$row = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-index\'>' . round( $ws_index_n ) . '</td>';
-						$report[ 'recent_posts_rows' ][ $post_type->name ][ $rp_table_row ] = $row;
-						$rp_table_row++;
+
+						// Difficult text table
+						if ( $ws_index_n > intval( $threshold_too_difficult ) ) {
+							$report[ 'diagnostic' ][ 'too_difficult' ][ $dg_difficult_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_difficult_row++;
+						}
+
+						// Simple text table
+						if ( $ws_index_n < intval( $threshold_too_simple ) ) {
+							$report[ 'diagnostic' ][ 'too_simple' ][ $dg_simple_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_simple_row++;
+						}
+
+						// Short text table
+						if ( $post_word_count < intval( $threshold_too_short ) ) {
+							$report[ 'diagnostic' ][ 'too_short' ][ $dg_short_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_short_row++;
+						}
+
+						// Long text table
+						if ( $post_word_count > intval( $threshold_too_long ) ) {
+							$report[ 'diagnostic' ][ 'too_long' ][ $dg_long_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_long_row++;
+						}
+
+						// No keywords table
+						if ( count( $dg_relevant_keywords ) == 0 ) {
+							$report[ 'diagnostic' ][ 'no_keywords' ][ $dg_no_keywords_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_no_keywords_row++;
+						}
+
+						// Keyword abuse table
+						if ( count( $dg_spammed_keywords ) > 0 ) {
+							$report[ 'diagnostic' ][ 'spammed_keywords' ][ $dg_long_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-keywords\'>' . implode( ', ', array_keys( $dg_spammed_keywords ) ) . '</td>';
+							$dg_spammed_keywords_row++;
+						}
 					}
-					/* For next version
-					if ( $can_write_csv ) {
-						// Store CSV data
-						$csv = array( $post->ID, $post->title, $post->post_date, $post_word_count, $ws_index_n, implode( ' ', array_keys( $keywords ) ) );
-						fputcsv( $csv_handle, $csv );
-					}
-					*/
 				}
 			}
 		}
-
-		/* if ( $can_write_csv ) { fclose( $csv_handle ); } */
 
 		// Sort keywords by frequency, descending
 		asort( $report[ 'total_keywords' ] );
@@ -701,16 +678,32 @@ class word_stats_admin {
 		return $report;
 	}
 
+	public function ws_diagnostics_table( $title, $fields, $id, $rows ) {
+	echo '<h4 class="ws-diagnostic-title">', $title, '</h4>';
+		echo '<table class="ws-diagnostics" id="ws-diagnostic-', $id, '">';
+		echo '<thead><tr>';
+		foreach( $fields as $field ) {
+			echo '<td class="ws-table-', strtolower( str_replace( ' ', '-', $field ) ),'">', $field, '</td>';
+		}
+		echo '</tr></thead>';
+
+		$even = false;
+		foreach( $rows as $row ) {
+			echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
+			echo $row;
+			echo '</tr>';
+			$even = !$even;
+		}
+		echo '</table>';
+	}
+
 	public function ws_reports_page() {
-		global $user_ID;
-		global $current_user;
-		global $wp_post_types;
-		global $wpdb;
+		// ToDo: Separate View from Model
+
+		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
 		if( $_GET[ 'view-all' ] ) { $period_start = '1900-01-01'; } else { $period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 ); }
 		if( $_GET[ 'view-all' ] ) { $period_end = date( 'Y-m-d' ); } else { $period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' ); }
-
-
 
 		if ( $_GET[ 'author-tab' ] ) {
 			$author_graph = intval( $_GET[ 'author-tab' ] );
@@ -742,7 +735,7 @@ class word_stats_admin {
 				echo '<script type="text/javascript" src="' , $script, '"></script>', "\n";
 			}
 
-			include( 'graph_options.php' );
+			include( 'graph-options.php' );
 
 			echo '<div class="wrap ws-wrap">';
 
@@ -841,12 +834,10 @@ class word_stats_admin {
 
 			// Timeline tooltip
 			echo '<script type="text/javascript" src="', plugins_url( 'word-stats/js/timeline-tooltip.js' ), '"></script>', "\n";
-
 			echo '<script type="text/javascript">', "\n";
 
 			// Words per Month
-			$series = '[ ';
-			$z = 0;
+			$series = '[ '; $z = 0;
 			if ( count( $report[ 'author_count' ][ $author_graph ] ) ) {
 				foreach ( $report[ 'author_count' ][ $author_graph ] as $type=>$months ) {
 
@@ -947,9 +938,7 @@ class word_stats_admin {
 
 			// Post type counts
 			$bar_max_width = 125;
-			$total_posts =  $report[ 'type_count' ][ 'post' ];
-			$total_pages =  $report[ 'type_count' ][ 'page' ];
-			$total_custom = $report[ 'type_count' ][ 'custom' ];
+			$total_posts =  $report[ 'type_count' ][ 'post' ]; $total_pages =  $report[ 'type_count' ][ 'page' ]; $total_custom = $report[ 'type_count' ][ 'custom' ];
 			$total_all_types = $total_posts + $total_pages + $total_custom;
 
 			if ( !$total_all_types ) { $total_all_types = 1; }
@@ -960,34 +949,34 @@ class word_stats_admin {
 
 			echo '</script>
 
-				<div id="ws-recent-entries-wrap">
-				<h3 class="ws-header">', __( 'The Most Recent Entries', 'word-stats' ), '</h3>
-					<div id="ws-tables">
-						<table id="ws-recent-entries">';
+				<div id="ws-diagnostics-wrap">
+				<h3 class="ws-header">', __( 'Diagnostics', 'word-stats' ), '</h3>
+					<div id="ws-tables">';
 
-			// Recent posts table
-			if ( count( $report[ 'recent_posts_rows' ] ) ) {
-				foreach ( $report[ 'recent_posts_rows' ] as $type=>$rows) {
-					// Clip rows array
-					if ( count( $rows ) > 15 ) { $rows = array_slice( $rows, 0, 15 ); }
-					echo "<tr><td class='ws-table-block'>";
-					switch( $type ) {
-						case 'post': _e( 'post', 'word-stats' ); break;
-						case 'page': _e( 'page', 'word-stats' ); break;
-						default: echo $type; break;
-					}
-					echo '</td><td class="ws-table-block">', __( 'date', 'word-stats' ), '</td><td class="ws-table-block ws-table-count">', __( 'words', 'word-stats' ), '</td><td class="ws-table-block ws-table-index">', __( 'readability', 'word-stats' ), '</td></tr>';
-					$even = false;
-					foreach( $rows as $row ) {
-						echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
-						$even = !$even;
-						echo $row, '</tr>';
-					}
-				}
-			} else {
-				echo "<tr><td class='ws-row-even'>", __( 'No data', 'word-stats' ), '</td></tr>';
+			// Diagnostics tables.
+			$table_fields = array( __( 'Title', 'word-stats' ), __( 'Post Type', 'word-stats'), __( 'Date', 'word-stats' ), __( 'Spammed Keywords', 'word-stats' ) );
+			if ( count( $report[ 'diagnostic' ][ 'spammed_keywords' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'Spammed keywords', 'word-stats' ), $table_fields, 'spammed-keywords', $report[ 'diagnostic' ][ 'spammed_keywords' ] );
 			}
-			echo '</table>
+
+			$table_fields = array( __( 'Title', 'word-stats' ), __( 'Post Type', 'word-stats'), __( 'Date', 'word-stats' ), __( 'Word Count', 'word-stats' ), __( 'Readability' , 'word-stats' ) );
+			if ( count( $report[ 'diagnostic' ][ 'no_keywords' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'No relevant keywords', 'word-stats' ), $table_fields, 'no_keywords', $report[ 'diagnostic' ][ 'no_keywords' ] );
+			}
+			if ( count( $report[ 'diagnostic' ][ 'too_difficult' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'Difficult text', 'word-stats' ), $table_fields, 'too-difficult', $report[ 'diagnostic' ][ 'too_difficult' ] );
+			}
+			if ( count( $report[ 'diagnostic' ][ 'too_simple' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'Simple text', 'word-stats' ), $table_fields, 'too-simple', $report[ 'diagnostic' ][ 'too_simple' ] );
+			}
+			if ( count( $report[ 'diagnostic' ][ 'too_long' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'Text may be too long', 'word-stats' ), $table_fields, 'too-long', $report[ 'diagnostic' ][ 'too_long' ] );
+			}
+			if ( count( $report[ 'diagnostic' ][ 'too_short' ] ) ) {
+				word_stats_admin::ws_diagnostics_table( __( 'Text may be too short', 'word-stats' ), $table_fields, 'too-short', $report[ 'diagnostic' ][ 'too_short' ] );
+			}
+
+			echo '
 					</div>
 				</div>
 				<div id="ws-feedback-links" style="clear:both; padding-top: 2em;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
@@ -1000,18 +989,16 @@ class word_stats_admin {
 }
 
 function word_stats_report_init() {
-		// wp_register_style( 'ws-google-font', 'http://fonts.googleapis.com/css?family=News+Cycle' );
 		wp_register_style( 'ws-reports-page', plugins_url() . '/word-stats/css/reports-page.css' );
 		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/jquery-ui-1.7.3.custom.css' );
 }
 
 function word_stats_report_styles() {
-		// wp_enqueue_style( 'ws-google-font' );
 		wp_enqueue_style( 'ws-reports-page' );
 		wp_enqueue_style( 'ws-jquery-ui' );
 }
 function word_stats_create_menu() {
-	add_action( 'admin_init', array( 'word_stats_admin', 'register_settings' ) );
+	add_action( 'admin_init', array( 'word_stats_admin', 'init_settings' ) );
 	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'word_stats_admin', 'settings_page' ) );
 	if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
 		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'word_stats_admin', 'ws_reports_page' ) );
