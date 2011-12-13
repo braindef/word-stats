@@ -133,8 +133,8 @@ function bst_simple_boundaries( $text ) {
 
 function bst_trim_array( $array ) {
 	// Remove the last item if it's empty
-	if ( $array[ 0 ] == "" ) { $array = array_slice( $array, 1, count( $array )  ); }
-	if ( $array[ count( $array ) - 1 ] == "" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
+	if ( $array[ 0 ] == "" || $array[ 0 ] == "\n" ) { $array = array_slice( $array, 1, count( $array )  ); }
+	if ( $array[ count( $array ) - 1 ] == "" || $array[ count( $array ) - 1 ] == "\n" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
 	return $array;
 }
 
