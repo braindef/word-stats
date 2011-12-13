@@ -4,7 +4,7 @@ Donate link: http://bestseller.franontanaya.com/
 Tags: word count, dashboard, readability, keywords, words, statistics, reports
 Requires at least: 3.0.0
 Tested up to: 3.3
-Stable tag: 3.2
+Stable tag: 3.2.1
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -96,6 +96,9 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.2.1 =
+* Fix: Default diagnostics thresholds weren't read.
+
 = 3.2 =
 * Feature: New length, readability and keyword density diagnostics for the reports page.
 * New settings for diagnostics thresholds.

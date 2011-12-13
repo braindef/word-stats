@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
 Author: Fran Ontanaya
-Version: 3.2
+Version: 3.2.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -26,13 +26,6 @@ http://bestseller.franontanaya.com/?p=101
 
 Thanks to Allan Ellegaard for testing and input.
 */
-define( 'CURRENT_VERSION', '3.2' );
-define( 'DEFAULT_TOO_SHORT', '140' );
-define( 'DEFAULT_TOO_LONG', '1500' );
-define( 'DEFAULT_TOO_DIFFICULT', '17' );
-define( 'DEFAULT_TOO_SIMPLE', '6' );
-define( 'DEFAULT_NO_KEYWORDS', '2' );
-define( 'DEFAULT_SPAMMED_KEYWORDS', '9' );
 
 /* # Activate premium.
 -------------------------------------------------------------- */
@@ -507,17 +500,16 @@ class word_stats_admin {
 
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
 
-		$opt_diagnostic_thresholds = array(
-			'too_short' => ( get_option( 'word_stats_diagnostic_too_short' ) === null ) ? DEFAULT_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' ),
-			'too_long' => ( get_option( 'word_stats_diagnostic_too_long' ) === null ) ? DEFAULT_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' ),
-			'too_difficult' => ( get_option( 'word_stats_diagnostic_too_difficult' ) === null ) ? DEFAULT_TOO_DIFFICULT : get_option( 'word_stats_diagnostic_too_difficult' ),
-			'too_simple' => ( get_option( 'word_stats_diagnostic_too_simple' ) === null ) ? DEFAULT_TOO_SIMPLE : get_option( 'word_stats_diagnostic_too_simple' ),
-			'no_keywords' => ( get_option( 'word_stats_diagnostic_no_keywords' ) === null ) ? DEFAULT_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_keywords' ),
-			'spammed_keywords' => ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === null ) ? DEFAULT_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_keywords' )
-		);
+		$opt_diagnostic_thresholds[ 'too_short' ] = ( get_option( 'word_stats_diagnostic_too_short' ) === false ) ? 140 : get_option( 'word_stats_diagnostic_too_short' );
+		$opt_diagnostic_thresholds[ 'too_long' ] = ( get_option( 'word_stats_diagnostic_too_long' ) === false ) ? 1500 : get_option( 'word_stats_diagnostic_too_long' );
+		$opt_diagnostic_thresholds[ 'too_difficult' ]= ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? 17 : get_option( 'word_stats_diagnostic_too_difficult' );
+		$opt_diagnostic_thresholds[ 'too_simple' ] = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? 6 : get_option( 'word_stats_diagnostic_too_simple' );
+		$opt_diagnostic_thresholds[ 'no_keywords' ] = ( get_option( 'word_stats_diagnostic_no_keywords' ) === false ) ? 2 : get_option( 'word_stats_diagnostic_no_keywords' );
+		$opt_diagnostic_thresholds[ 'spammed_keywords' ] = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === false ) ? 9 : get_option( 'word_stats_diagnostic_spammed_keywords' );
 
 		// Output the page.
 		include( 'view-settings.php' );
+
 	}
 
 	// Analyze the posts database and output the data set for the stats page
@@ -537,12 +529,12 @@ class word_stats_admin {
 		$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
 
 		// Load diagnostics thresholds
-		$threshold_too_short = ( get_option( 'word_stats_diagnostic_too_short' ) === null ) ? DEFAULT_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' );
-		$threshold_too_long = ( get_option( 'word_stats_diagnostic_too_long' ) === null ) ? DEFAULT_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' );
-		$threshold_too_difficult = ( get_option( 'word_stats_diagnostic_too_difficult' ) === null ) ? DEFAULT_TOO_DIFFICULT : get_option( 'word_stats_diagnostic_too_difficult' );
-		$threshold_too_simple = ( get_option( 'word_stats_diagnostic_too_simple' ) === null ) ? DEFAULT_TOO_SIMPLE : get_option( 'word_stats_diagnostic_too_simple' );
-		$threshold_no_keywords = ( get_option( 'word_stats_diagnostic_no_keywords' ) === null ) ? DEFAULT_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_keywords' );
-		$threshold_spammed_keywords = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === null ) ? DEFAULT_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_keywords' );
+		$threshold_too_short = ( get_option( 'word_stats_diagnostic_too_short' ) === false ) ? 140 : get_option( 'word_stats_diagnostic_too_short' );
+		$threshold_too_long = ( get_option( 'word_stats_diagnostic_too_long' ) === false ) ? 1500 : get_option( 'word_stats_diagnostic_too_long' );
+		$threshold_too_difficult = ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? 17 : get_option( 'word_stats_diagnostic_too_difficult' );
+		$threshold_too_simple = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? 6 : get_option( 'word_stats_diagnostic_too_simple' );
+		$threshold_no_keywords = ( get_option( 'word_stats_diagnostic_no_keywords' ) === false ) ? 2 : get_option( 'word_stats_diagnostic_no_keywords' );
+		$threshold_spammed_keywords = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === false ) ? 9 : get_option( 'word_stats_diagnostic_spammed_keywords' );
 
 		$report[ 'type_count' ][ 'custom' ] = 0;
 
