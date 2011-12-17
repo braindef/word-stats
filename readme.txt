@@ -1,10 +1,9 @@
 === Plugin Name ===
-Contributors: Fran_Ontanaya
-Donate link: http://bestseller.franontanaya.com/
-Tags: word count, dashboard, readability, keywords, words, statistics, reports
+Contributors: Fran Ontanaya
+Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics, premium
 Requires at least: 3.0.0
 Tested up to: 3.3
-Stable tag: 3.2.1
+Stable tag: 3.2.2
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -34,6 +33,25 @@ Additionally, an extra column with the readability level of each post can be dis
 Word Stats includes basic support for Unicode scripts, including cyrillic, greek, arabic, hindi and japanese (mileage may vary).
 
 Spanish and Catalan translations are bundled with the plugin.
+
+Requires WordPress 3.0 and PHP 5.
+
+**Features planned for next versions**
+* Posts list sortable by readability.
+* Send analytics reports by email.
+* Optionally include excerpts in stats.
+* Exportable analytics data.
+* Uniform three colors scheme for readability values.
+* Compatibility fix for badly placed W3 Total Cache warning message in the analitycs page.
+* Emphasize the integer part of readability values.
+
+**Contact**
+
+Feel free to send feedback, requests or suggestions at email@franontanaya.com.
+
+Or follow me on Twitter:
+
+[https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Installation ==
 
@@ -96,7 +114,12 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
-= 3.2.1 =
+= 3.2.2 =
+* Fix: Messed ignored words list linked to version check bug. Duplicated characters at the beggining and end of each expression should be removed upon upgrade.
+* Uniformized three colors scheme for readability values on the posts list and live stats.
+* Some default thresholds in the code moved into constants.
+
+= 3.2.1=
 * Fix: Default diagnostics thresholds weren't read.
 
 = 3.2 =
@@ -149,3 +172,4 @@ They are just for style consistence.
 * Fix: Duplicated readability index value when number was a round integer.
 
 == Upgrade Notice ==
+Please, upgrade if you are running version 3.2.1 or earlier. Several bugs are fixed in the latest version.

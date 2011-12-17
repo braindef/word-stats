@@ -2,9 +2,9 @@
 /*
 Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
-Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
+Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 3.2.1
+Version: 3.2.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -26,6 +26,12 @@ http://bestseller.franontanaya.com/?p=101
 
 Thanks to Allan Ellegaard for testing and input.
 */
+
+/* # Constants.
+-------------------------------------------------------------- */
+define( 'WS_RI_BASIC', 8 );
+define( 'WS_RI_ADVANCED', 16 );
+define( 'CURRENT_VERSION', '3.2.2' );
 
 /* # Activate premium.
 -------------------------------------------------------------- */
@@ -66,7 +72,8 @@ if ( !get_option( 'word_stats_version' ) ) {
 	$keywords_to_upgrade = explode( "\n", str_replace( "\r", '', get_option( 'word_stats_ignore_keywords' ) ) );
 	if ( count( $keywords_to_upgrade ) ) {
 		for ( $i = 0; $i < count( $keywords_to_upgrade ); $i++ ) {
-			$keywords_to_upgrade[ $i ] =  '^' . $keywords_to_upgrade[ $i ] . '$';
+			// preg_replace to avoid duplicated start and end regex characters.
+			$keywords_to_upgrade[ $i ] =  '^' . preg_replace( '/^[\^]+||[\$]+$/', '', $keywords_to_upgrade[ $i ] ) . '$';
 		}
 		$i = null;
 		update_option( 'word_stats_ignore_keywords', implode( "\n", $keywords_to_upgrade ) );
@@ -224,20 +231,16 @@ class word_stats_readability {
 					/* Automated Readability Index */
 					var ARI = 4.71 * ( totalAlphanumeric / totalWords ) + 0.5 * ( totalWords / totalSentences ) - 21.43;
 					ARI = ARI.toFixed( 1 );
-					if ( ARI < 8 ) { ARItext = \'<span style="color: #0c0;">\' + ARI + "</span>"; }
-					if ( ARI > 7.9 && ARI < 12 ) { ARItext = \'<span style="color: #aa0;">\' + ARI + "</span>"; }
-					if ( ARI > 11.9 && ARI < 16 ) { ARItext = \'<span style="color: #c60;">\' + ARI + "</span>"; }
-					if ( ARI > 15.9 && ARI < 20 ) { ARItext = \'<span style="color: #c00;">\' + ARI + "</span>"; }
-					if ( ARI > 19.9 ) { ARItext = \'<span style="color: #a0a;">\' + ARI + "</span>"; }
+					if ( ARI < ', WS_RI_BASIC, ' ) { ARItext = \'<span style="color: #06a;">\' + ARI + "</span>"; }
+					if ( ARI >= ', WS_RI_BASIC, ' && ARI < ', WS_RI_ADVANCED, ' ) { ARItext = \'<span style="color: #0a6;">\' + ARI + "</span>"; }
+					if ( ARI >= ', WS_RI_ADVANCED, ' ) { ARItext = \'<span style="color: #c36;">\' + ARI + "</span>"; }
 
 					/* Coleman-Liau Index */
 					var CLI = 5.88 * ( totalAlphanumeric / totalWords ) - 29.6 * ( totalSentences / totalWords ) - 15.8;
 					CLI = CLI.toFixed( 1 );
-					if ( CLI < 8 ) { CLItext = \'<span style="color: #0c0;">\' + CLI + "</span>"; }
-					if ( CLI > 7.9 && CLI < 12 ) { CLItext = \'<span style="color: #aa0;">\' + CLI + "</span>"; }
-					if ( CLI > 11.9 && CLI < 16 ) { CLItext = \'<span style="color: #c60;">\' + CLI + "</span>"; }
-					if ( CLI > 15.9 && CLI < 20 ) { CLItext = \'<span style="color: #c00;">\' + CLI + "</span>"; }
-					if ( CLI > 19.9 ) { CLItext = \'<span style="color: #a0a;">\' + CLI + "</span>"; }
+					if ( CLI < ', WS_RI_BASIC, ' ) { CLItext = \'<span style="color: #06a;">\' + CLI + "</span>"; }
+					if ( CLI >= ', WS_RI_BASIC, ' && CLI < ', WS_RI_ADVANCED, ' ) { CLItext = \'<span style="color: #0a6;">\' + CLI + "</span>"; }
+					if ( CLI >= ', WS_RI_ADVANCED, ' ) { CLItext = \'<span style="color: #c36;">\' + CLI + "</span>"; }
 
 					/* LIX */
 					var LIXlongwords = 0;
@@ -247,11 +250,9 @@ class word_stats_readability {
 					temp = allText.split( /[,;\.\(\:]/ );
 					var LIX = totalWords / temp.length + ( LIXlongwords * 100 ) / totalWords;
 					LIX = LIX.toFixed( 1 );
-					if ( LIX < 30 ) { LIXtext = \'<span style="color: #0c0;">\' + LIX + "</span>"; }
-					if ( LIX > 29.9 && LIX < 40 ) { LIXtext = \'<span style="color: #aa0;">\' + LIX + "</span>"; }
-					if ( LIX > 39.9 && LIX < 50 ) { LIXtext = \'<span style="color: #c60;">\' + LIX + "</span>"; }
-					if ( LIX > 49.9 && LIX < 60 ) { LIXtext = \'<span style="color: #c00;">\' + LIX + "</span>"; }
-					if ( LIX > 59.9 ) { LIXtext = \'<span style="color: #a0a;">\' + LIX + "</span>"; }
+					if ( LIX < 30 ) { LIXtext = \'<span style="color: #06a;">\' + LIX + "</span>"; }
+					if ( LIX >= 30 && LIX < 55 ) { LIXtext = \'<span style="color: #0a6;">\' + LIX + "</span>"; }
+					if ( LIX >= 55 ) { LIXtext = \'<span style="color: #c36;">\' + LIX + "</span>"; }
 
 					temp = "";';
 					if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) {
@@ -443,11 +444,9 @@ class word_stats_readability {
 			} else {
 				// Trying to aggregate the indexes in a meaningful way.
 				$r_avg = word_stats_readability::calc_ws_index( $ARI, $CLI, $LIX );
-				if ( $r_avg < 8 ) { echo '<span style="color: #0c0;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 8 && $r_avg < 12 ) { echo '<span style="color: #aa0;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 12 && $r_avg < 16 ) { echo '<span style="color: #c60;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 16 && $r_avg < 20 ) { echo '<span style="color: #c00;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 20 ) { echo '<span style="color: #a0a;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg < WS_RI_BASIC ) { echo '<span style="color: #06a;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg >= WS_RI_BASIC && $r_avg < WS_RI_ADVANCED ) { echo '<span style="color: #0a6;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg >= WS_RI_ADVANCED ) { echo '<span style="color: #c36;">', round( $r_avg, 1 ), '</span>'; }
 			}
 		}
 	}
@@ -502,8 +501,8 @@ class word_stats_admin {
 
 		$opt_diagnostic_thresholds[ 'too_short' ] = ( get_option( 'word_stats_diagnostic_too_short' ) === false ) ? 140 : get_option( 'word_stats_diagnostic_too_short' );
 		$opt_diagnostic_thresholds[ 'too_long' ] = ( get_option( 'word_stats_diagnostic_too_long' ) === false ) ? 1500 : get_option( 'word_stats_diagnostic_too_long' );
-		$opt_diagnostic_thresholds[ 'too_difficult' ]= ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? 17 : get_option( 'word_stats_diagnostic_too_difficult' );
-		$opt_diagnostic_thresholds[ 'too_simple' ] = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? 6 : get_option( 'word_stats_diagnostic_too_simple' );
+		$opt_diagnostic_thresholds[ 'too_difficult' ]= ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? WS_RI_ADVANCED : get_option( 'word_stats_diagnostic_too_difficult' );
+		$opt_diagnostic_thresholds[ 'too_simple' ] = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? WS_RI_BASIC : get_option( 'word_stats_diagnostic_too_simple' );
 		$opt_diagnostic_thresholds[ 'no_keywords' ] = ( get_option( 'word_stats_diagnostic_no_keywords' ) === false ) ? 2 : get_option( 'word_stats_diagnostic_no_keywords' );
 		$opt_diagnostic_thresholds[ 'spammed_keywords' ] = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === false ) ? 9 : get_option( 'word_stats_diagnostic_spammed_keywords' );
 
@@ -531,8 +530,8 @@ class word_stats_admin {
 		// Load diagnostics thresholds
 		$threshold_too_short = ( get_option( 'word_stats_diagnostic_too_short' ) === false ) ? 140 : get_option( 'word_stats_diagnostic_too_short' );
 		$threshold_too_long = ( get_option( 'word_stats_diagnostic_too_long' ) === false ) ? 1500 : get_option( 'word_stats_diagnostic_too_long' );
-		$threshold_too_difficult = ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? 17 : get_option( 'word_stats_diagnostic_too_difficult' );
-		$threshold_too_simple = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? 6 : get_option( 'word_stats_diagnostic_too_simple' );
+		$threshold_too_difficult = ( get_option( 'word_stats_diagnostic_too_difficult' ) === false ) ? WS_RI_ADVANCED : get_option( 'word_stats_diagnostic_too_difficult' );
+		$threshold_too_simple = ( get_option( 'word_stats_diagnostic_too_simple' ) === false ) ? WS_RI_BASIC : get_option( 'word_stats_diagnostic_too_simple' );
 		$threshold_no_keywords = ( get_option( 'word_stats_diagnostic_no_keywords' ) === false ) ? 2 : get_option( 'word_stats_diagnostic_no_keywords' );
 		$threshold_spammed_keywords = ( get_option( 'word_stats_diagnostic_spammed_keywords' ) === false ) ? 9 : get_option( 'word_stats_diagnostic_spammed_keywords' );
 
@@ -599,7 +598,7 @@ class word_stats_admin {
 						if ( $ARI  && $CLI && $LIX ) {
 							$ws_index_n = word_stats_readability::calc_ws_index( $ARI, $CLI, $LIX );
 							// Aggregate levels in 3 tiers like Google does (Basic, Intermediate, Advanced)
-							if ( $ws_index_n < 9) { $ws_index = 0; } elseif ( $ws_index_n < 16 ) { $ws_index = 1; } else { $ws_index = 2; }
+							if ( $ws_index_n < WS_RI_BASIC ) { $ws_index = 0; } elseif ( $ws_index_n < WS_RI_ADVANCED ) { $ws_index = 1; } else { $ws_index = 2; }
 							$report[ 'totals_readability' ][ $ws_index ]++;
 						}
 					}
