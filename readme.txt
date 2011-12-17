@@ -119,7 +119,7 @@ They are just for style consistence.
 * Uniformized three colors scheme for readability values on the posts list and live stats.
 * Some default thresholds in the code moved into constants.
 
-= 3.2.1=
+= 3.2.1 =
 * Fix: Default diagnostics thresholds weren't read.
 
 = 3.2 =
