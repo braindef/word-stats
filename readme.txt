@@ -12,6 +12,7 @@ A suite of word counters, keyword counters and readability analysis for your blo
 Word Stats adds a suite of linguistic diagnostics to help you keep track of your content and improve its quality.
 
 The reports page lets you select an author and period to analyze, and displays:
+
 * The total word count.
 * The number and percentage of posts of each post type.
 * The top 20 keywords.
@@ -22,6 +23,7 @@ The reports page lets you select an author and period to analyze, and displays:
 You can display the total word counts for each post type in your dashboard, widget areas and inside your posts with the &#91;wordcounts&#93; shortcode.
 
 Word Stats also extends the info area of the post edit form with these live stats:
+
 * Relevant keywords. Common words can be blacklisted with regular expressions in the settings page.
 * A more accurate word count.
 * Color coded readability tests: Automated Readability Index, Coleman-Liau Index and LIX.
@@ -37,6 +39,7 @@ Spanish and Catalan translations are bundled with the plugin.
 Requires WordPress 3.0 and PHP 5.
 
 **Features planned for next versions**
+
 * Posts list sortable by readability.
 * Send analytics reports by email.
 * Optionally include excerpts in stats.
@@ -66,6 +69,7 @@ Or follow me on Twitter:
 For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level 1 corresponds to ages 6-8, grade 8 to 14 years old, grade 12 to 17 years old. The color code is 0-8: green; 8-12: yellow; 12-16: orange; 16-20: red; +20: purple.
 
 For LIX:
+
 * below 25: Children's Books (green)
 * 25 - 30: Simple texts (green)
 * 30 - 40: Normal Text / Fiction (yellow)
@@ -74,6 +78,7 @@ For LIX:
 * over 60: Specialist texts / research / dissertations (purple)
 
 Each index uses a different algorithm:
+
 * ARI is based on word length and words per sentence.
 * CLI is based on characters per 100 words, excluding non-word characters, and sentences per 100 words
 * LIX is based on average words between pauses (periods, colons, semicolons, etc.) and average words longer than 6 characters.
