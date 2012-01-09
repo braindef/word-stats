@@ -185,49 +185,72 @@ input#period-end {
 #ws-premium-dialog-text small {
 	color: #666;
 	font-style: italic;
+	font-size: 12px;
 }
 #ws-premium-dialog-button {
 	float: right;
 	width: 38%;
 	padding-top: 8px;
 }
-#ws-recent-entries {
+table.ws-diagnostics {
 	border-spacing: 0;
 	border-collapse: collapse;
 	margin-top: -10px;
+	font-size: 12px;
 	width: 100%;
+	max-width: 1225px;
 }
-#ws-recent-entries-wrap {
+table.ws-diagnostics thead td {
+	font-weight: bold;
+}
+
+
+table.ws-diagnostics td.ws-table-type,
+table.ws-diagnostics td.ws-table-date,
+table.ws-diagnostics td.ws-table-word-count,
+table.ws-diagnostics td.ws-table-readability {
+	width: 12%;
+}
+table.ws-diagnostics td.ws-table-title {
+	width: 52%;
+}
+table.ws-diagnostics-wrap {
 	width: 100%;
 	float: left;
 	max-width: 1225px;
 }
-#ws-recent-entries .ws-table-block,
+.ws-diagnostic-title {
+	font-weight: normal;
+	font-size: 15px;
+}
+.ws-header {
+	max-width: 1225px;
+}
 #ws-total,
 .ws-header,
 .pt-meter,
 #ws-premium-dialog-text h1  {
 	font-family: League Gothic, Trebuchet MS, Tahoma, Arial;
 }
-#ws-recent-entries .ws-table-block {
+table.ws-diagnostics .ws-table-block {
 	font-weight: normal;
-	font-size: 120%;
+	font-size: 100%;
 	color: #2266a5;
 	padding-top: 16px;
 }
-#ws-recent-entries td {
+table.ws-diagnostics td {
 	font-weight: normal;
 	padding: 3px;
 	color: #334050;
 	border-bottom: 1px solid #d3d9df;
 }
-#ws-recent-entries .ws-table-count {
+table.ws-diagnostics .ws-table-word-count {
 	text-align: right;
 }
-#ws-recent-entries .ws-table-index {
+table.ws-diagnostics .ws-table-readability {
 	text-align: right;
 }
-#ws-recent-entries .ws-row-even {
+table.ws-diagnostics .ws-row-even {
 	background: #f0f5f9;
 }
 #ws-total {
@@ -237,7 +260,7 @@ input#period-end {
 }
 #ws-total-period {
 	text-transform: uppercase;
-	font-size: 40%;
+	font-size: 11px;
 }
 .ws-wrap {
 	font-family: Verdana, Arial;

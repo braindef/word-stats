@@ -2,9 +2,14 @@
 /*
 Basic String Tools
 by: Fran Ontanaya <email@franontanaya.com>
-Version: 0.1
+Version: 0.2
 License: GPLv2
 -------------------------------------------------------------- */
+
+/* Changelog
+= 0.2 =
+Fix: Quote entities being counted as keywords.
+*/
 
 // Find if there is a match for a word in an array of regular expressions
 function bst_match_regarray( $regexArray, $text ) {
@@ -22,12 +27,19 @@ function bst_match_regarray( $regexArray, $text ) {
 
 // Strip html tags without gluing words.
 function bst_html_stripper ( $text ) {
+
+	// Decode some entities. html_entity_decode eats text here.
+	$text = str_replace( '&quot;', '"', $text );
+	$text = str_replace( '&nbsp;', ' ', $text );
+
 	$search = array('@<script[^>]*?>.*?</script>@si',  // Strip out javascript
 		            '@<[\/\!]*?[^<>]*?>@si',            // Strip out HTML tags
 		            '@<style[^>]*?>.*?</style>@siU',    // Strip style tags properly
 		            '@<![\s\S]*?--[ \t\n\r]*>@'         // Strip multi-line comments including CDATA
 	);
-	return preg_replace( $search, ' ', $text );
+	$text = preg_replace( $search, ' ', $text );
+
+	return $text;
 }
 
 function bst_array_first( $array ) {
@@ -133,8 +145,8 @@ function bst_simple_boundaries( $text ) {
 
 function bst_trim_array( $array ) {
 	// Remove the last item if it's empty
-	if ( $array[ 0 ] == "" ) { $array = array_slice( $array, 1, count( $array )  ); }
-	if ( $array[ count( $array ) - 1 ] == "" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
+	if ( $array[ 0 ] == "" || $array[ 0 ] == "\n" ) { $array = array_slice( $array, 1, count( $array )  ); }
+	if ( $array[ count( $array ) - 1 ] == "" || $array[ count( $array ) - 1 ] == "\n" ) { $array = array_slice( $array, 0, count( $array )  - 1 ); }
 	return $array;
 }
 

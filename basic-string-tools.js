@@ -111,8 +111,8 @@ function bstSimpleBoundaries( text ) {
 
  function bstTrimArray( array ) {
 	/* Remove the first and last items if they are empty */
-	if ( array[ 0 ] == "" ) { array.slice( 1, array.length ); }
-	if ( array[ array.length - 1 ] == "" ) { array.slice( 0, array.length - 1 ); }
+	if ( array[ 0 ] == "" || array[ 0 ] == "\n" ) { array = array.slice( 1, array.length ); }
+	if ( array[ array.length - 1 ] == "" || array[ array.length -1 ] == "\n" ) { array = array.slice( 0, array.length - 1 ); }
 	return array;
 }
 
@@ -144,12 +144,19 @@ function bstSplitWords( text ) {
 }
 
 function bstSplitText( text ) {
-	var simplified = bstSimpleBoundaries( text );
 	var stats = new Array();
-	stats[ "text" ] = simplified[ "text" ];
-	simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
-	stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
-	stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
-	stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	if ( text == "" ) {
+		stats[ "text" ] = "";
+		stats[ "sentences" ] = "";
+		stats[ "words" ] = "";
+		stats[ "alphanumeric" ] = "";
+	} else {
+		var simplified = bstSimpleBoundaries( text );
+		stats[ "text" ] = simplified[ "text" ];
+		simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
+		stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
+		stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
+		stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	}
 	return stats;
 }
