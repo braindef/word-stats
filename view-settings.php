@@ -73,7 +73,7 @@
 			<p>
 				<input type="hidden" name="word_stats_add_tags" value="0" />
 				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Add the last saved tags to the keyword count.', 'word-stats' ), '
+				__( 'Add the last saved tags to the live keyword count.', 'word-stats' ), '
 			</p>
 
 			<h4 style="padding: 0;margin: 0;">Ignore these keywords:</h4>

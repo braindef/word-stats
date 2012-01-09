@@ -2,8 +2,8 @@
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics, premium
 Requires at least: 3.0.0
-Tested up to: 3.3
-Stable tag: 3.2.2
+Tested up to: 3.3.1
+Stable tag: 3.3
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -40,27 +40,26 @@ Requires WordPress 3.0 and PHP 5.
 
 **Features planned for next versions**
 
-* Posts list sortable by readability.
 * Send analytics reports by email.
 * Optionally include excerpts in stats.
 * Exportable analytics data.
-* Uniform three colors scheme for readability values.
-* Compatibility fix for badly placed W3 Total Cache warning message in the analitycs page.
-* Emphasize the integer part of readability values.
 
 **Contact**
 
 Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 
-Or follow me on Twitter:
-
-[https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
+Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Installation ==
 
 1. Install it from the plugins admin page, or upload the zip with WordPress' built-in tool, or unzip it to 'wp-content/plugins'.
 2. Activate it.
 3. Go to Settings | Word Stats and set up the optional features.
+
+**Uninstall note**
+
+* All settings and post metadata, save the premium status, are deleted when you uninstall the plugin.
+* If you want to retain the settings and/or metadata, disable the plugin instead of uninstalling it, or delete it manually from the plugins folder.
 
 == Frequently Asked Questions ==
 
@@ -119,6 +118,15 @@ They are just for style consistence.
 4. Extra column showing an aggregate of the readability indexes.
 
 == Changelog ==
+= 3.3 =
+* Settings and metadata are deleted upon uninstall.
+* Live keyword count uses now the thresholds from the settings page. Spammed keywords are marked red. Top, not spammed keywords are marked green.
+* Default thresholds for keywords changed to 4 (relevant) and 10 (spammed).
+* Fix: Quote entities being counted as keywords.
+* Fix: Options weren't properly tested for existence, affected first install defaults and word count replacement option.
+* Fix: Lowered character length threshold for live counting keywords from 3 to 2.
+* Tested with WordPress 3.3.1.
+
 = 3.2.2 =
 * Fix: Messed ignored words list linked to version check bug. Duplicated characters at the beggining and end of each expression should be removed upon upgrade.
 * Uniformized three colors scheme for readability values on the posts list and live stats.
