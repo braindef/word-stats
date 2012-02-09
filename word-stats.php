@@ -2,9 +2,9 @@
 /*
 Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
-Description: A suite of word counters, keyword counters and readability analysis displays for your blog.
+Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 3.1.1
+Version: 4.0.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -27,15 +27,30 @@ http://bestseller.franontanaya.com/?p=101
 Thanks to Allan Ellegaard for testing and input.
 */
 
+/*
+	Note: All bst_ functions come from basic_string_tools.php.
+*/
+
+/* # Constants.
+-------------------------------------------------------------- */
+define( 'WS_TOO_SHORT', 150 );
+define( 'WS_TOO_LONG', 1500 );
+define( 'WS_RI_BASIC', 7 );
+define( 'WS_RI_ADVANCED', 15 );
+define( 'WS_NO_KEYWORDS', 2 );
+define( 'WS_SPAMMED_KEYWORDS', 20 );
+
+define( 'WS_CURRENT_VERSION', '4.0.2' );
+
 /* # Activate premium.
 -------------------------------------------------------------- */
 // No special checks. This is open source, you could hack around it easily (if your time is less valuable than €2).
-if ( $_GET[ 'word-stats-action' ] == 'basic' ) { update_option( 'word_stats_premium', 0 ); }
+if ( $_GET[ 'word-stats-action' ] == 'basic' ) { update_option( 'word_stats_premium', 0 ); } // Disables premium. Only for testing purposes.
 if ( $_GET[ 'word-stats-action' ] == 'alternative') {	update_option( 'word_stats_premium', 1 ); }
 if ( $_GET[ 'word-stats-action' ] == 'payment') {	update_option( 'word_stats_premium', 2 ); }
 if ( $_GET[ 'word-stats-action' ] == 'donation' ) { update_option( 'word_stats_premium', 3 ); }
 
-/* # Word Counts
+/* # Word Countswp-admin/
 -------------------------------------------------------------- */
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
 
@@ -45,379 +60,329 @@ require_once( 'basic-string-tools.php' );
 
 /* # Check version. Perform upgrades.
 -------------------------------------------------------------- */
-// Note: version_compare is the PHP for checking versions.
+/* Pre 3.1 */
+// Fix inconsistent naming for some options
+if ( Word_Stats_Core::is_option( 'ws-premium' ) ) { Word_Stats_Core::move_option( 'ws-premium', 'word_stats_premium' ); }
+if ( Word_Stats_Core::is_option( 'ws-total-counts-cache' ) ) { Word_Stats_Core::move_option( 'ws-total-counts-cache', 'word_stats_total_counts_cache' ); }
+if ( Word_Stats_Core::is_option( 'ws-monthly-counts-cache' ) ) { Word_Stats_Core::move_option( 'ws-monthly-counts-cache', 'word_stats_monthly_counts_cache' ); }
 
-// pre 3.1.0 versions have no word_stats_version
-if ( !get_option( 'word_stats_version' ) ) {
-
-	// fix inconsistent naming for some options
-	if ( get_option( 'ws-premium' ) ) {
-		update_option( 'word_stats_premium', get_option( 'ws-premium' ) );
-		delete_option( 'ws-premium' );
-	}
-	if ( get_option( 'ws-total-counts-cache' ) ) {
-		update_option( 'word_stats_total_counts_cache', get_option( 'ws-total-counts-cache' ) );
-		delete_option( 'ws-total-counts-cache' );
-	}
-	if ( get_option( 'ws-monthly-counts-cache' ) ) {
-		update_option( 'word_stats_monthly_counts_cache', get_option( 'ws-monthly-counts-cache' ) );
-		delete_option( 'ws-monthly-counts-cache' );
-	}
-
-	// convert ignored keywords list to regular expressions
+// There's an ignore list, but not plugin version = Pre 3.1 install.
+if ( !Word_Stats_Core::is_option( 'word_stats_version' ) && Word_Stats_Core::is_option( 'word_stats_ignore_keywords' ) ) {
 	$keywords_to_upgrade = explode( "\n", str_replace( "\r", '', get_option( 'word_stats_ignore_keywords' ) ) );
 	if ( count( $keywords_to_upgrade ) ) {
 		for ( $i = 0; $i < count( $keywords_to_upgrade ); $i++ ) {
-			$keywords_to_upgrade[ $i ] =  '^' . $keywords_to_upgrade[ $i ] . '$';
+			// preg_replace to avoid duplicated start and end regex characters.
+			$keywords_to_upgrade[ $i ] =  '^' . preg_replace( '/^[\^]+||[\$]+$/', '', $keywords_to_upgrade[ $i ] ) . '$';
 		}
 		$i = null;
 		update_option( 'word_stats_ignore_keywords', implode( "\n", $keywords_to_upgrade ) );
 	}
-	update_option( 'word_stats_version', '3.1.0' );
 }
+/* End pre 3.1.0 */
 
+/* Reset keyword count relevance to defaults since the calculation method changed from 3.3 to 3.4 */
+if ( version_compare( get_option( 'word_stats_version' ), '3.4' ) == -1 ) {
+	update_option( 'word_stats_diagnostic_no_keywords', WS_NO_KEYWORDS );
+	update_option( 'word_stats_diagnostic_spammed_keywords', WS_SPAMMED_KEYWORDS );
+}
 
 //  Deprecated option
 if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'ws-counts-cache' ); }
 
-/* # Functions to count and cache total words
--------------------------------------------------------------- */
-class word_stats_counts {
+// Update version
+if ( get_option( 'word_stats_version' ) != WS_CURRENT_VERSION ) {
+	update_option( 'word_stats_version', WS_CURRENT_VERSION );
+}
 
-	// Code to select posts according to the count unpublished option
-	public function ws_get_posts( $post_type_name ) {
+include( 'word-counts-widget.php' );
+
+/* # Background caching
+-------------------------------------------------------------- */
+/*
+	If there's caching to do, adds an AJAX call to the admin head so the caching starts doing its thing.
+	Before adding the action hooks, we check if intial caching isn't complete yet and either:
+		a) there's no caching worker active, or
+		b) any caching worker was started (and possibly interrupted without finishing) more than 300 seconds ago.
+*/
+function word_stats_call_cache_worker() {
+	?>
+	<script type="text/javascript" >
+		jQuery( document ).ready( function( $ ) {
+			var worker_call = { action: 'cache_pending' };
+			jQuery.post( ajaxurl, worker_call, function( response ) { return response; } ); // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+		} );
+	</script>
+	<?php
+}
+function word_stats_cache_worker() {
+	update_option( 'word_stats_cache_start', time() );
+	echo Word_Stats_Core::cache_pending();
+	update_option( 'word_stats_cache_start', false );
+	die(); // this is required to return a proper result
+}
+$is_worker_free =  !get_option( 'word_stats_done_caching', false ) && ( !get_option( 'word_stats_cache_start' ) OR ( time() - get_option( 'word_stats_cache_start' ) > 300 ) );
+if ( $is_worker_free ) {
+	add_action( 'admin_head', 'word_stats_call_cache_worker' );
+	add_action('wp_ajax_cache_pending', 'word_stats_cache_worker' );
+}
+
+/* # Core functions
+-------------------------------------------------------------- */
+class Word_Stats_Core {
+
+	/* # General purpose functions
+	-------------------------------------------------------------- */
+	/*
+		is_option: Checks if the option doesn't exist (as opposed to just being empty).
+		move_option: Indeed.
+		get_year_month: Return YYYY-MM from the given date. Currently expects $date to be YYYY-MM-DD.
+		is_content_type: Checks if a post is a content type or a functional type.
+		total_word_counts: Output dashboard totals.
+		safe_ksort: Perform ksort only if the variable is an array. Return false instead of throwing an error if it isn't.
+	*/
+	public function is_option( $option ) { return get_option( $option, null ) !== null; }
+	public function move_option( $option1, $option2 ) { update_option( $option2, get_option( $option1 ) ); delete_option( $option1 ); }
+	public function get_year_month( $date ) { return substr( $date, 0, 7 ); }
+	public function is_content_type( $name ) { return ( $name != 'attachment' && $name != 'nav_menu_item' && $name != 'revision' ); }
+	public function total_word_counts() { echo Word_Stats_Core::get_word_counts( 'table' ); }
+	public function is_plugin_plugged( $plugin ) { return in_array( $plugin . '/' . $plugin . '.php', get_option( 'active_plugins' ) ); }
+	public function safe_ksort( &$array ) {
+		if ( is_array( $array ) && !empty( $array ) ) {
+			ksort( $array );
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/* # Model functions (WIP)
+	-------------------------------------------------------------- */
+	/*
+		Select posts according to the count unpublished option
+	*/
+	public function get_posts( $post_type_name ) {
 		global $wpdb;
 		if ( get_option( 'word_stats_count_unpublished' ) ) {
-			$query = "SELECT * FROM $wpdb->posts WHERE post_type = '" . $post_type_name . "' ORDER BY ID DESC";
-
-			// post_status => any is necessary to count drafts and post pending review
-			/*$posts = get_posts( array(
-				'numberposts' => -1,
-				'post_type' => array( $post_type->name ),
-				'post_status' => 'any'
-			));*/
+			$query = "SELECT * FROM $wpdb->posts WHERE post_type = '" . mysql_real_escape_string( $post_type_name ) . "' ORDER BY ID DESC";
 		} else {
-			$query = "SELECT * FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = '" . $post_type_name . "' ORDER BY ID DESC";
-			/*$posts = get_posts( array(
-				'numberposts' => -1,
-				'post_type' => array( $post_type->name ),
-			));*/
+			$query = "SELECT * FROM $wpdb->posts WHERE post_status = 'publish' AND post_type = '" . mysql_real_escape_string( $post_type_name ) . "' ORDER BY ID DESC";
 		}
 		$posts = $wpdb->get_results( $query, OBJECT );
 		return $posts;
 	}
 
-	// Count words from all post types and cache the output
-	public function cache_word_counts() {
-		global $wp_post_types;
-		$total_count = 0;
-		$cache = '';
-		$author_count = array();
-		$total_num = 0;
-		foreach( $wp_post_types as $post_type ) {
-			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
-				$total_count = 0;
-				$posts = word_stats_counts::ws_get_posts( $post_type->name );
-				foreach( $posts as $post ) {
-					$word_count = bst_count_words( $post->post_content );
-					$total_count += $word_count;
-					// Multidimensional array, stores monthly words per author
-					$author_count[ $post->post_author ][ $post_type->name ][ substr( $post->post_date, 0, 7 ) ] += $word_count;
-				}
-				$num = number_format_i18n( $total_count );
+	/* # Shortcodes
+	-------------------------------------------------------------- */
+	/*
+		word_counts_sc: Output word counts
+	*/
+	public function word_counts_sc( $atts = null, $content = null ) { return '<ul class="word-stats-counts">' . Word_Stats_Core::get_word_counts( 'list' ) . '</ul>'; }
 
-				// This adds the word count for each post type to the stats portion of the Right Now box
-				$text = __( 'Words', 'word-stats' ) . ' (' . $post_type->name . ')';
-				$cache = $cache . "::opentag::{$num}::separator::{$text}::closetag::";
-				$total_num += $total_count;
-			}
-		}
-
-		$text = __( 'Total words', 'word-stats' );
-		$total_num =  number_format_i18n( $total_num );
-		$cache = $cache . "::totalopentag::{$total_num}::separator::{$text}::closetag::";
-		update_option( 'word_stats_total_counts_cache', $cache );
-		update_option( 'word_stats_monthly_counts_cache', $author_count );
-		return $cache;
-	}
-
-	// Output the cached word counts with the proper HTML tags
-	public function get_word_counts( $mode ) {
-		$cached = get_option( 'word_stats_total_counts_cache' );
-		//echo $cached;
-		if ( !$cached ) {
-			$cached = word_stats_counts::cache_word_counts();
-		}
-		if ( $mode == 'table' ) {
-			$cached = str_replace( '::opentag::', '<tr><td class="first b"><a>', $cached );
-			$cached = str_replace( '::totalopentag::', '<tr><td class="first b word-stats-dash-total"><a>', $cached );
-			$cached = str_replace( '::separator::', '</a></td><td class="t"><a>', $cached );
-			$cached = str_replace( '::closetag::', '</a></td></tr>', $cached );
-		} else {
-			$cached = str_replace( '::opentag::', '<li class="word-stats-count">', $cached );
-			$cached = str_replace( '::totalopentag::', '<li class="word-stats-count word-stats-list-total">', $cached );
-			$cached = str_replace( '::separator::', ' ', $cached );
-			$cached = str_replace( '::closetag::', '</li>', $cached );
-		}
-		return $cached;
-	}
-
-	public function total_word_counts() {
-		echo word_stats_counts::get_word_counts( 'table' );
-	}
-
-	// Shortcode to output word counts
-	public function word_counts_sc( $atts = null, $content = null ) {
-		return '<ul class="word-stats-counts">' . word_stats_counts::get_word_counts( 'list' ) . '</ul>';
-	}
-}
-
-include ( 'word-counts-widget.php' );
-
-// Hook the functions
-if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
-	add_action( 'save_post', array( 'word_stats_counts', 'cache_word_counts' ) );
-	add_action( 'right_now_content_table_end', array( 'word_stats_counts', 'total_word_counts' ) );
-	add_action( 'widgets_init', create_function( '', 'return register_widget( "widget_ws_word_counts" );' ) );
-}
-add_shortcode( 'wordcounts', array( 'word_stats_counts', 'word_counts_sc' ) );
-
-/* # Live post stats
--------------------------------------------------------------- */
-// Display post legibility
-class word_stats_readability {
-
+	/* # Live stats
+	-------------------------------------------------------------- */
+	/*
+		Loads javascript for stat counting, outputs the counting code and the relevant html.
+	*/
 	public function live_stats() {
 		global $post;
 		bst_js_string_tools();
-
-		echo '
-		<script type="text/javascript">
-			function wsRefreshStats() {
-				var statusInfo = document.getElementById( "post-status-info" );
-				var allText = document.getElementById("content").value;
-				allText = bstHtmlStripper( allText );
-				var totalCharacters = 0;
-				var totalWords = 0;
-				var totalSentences = 0;
-				var wordArray = new Array();
-				var stats = new Array();
-				var temp = "";
-				if ( allText ) {
-					totalCharacters = allText.length;
-					stats = bstSplitText( allText );
-					allText = stats[ "text" ];
-					totalAlphanumeric = stats[ "alphanumeric"].length;
-					totalSentences = stats[ "sentences" ].length;
-					totalWords = stats[ "words" ].length;
-					wordArray = stats[ "words"].slice( 0 ); /* array copy kludge */
-					delete stats;
-				}
-				if ( totalWords > 0 && totalSentences > 0 ) {
-					var charsPerWord = ( totalAlphanumeric / totalWords );
-					charsPerWord = charsPerWord.toFixed( 0 );
-					var charsPerSentence = ( totalAlphanumeric / totalSentences );
-					charsPerSentence = charsPerSentence.toFixed( 0 );
-					var wordsPerSentence = ( totalWords / totalSentences );
-					wordsPerSentence = wordsPerSentence.toFixed( 0 );
-
-					/* Automated Readability Index */
-					var ARI = 4.71 * ( totalAlphanumeric / totalWords ) + 0.5 * ( totalWords / totalSentences ) - 21.43;
-					var ARItext;
-					ARI = ARI.toFixed( 1 );
-					if ( ARI < 8 ) { ARItext = \'<span style="color: #0c0;">\' + ARI + "</span>"; }
-					if ( ARI > 7.9 && ARI < 12 ) { ARItext = \'<span style="color: #aa0;">\' + ARI + "</span>"; }
-					if ( ARI > 11.9 && ARI < 16 ) { ARItext = \'<span style="color: #c60;">\' + ARI + "</span>"; }
-					if ( ARI > 15.9 && ARI < 20 ) { ARItext = \'<span style="color: #c00;">\' + ARI + "</span>"; }
-					if ( ARI > 19.9 ) { ARItext = \'<span style="color: #a0a;">\' + ARI + "</span>"; }
-
-					/* Coleman-Liau Index */
-					var CLI = 5.88 * ( totalAlphanumeric / totalWords ) - 29.6 * ( totalSentences / totalWords ) - 15.8;
-					var CLItext;
-					CLI = CLI.toFixed( 1 );
-					if ( CLI < 8 ) { CLItext = \'<span style="color: #0c0;">\' + CLI + "</span>"; }
-					if ( CLI > 7.9 && CLI < 12 ) { CLItext = \'<span style="color: #aa0;">\' + CLI + "</span>"; }
-					if ( CLI > 11.9 && CLI < 16 ) { CLItext = \'<span style="color: #c60;">\' + CLI + "</span>"; }
-					if ( CLI > 15.9 && CLI < 20 ) { CLItext = \'<span style="color: #c00;">\' + CLI + "</span>"; }
-					if ( CLI > 19.9 ) { CLItext = \'<span style="color: #a0a;">\' + CLI + "</span>"; }
-
-					/* LIX */
-					var LIXlongwords = 0;
-					for (var i = 0; i < wordArray.length; i=i+1 ) {
-						if ( wordArray[ i ].length > 6 ) { LIXlongwords = LIXlongwords + 1; }
-					}
-					temp = allText.split( /[,;\.\(\:]/ );
-					var LIX = totalWords / temp.length + ( LIXlongwords * 100 ) / totalWords;
-					var LIXtext;
-					LIX = LIX.toFixed( 1 );
-					if ( LIX < 30 ) { LIXtext = \'<span style="color: #0c0;">\' + LIX + "</span>"; }
-					if ( LIX > 29.9 && LIX < 40 ) { LIXtext = \'<span style="color: #aa0;">\' + LIX + "</span>"; }
-					if ( LIX > 39.9 && LIX < 50 ) { LIXtext = \'<span style="color: #c60;">\' + LIX + "</span>"; }
-					if ( LIX > 49.9 && LIX < 60 ) { LIXtext = \'<span style="color: #c00;">\' + LIX + "</span>"; }
-					if ( LIX > 59.9 ) { LIXtext = \'<span style="color: #a0a;">\' + LIX + "</span>"; }
-
-					temp = "";';
-					if ( get_option( 'word_stats_show_keywords' ) || get_option( 'word_stats_show_keywords' ) == '' ) {
-
-						echo '
-						/* Find keywords */
-						var wordHash = new Array;
-						var topCount = 0;
-						 var ignKeywords = "' , strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) ), '";
-						ignKeywords = ignKeywords.split( "::" );
-						for (var i = 0; i < wordArray.length; i = i + 1) {
-							wordArray[i] = wordArray[i].toLowerCase();
-
-							/* if ( ignKeywords.indexOf( wordArray[i] ) == "-1" ) { */
-
-							if ( !bstMatchRegArray( ignKeywords, wordArray[i] ) ) {
-								if ( wordArray[i].length > 3 ) {
-									if ( !wordHash[ wordArray[i] ] ) { wordHash[ wordArray[i] ] = 0; }
-									wordHash[ wordArray[i] ] = wordHash[ wordArray[i] ] + 1;
-									if ( wordHash[ wordArray[i] ] > topCount ) { topCount = wordHash[ wordArray[i] ]; }
-								}
-							}
-						}';
-
-						// Add tags. Note $post has been declared global above.
-						if ( get_option( 'word_stats_add_tags' ) && get_the_tags( $post->ID ) ) {
-							echo '/* Add last saved tags */', "\n";
-							foreach ( get_the_tags( $post->ID ) as $tag ) {
-								$tag->name = strtolower( esc_attr( $tag->name ) );
-								if ( strlen( $tag->name ) > 3 ) {
-									echo '
-											if ( !wordHash[ "', $tag->name, '" ] ) { wordHash[ "', $tag->name, '" ] = 0; }
-											wordHash[ "', $tag->name, '" ] = wordHash[ "', $tag->name, '" ] + 1;
-											if ( wordHash[ "', $tag->name, '" ] > topCount ) { topCount = wordHash[ "', $tag->name, '" ]; }
-									';
-								}
-							}
-						}
-
-						echo '
-						/* Relevant keywords must have at least three appareances and half the appareances of the top keyword */
-						for ( var j in wordHash ) {
-							if ( wordHash[j] >= topCount/5 && wordHash[j] > 2 ) {
-								if ( wordHash[j] == topCount ) {
-									temp = temp + \'<span style="font-weight:bold; color:#0c0;">\' + j + " (" + wordHash[j] + ")</span> ";
-								} else if ( wordHash[j] > topCount / 1.5 ) {
-									temp = temp + \'<span style="color:#3c0;">\' + j + " (" + wordHash[j] + ")</span> ";
-								} else {
-									temp = temp + j + " (" + wordHash[j] + ") ";
-								}
-							}
-						}
-						if ( temp == "" ) {
-							temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>', esc_attr( __( 'No relevant keywords.', 'word-stats' ) ), '";
-						} else {
-							temp = "<br><strong>', esc_attr( __( 'Keywords:', 'word-stats' ) ), '</strong><br>" + temp;
-						}';
-					}
-					echo 'if ( statusInfo.innerHTML.indexOf( "edit-word-stats" ) < 1 ) {
-							statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id=\'edit-word-stats\' style=\'padding-left:7px; padding-bottom:4px;\' colspan=\'2\'><strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
-					if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) {
-						echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
-							'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
-							'; " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ),
-							'; " + totalSentences + " ', esc_attr( __( 'sentences', 'word-stats' ) ),
-							'.<br>" + charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ),
-							'; " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ),
-							'; " + wordsPerSentence + " ', esc_attr( __( 'words per sentence', 'word-stats' ) ), '."';
-					}
-					echo ' + temp + "</td></tr></tbody>";
-						} else {
-						 	document.getElementById( "edit-word-stats").innerHTML = "<strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI<a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
-					if ( get_option( 'word_stats_averages' ) || get_option( 'word_stats_averages' ) == null ) {
-						echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
-							'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
-							'; " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ),
-							'; " + totalSentences + " ', esc_attr( __( 'sentences', 'word-stats' ) ),
-							'.<br>" + charsPerWord + " ', esc_attr( __( 'characters per word', 'word-stats' ) ),
-							'; " + charsPerSentence + " ', esc_attr( __( 'characters per sentence', 'word-stats' ) ),
-							'; " + wordsPerSentence + " ', esc_attr( __( 'words per sentence', 'word-stats' ) ), '."';
-					}
-					echo ' + temp;
-						} ';
-
-					// Replace WordPress' word count
-					if ( true || get_option( 'word_stats_replace_word_count' ) || get_option( 'word_stats_replace_word_count' ) == null ) {
-						echo '
-						if ( document.getElementById( "wp-word-count") != null ) { /* WP 3.2 */
-							document.getElementById( "wp-word-count").innerHTML = "' . __( 'Word count:' ) . ' " + totalWords + " <small>' . __( '(Word Stats plugin)', 'word-stats' ) . '</small>";
-						}
-						if ( document.getElementById( "word-count") != null ) { /* WP 3.0 */
-							document.getElementById( "word-count").innerHTML = totalWords;
-						}';
-					}
-				echo '}
-			}
-
-			var statsTime = setInterval( "wsRefreshStats()", 10000 );
-			wsRefreshStats();
-
-		</script>';
+		include( 'view-live-stats.php' );
 	}
 
-	/* # Static post stats
+	/* # Caching
 	-------------------------------------------------------------- */
-	// Calculate stats the PHP way and store them.
+	/*
+		When the plugin is freshly installed in a large blog, stats collecting
+		could time out when the user tries to load stats for the entire timeline.
+		To avoid this we load a worker with an AJAX script so it caches in the background.
+	*/
+
+	/*
+		Retrieve the ids of the posts still uncached.
+		Called too when the "please, wait" message is shown with a count of posts remaining.
+	*/
+	public function get_uncached_posts_ids() {
+		global $wpdb;
+		$query = "SELECT $wpdb->posts.ID
+			FROM $wpdb->posts
+			WHERE $wpdb->posts.ID NOT IN (
+				SELECT DISTINCT post_id
+				FROM  $wpdb->postmeta
+				WHERE meta_key = 'word_stats_cached'
+				AND meta_value = TRUE
+			)
+			AND $wpdb->posts.post_type != 'attachment'
+			AND $wpdb->posts.post_type != 'nav_menu_item'
+			AND $wpdb->posts.post_type != 'revision'
+		";
+		return $wpdb->get_results( $query, OBJECT );
+	}
+
+	/*
+		Does the word count, keywords and readability calculations, and stores them as meta, for a chunk of posts.
+		This function will run for as long as necessary, so it should be called via AJAX, then wait for the result;
+		otherwise, the browser may timeout while waiting for it.
+		This loop can be very slow in cheap production servers. We exit if the plugin has been removed from the active plugins list.
+	*/
+	public function cache_pending() {
+		if ( get_option( 'word_stats_done_caching', false ) ) { return false; }
+		ignore_user_abort( true );
+		set_time_limit( 0 );  // Work for as long as necessary.
+		$posts = Word_Stats_Core::get_uncached_posts_ids();
+		if ( count( $posts ) ) {
+			$posts_checked = 0;
+			foreach ( $posts as $post ) {
+				if ( !Word_Stats_Core::is_plugin_plugged( 'word-stats' ) ) { exit(); }
+				$posts_checked++;
+				if ( !get_post_meta( $post->ID, 'word_stats_cached', true ) ) { Word_Stats_Core::cache_stats( $post->ID ); }
+			}
+		}
+		update_option( 'word_stats_done_caching', true );
+		return $posts_checked;
+	}
+
+	/*
+		This function is called when a post save doesn't find a monthly totals cache to update,
+		which in normal conditions means the plugin is a fresh install.
+	*/
+	public function cache_totals() {
+		set_time_limit( 0 );  // Work for as long as necessary.
+		global $wp_post_types;
+		$author_count = $totals = array();
+		foreach( $wp_post_types as $post_type ) {
+			if ( Word_Stats_Core::is_content_type( $post_type->name ) ) {
+				$posts = Word_Stats_Core::get_posts( $post_type->name );
+				foreach( $posts as $post ) {
+					$word_count = get_post_meta( $post->ID, 'word_stats_word_count', true );
+					if ( $word_count == '' ) {
+						$word_count = bst_count_words( $post->post_content );
+						update_post_meta( $post->ID,  'word_stats_word_count', $word_count );
+					}
+					$author_count[ $post->post_author ][ $post_type->name ][ Word_Stats_Core::get_year_month( $post->post_date ) ] += $word_count;
+					$totals[ $post_type->name ] += $word_count;
+				}
+			}
+		}
+		update_option( 'word_stats_total_words_cache', $totals );
+		update_option( 'word_stats_monthly_counts_cache', $author_count );
+	}
+
+	/*
+		Calculates the various stats for the current or specified post, saves them in post metas,
+		then updates the cached blog-wide total word counts.
+		ARI = Automated Readability Index. CLI = Coleman-Liau Index.
+	*/
 	public function cache_stats( $id = null ) {
 		if ( !$id ) {
 			global $post;
-			if ( !$post->ID ) {
-				return null;
-			}
+			if ( !$post->ID ) { return null; }
 			$id = $post->ID;
 		}
-		$thepost = get_post( $id );
+		$the_post = get_post( $id );
+		$all_text = bst_html_stripper( $the_post->post_content, get_bloginfo( 'charset' ) );
 
-		// Strip tags
-		$allText = bst_html_stripper( $thepost->post_content );
+		if ( $all_text ) {
+			$stats = bst_split_text( $all_text );
+			$total_alphanumeric = mb_strlen( $stats[ 'alphanumeric' ] ); // mb_strlen = multibyte strlen
+			$total_sentences = count( $stats[ 'sentences' ] );
+			$total_words = count( $stats[ 'words' ] );
+			$word_array = $stats[ 'words' ];
+			$all_text = $stats[ 'text' ];
 
-		// Count
-		if ( $allText ) {
-			$stats = bst_split_text( $allText );
-			$totalAlphanumeric = mb_strlen( $stats[ 'alphanumeric' ] );
-			$totalSentences = count( $stats[ 'sentences' ] );
-			$totalWords = count( $stats[ 'words' ] );
-			$wordArray = $stats[ 'words' ];
-			$allText = $stats[ 'text' ];
-			// Do the calcs if we aren't going to divide by zero
-			if ( $totalWords > 0 && $totalSentences > 0 ) {
-				$charsPerWord = intval( $totalAlphanumeric / $totalWords );
-				$charsPerSentence = intval( $totalAlphanumeric / $totalSentences );
-				$wordsPerSentence = intval( $totalWords / $totalSentences );
-				// Automated Readability Index
-				$ARI = round( 4.71 * ( $totalAlphanumeric / $totalWords ) + 0.5 * ( $totalWords / $totalSentences ) - 21.43, 1);
+			if ( $total_words > 0 && $total_sentences > 0 ) { // No divisions by zero, thanks.
+				$chars_per_word = intval( $total_alphanumeric / $total_words );
+				$chars_per_sentence = intval( $total_alphanumeric / $total_sentences );
+				$words_per_sentence = intval( $total_words / $total_sentences );
 
-				// Coleman-Liau Index
-				$CLI = round( 5.88 * ( $totalAlphanumeric / $totalWords ) - 29.6 * ( $totalSentences / $totalWords ) - 15.8, 1);
+				$ARI = round( 4.71 * ( $total_alphanumeric / $total_words ) + 0.5 * ( $total_words / $total_sentences ) - 21.43, 1);
+				$CLI = round( 5.88 * ( $total_alphanumeric / $total_words ) - 29.6 * ( $total_sentences / $total_words ) - 15.8, 1);
 
-				// LIX
 				$LIXlongwords = 0;
-				for ($i = 0; $i < count( $wordArray ); $i = $i + 1 ) {
-					if ( mb_strlen( $wordArray[ $i ] ) > 6 ) { $LIXlongwords++; }
+				for ($i = 0; $i < count( $word_array ); $i = $i + 1 ) {
+					if ( mb_strlen( $word_array[ $i ] ) > 6 ) { $LIXlongwords++; }
 				}
-				$temp = preg_split( '/[,;\.\(\:]/', $allText );
-				$LIX = round( $totalWords / count( $temp ) + ( $LIXlongwords * 100 ) / $totalWords, 1) ;
+				$temp = preg_split( '/[,;\.\(\:]/', $all_text );
+				$LIX = round( $total_words / count( $temp ) + ( $LIXlongwords * 100 ) / $total_words, 1) ;
 			} else {
-				$ARI = '0';
-				$CLI = '0';
-				$LIX = '0';
+				$ARI = $CLI = $LIX = '0';
 			}
 		} else {
-			$ARI = '0';
-			$CLI = '0';
-			$LIX = '0';
+				$ARI = $CLI = $LIX = '0';
 		}
 
-		// Create/update the post meta fields for readability
+		// Remove ignored keywords
+		$ignore = Word_Stats_Core::get_ignored_keywords();
+		$keywords = bst_regfilter_keyword_counts( bst_keywords( $the_post->post_content, 3, get_bloginfo( 'charset' ) ), $ignore );
+
+		// Update the total counts.
+		$post_type = get_post_type( $id );
+		$old_total_words = get_post_meta( $id, 'word_stats_word_count', true );
+		Word_Stats_Core::get_cached_totals( $author_count, $totals );
+		if ( $author_count === null ) {
+			Word_Stats_Core::cache_totals();
+			$author_count  = get_option( 'word_stats_monthly_counts_cache', null );
+		}
+		if ( $old_total_words ) {
+			$author_count[ $the_post->post_author ][ $post_type ][ Word_Stats_Core::get_year_month( $the_post->post_date ) ] -= $old_total_words;
+			$totals[ $post_type ] -= $old_total_words;
+		}
+		$author_count[ $the_post->post_author ][ $post_type ][ Word_Stats_Core::get_year_month( $the_post->post_date ) ] += $total_words;
+		$totals[ $post_type ] -= $total_words;
+
+		// Cache the stats
 		update_post_meta( $id, 'readability_ARI', $ARI );
 		update_post_meta( $id, 'readability_CLI', $CLI );
 		update_post_meta( $id, 'readability_LIX', $LIX );
+		update_post_meta( $id, 'word_stats_word_count', $total_words );
+		update_post_meta( $id, 'word_stats_keywords', serialize( $keywords ) );
+		update_post_meta( $id, 'word_stats_cached', true );
+		update_option( 'word_stats_monthly_counts_cache', $author_count );
+		update_option( 'word_stats_total_words_cache', $total_words );
 	}
 
-	/* # Add a column to the post management list
+	/*
+		Load cached totals, recache if empty.
+	*/
+	public function get_cached_totals( &$author_count, &$totals ) {
+		$author_count  = get_option( 'word_stats_monthly_counts_cache', null );
+		$totals  = get_option( 'word_stats_total_words_cache', null );
+		if ( $author_count === null || empty( $author_count ) || !is_array( $author_count ) || empty( $totals ) || !is_array( $totals ) || $totals === null ) {
+			Word_Stats_Core::cache_totals();
+			$author_count  = get_option( 'word_stats_monthly_counts_cache', null );
+			$totals  = get_option( 'word_stats_total_words_cache', null );
+		}
+	}
+
+	/*
+		Output the cached word counts with the proper HTML tags.
+	*/
+	public function get_word_counts( $mode ) {
+		$html = '';
+		Word_Stats_Core::get_cached_totals( $author_count, $totals );
+		$total_all = 0;
+		foreach ( $totals as $type => $words ) {
+			$text = __( 'Words', 'word-stats' ) . ' (' . $type . ')';
+			$total_all += (int)$words;
+			if ( $mode == 'table' ) {
+				$html .= '<tr><td class="first b"><a>' . number_format_i18n( $words ) . '</a></td><td class="t"><a>' . $text . '</a></td></tr>';
+			} else {
+				$html .= '<li class="word-stats-count">' . number_format_i18n( $words ) . ' ' . $text . '</li>';
+			}
+		}
+
+		// Absolute total words
+		$text =  __( 'Total words', 'word-stats' );
+		$total_all =  number_format_i18n( $total_all );
+		if ( $mode == 'table' ) {
+			$html .= '<tr><td class="first b word-stats-dash-total"><a>' . $total_all . '</a></td><td class="t"><a>' . $text . '</a></td></tr>';
+		} else {
+			$html .= '<li class="word-stats-count word-stats-list-total">' . $total_all . ' ' . $text . '</li>';
+		}
+
+		return $html;
+	}
+
+	/*Add a column to the post management list
 	-------------------------------------------------------------- */
 	public function add_posts_list_column( $defaults ) {
 		 $defaults[ 'readability' ] = __( 'R.I.', 'word-stats' );
@@ -441,12 +406,10 @@ class word_stats_readability {
 				echo '<span style="color:#999;">--</span>';
 			} else {
 				// Trying to aggregate the indexes in a meaningful way.
-				$r_avg = word_stats_readability::calc_ws_index( $ARI, $CLI, $LIX );
-				if ( $r_avg < 8 ) { echo '<span style="color: #0c0;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 8 && $r_avg < 12 ) { echo '<span style="color: #aa0;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 12 && $r_avg < 16 ) { echo '<span style="color: #c60;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 16 && $r_avg < 20 ) { echo '<span style="color: #c00;">', round( $r_avg, 1 ), '</span>'; }
-				if ( $r_avg >= 20 ) { echo '<span style="color: #a0a;">', round( $r_avg, 1 ), '</span>'; }
+				$r_avg = Word_Stats_Core::calc_ws_index( $ARI, $CLI, $LIX );
+				if ( $r_avg < WS_RI_BASIC ) { echo '<span style="color: #06a;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg >= WS_RI_BASIC && $r_avg < WS_RI_ADVANCED ) { echo '<span style="color: #0a6;">', round( $r_avg, 1 ), '</span>'; }
+				if ( $r_avg >= WS_RI_ADVANCED ) { echo '<span style="color: #c36;">', round( $r_avg, 1 ), '</span>'; }
 			}
 		}
 	}
@@ -456,129 +419,118 @@ class word_stats_readability {
 		wp_register_style( 'word-stats-css', plugins_url() . '/word-stats/css/word-stats.css' );
 		wp_enqueue_style( 'word-stats-css' );
 	}
-} // end class word_stats_readability
 
-// Hook live stats. Load only when editing a post
-if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER[ 'SCRIPT_FILENAME' ], 'post-new.php' ) === false ) {
-	add_action( 'admin_footer', array( 'word_stats_readability' , 'live_stats' ) );
-}
+	// Assign default or custom threshold values
+	public function assign_thresholds( &$too_short = null, &$too_long = null, &$too_difficult = null, &$too_simple = null, &$no_keywords = null, &$spammed_keywords = null) {
+		$too_short = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_short' ) ) ? WS_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' );
+		$too_long = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_long' ) ) ? WS_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' );
+		$too_difficult = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_difficult' ) ) ? WS_RI_ADVANCED : get_option( 'word_stats_diagnostic_too_difficult' );
+		$too_simple = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_simple' ) ) ? WS_RI_BASIC : get_option( 'word_stats_diagnostic_too_simple' );
+		$no_keywords = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_no_kws' ) ) ? WS_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_kws' );
+		$spammed_keywords = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_spammed_kws' ) ) ? WS_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_kws' );
+	}
 
-// Hook cached stats
-add_action( 'save_post', array( 'word_stats_readability', 'cache_stats' ) );
+	// Return an array with the user's list of ignored keywords merged with the selected (if any) or default list of common words.
+	// Using get_bloginfo( 'language' ) for the default list. Makes things smoother for new installs.
+	public function get_ignored_keywords() {
+		$ignore_lang = get_option( 'word_stats_ignore_common', null );
+		if ( $ignore_lang === null ) {
+				$common = bst_get_common_words( substr( get_bloginfo( 'language' ), 0, 2 ) );
+		} elseif ( $ignore_lang ) {
+			if ( in_array( $ignore_lang, array( 'en', 'es' ) ) ) {
+				$common = bst_get_common_words( $ignore_lang );
+			} else {
+				$common = array();
+			}
+		} else {
+			return array();
+		}
 
-// Hook custom column
-if ( get_option( 'word_stats_RI_Column' ) || get_option( 'word_stats_RI_Column' ) == '' ) {
-	add_filter( 'manage_posts_columns', array( 'word_stats_readability', 'add_posts_list_column' ) );
-	add_action( 'manage_posts_custom_column', array( 'word_stats_readability', 'create_posts_list_column' ) );
-	add_action( 'admin_init', array( 'word_stats_readability', 'style_column' ) );
-}
+		$ignore = get_option( 'word_stats_ignore_keywords' );
+		if ( !empty( $ignore ) ) {
+			$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
+			if ( !empty( $common ) ) {
+				$ignore = array_unique( array_merge( $ignore, $common ) );
+			}
+		} else {
+			$ignore = $common;
+		}
+		return $ignore;
+	}
 
-/* § Construct the options page
+} // end class Word_Stats_Core
+
+/* # Hooks
 -------------------------------------------------------------- */
-// create custom plugin settings menu
-class word_stats_admin {
-	function register_settings() {
-		//register our settings
-		register_setting( 'word-stats-settings-group', 'word_stats_RI_column' );
-		register_setting( 'word-stats-settings-group', 'word_stats_totals' );
-		register_setting( 'word-stats-settings-group', 'word_stats_replace_word_count' );
-		register_setting( 'word-stats-settings-group', 'word_stats_averages' );
-		register_setting( 'word-stats-settings-group', 'word_stats_show_keywords' );
-		register_setting( 'word-stats-settings-group', 'word_stats_ignore_keywords' );
-		register_setting( 'word-stats-settings-group', 'word_stats_add_tags' );
-		register_setting( 'word-stats-settings-group', 'word_stats_count_unpublished' );
+/*
+	Hook live stats. Load only when editing a post.
+*/
+if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER[ 'SCRIPT_FILENAME' ], 'post-new.php' ) === false ) {
+	add_action( 'admin_footer', array( 'Word_Stats_Core' , 'live_stats' ) );
+}
+
+/*
+	Hook stats caching
+*/
+add_action( 'save_post', array( 'Word_Stats_Core', 'cache_stats' ) );
+
+/*
+	Hook the functions for the total word counts output.
+	Note that the shorcodes can't be disabled, they'll continue using the stored data.
+*/
+if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
+	add_action( 'right_now_content_table_end', array( 'Word_Stats_Core', 'total_word_counts' ) );
+	add_action( 'widgets_init', create_function( '', 'return register_widget( "widget_ws_word_counts" );' ) );
+}
+add_shortcode( 'wordcounts', array( 'Word_Stats_Core', 'word_counts_sc' ) );
+
+/*
+	Hook readability custom column
+*/
+if ( get_option( 'word_stats_RI_Column' ) || get_option( 'word_stats_RI_Column' ) == '' ) {
+	add_filter( 'manage_posts_columns', array( 'Word_Stats_Core', 'add_posts_list_column' ) );
+	add_action( 'manage_posts_custom_column', array( 'Word_Stats_Core', 'create_posts_list_column' ) );
+	add_action( 'admin_init', array( 'Word_Stats_Core', 'style_column' ) );
+}
+
+
+/* # Admin functions
+-------------------------------------------------------------- */
+class Word_Stats_Admin {
+
+	/*
+		Register settings
+	*/
+	function register_settings( $settings ) {
+		foreach( $settings as $setting ) { 	register_setting( 'word-stats-settings-group', $setting ); }
+	}
+	function init_settings() {
+		Word_Stats_Admin::register_settings( array( 'word_stats_RI_column', 'word_stats_totals', 'word_stats_replace_word_count', 'word_stats_averages', 'word_stats_show_keywords', 'word_stats_ignore_keywords', 'word_stats_add_tags', 'word_stats_count_unpublished', 'word_stats_diagnostic_thresholds', 'word_stats_diagnostic_too_short', 'word_stats_diagnostic_too_long', 'word_stats_diagnostic_too_difficult', 'word_stats_diagnostic_too_simple', 'word_stats_diagnostic_no_kws', 'word_stats_diagnostic_spammed_kws', 'word_stats_ignore_common' ) );
 	}
 
-	function settings_page() {
+	/*
+		Settings page
+	*/
+	public function settings_page() {
 		// Default values
-		$opt_RI_column = ( get_option( 'word_stats_RI_column' ) === null ) ? 1 : get_option( 'word_stats_RI_column' );
-		$opt_totals = ( get_option( 'word_stats_totals' )  === null ) ?  1 : get_option( 'word_stats_totals' );
-		$opt_replace_wc = ( get_option( 'word_stats_replace_word_count' ) === null ) ? 1 : get_option( 'word_stats_replace_word_count') ;
-		$opt_averages = ( get_option( 'word_stats_averages' )  === null ) ? 1 : get_option( 'word_stats_averages' );
-		$opt_show_keywords = ( get_option( 'word_stats_show_keywords' )  === null ) ? 1 : get_option( 'word_stats_show_keywords' );
-		$opt_add_tags = ( get_option( 'word_stats_add_tags' )  === null ) ? 1 : get_option( 'word_stats_add_tags' );
-		$opt_count_unpublished = ( get_option( 'word_stats_count_unpublished' )  === null ) ? 1 : get_option( 'word_stats_count_unpublished' );
-
+		$opt_RI_column = ( !Word_Stats_Core::is_option( 'word_stats_RI_column' ) ) ? 1 : get_option( 'word_stats_RI_column' );
+		$opt_totals = ( !Word_Stats_Core::is_option( 'word_stats_totals' ) ) ?  1 : get_option( 'word_stats_totals' );
+		$opt_replace_wc = ( !Word_Stats_Core::is_option( 'word_stats_replace_word_count' ) ) ? 1 : get_option( 'word_stats_replace_word_count') ;
+		$opt_averages = ( !Word_Stats_Core::is_option( 'word_stats_averages' ) ) ? 1 : get_option( 'word_stats_averages' );
+		$opt_show_keywords = ( !Word_Stats_Core::is_option( 'word_stats_show_keywords' ) ) ? 1 : get_option( 'word_stats_show_keywords' );
+		$opt_add_tags = ( !Word_Stats_Core::is_option( 'word_stats_add_tags' ) ) ? 1 : get_option( 'word_stats_add_tags' );
+		$opt_count_unpublished = ( !Word_Stats_Core::is_option( 'word_stats_count_unpublished' ) ) ? 0 : get_option( 'word_stats_count_unpublished' );
 		$opt_ignore_keywords = get_option( 'word_stats_ignore_keywords' );
+		Word_Stats_Core::assign_thresholds( 	$opt_diagnostic_thresholds[ 'too_short' ], $opt_diagnostic_thresholds[ 'too_long' ], $opt_diagnostic_thresholds[ 'too_difficult' ], $opt_diagnostic_thresholds[ 'too_simple' ], $opt_diagnostic_thresholds[ 'no_keywords' ], $opt_diagnostic_thresholds[ 'spammed_keywords' ] );
+		$opt_ignore_common = ( !Word_Stats_Core::is_option( 'word_stats_ignore_common' ) ) ? substr( get_bloginfo( 'language' ), 0, 2 ) : get_option( 'word_stats_ignore_common' );
 
-		echo '
-	<div class="wrap">
-		<h2>' , __( 'Word Stats Options', 'word-stats' ), '</h2>
-		<form method="post" action="options.php">
-			 ', settings_fields( 'word-stats-settings-group' ), '
- 			<h3>', __( 'Readabilty', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_RI_column" value="0" />
-				<input type="checkbox" name="word_stats_RI_column" value="1" '; if ( $opt_RI_column ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display aggregate readability column in the manage posts list.', 'word-stats' ), '
-			</p>
-			<h3>', __( 'Total word counts', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_totals" value="0" />
-				<input type="checkbox" name="word_stats_totals" value="1" ';  if ( $opt_totals ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Enable total word counts (dashboard, widget and shortcode).', 'word-stats' ), ' ',
-				__( 'This may slow down post saving in large blogs.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_count_unpublished" value="0" />
-				<input type="checkbox" name="word_stats_count_unpublished" value="1" ';  if ( $opt_count_unpublished ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Count words from drafts and posts pending review.', 'word-stats' ),  '
-			</p>
-			<h3>', __( 'Live stats', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_replace_word_count" value="0" />
-				<input type="checkbox" name="word_stats_replace_word_count" value="1" '; if ( $opt_replace_wc ) { echo 'checked="checked"';  } echo ' /> ',
-				__( 'Replace WordPress live word count with Word Stats word count.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_averages" value="0" />
-				<input type="checkbox" name="word_stats_averages" value="1" '; if ( $opt_averages ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display live character/word/sentence averages.', 'word-stats' ), '
-			</p>
-			<p>
-				<input type="hidden" name="word_stats_show_keywords" value="0" />
-				<input type="checkbox" name="word_stats_show_keywords" value="1" '; if ( $opt_show_keywords ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Display live keyword count.', 'word-stats' ), '
-			</p>
-			<h3>', __( 'Keywords', 'word-stats' ), '</h3>
-			<p>
-				<input type="hidden" name="word_stats_add_tags" value="0" />
-				<input type="checkbox" name="word_stats_add_tags" value="1" '; if ( $opt_add_tags ) { echo 'checked="checked"'; } echo ' /> ',
-				__( 'Add the last saved tags to the keyword count.', 'word-stats' ), '
-			</p>
-
-			<h4 style="padding: 0;margin: 0;">Ignore these keywords:</h4>
-			<p>
-				', sprintf( __( 'One %1$sregular expression%2$s per line, without slashes.', 'word-stats' ), '<a href="https://developer.mozilla.org/en/JavaScript/Guide/Regular_Expressions">', '</a>' ),  '<br />
-				 <small><em>', __( 'Example: ^apples?$ = good, /^apples?$/ = bad.', 'word-stats' ), '</em></small><br />
-
-
-<div style="float: left; margin-right: 20px;">
-				<textarea name="word_stats_ignore_keywords" cols="40" rows="25">', esc_attr( strip_tags( $opt_ignore_keywords ) ) ,'</textarea></div>
-
-				<div style="float: left;">
-
-				<strong>', __( 'Writing basic regular expressions:', 'word-stats' ), '</strong><br /><br /><ul><li>',
-				__( '^ matches the beggining of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where" matches "wherever" but not "anywhere".', 'word-stats' ), '</em></small></li><li>',
-				__( '$ matches the end of the word.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "where$" matches "anywhere" but not "wherever".', 'word-stats' ), '</em></small></li><li>',
-				__( '^keyword$ matches only the whole keyword.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^where$" matches "where" but not "anywhere" or "wherever".', 'word-stats' ), '</em></small></li><li>',
-				__( '? matches the previous character zero or one time.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^apples?$" matches "apple" and "apples".', 'word-stats' ), '</em></small></li><li>',
-				__( '* matches the previous character zero or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10*$" matches "1", "10", "1000000", etc.', 'word-stats' ), '</em></small></li><li>',
-				__( '+ matches the previous character one or more times.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^10+$" matches "10", "1000000", etc., but not "1".', 'word-stats' ), '</em></small></li><li>',
-				__( '[] matches any of the characters between the brackets.', 'word-stats' ), ' <br /><small><em>', __( 'Example: "^take[ns]?$" matches "take", "taken" and "takes".', 'word-stats' ), '</em></small></li></ul>',
-
-				'</div><br style="clear:both;">',
-
-			'</p>
-			<p class="submit">
-				<input type="submit" class="button-primary" value="' ,__( 'Save Changes' ), '" />
-			</p>
-		</form>
-		<div id="ws-feedback-links" style="font-size: 16px; clear:both;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
-	</div>';
+		// Output the page.
+		include( 'view-settings.php' );
 	}
 
-	// Analyze the posts database and output the data set for the stats page
+	/*
+		Analyze the posts database and output the data set for the stats page
+	*/
 	public function load_report_stats( $author_graph, $period_start, $period_end ) {
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
@@ -589,50 +541,77 @@ class word_stats_admin {
 
 		// Validate dates
 		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
-		$period_end = date( 'Y-m-d', strtotime( $period_end ) );
-		/* For next version
-		$can_write_csv = is_writable( plugins_url( 'word-stats/csv' ) );
-		if ( $can_write_csv ) {
-			// CSV file to export the data
-			$csv_file = 'word-stats/csv/' . $period_start . '_' . $period_end;
-			if ( get_option( 'word_stats_count_unpublished' ) ) { $csv_file .= '_all'; } else { $csv_file .= '_published'; }
-			$csv_file .= '.csv';
-			$csv_handle = fopen( plugins_url( $csv_file ), 'w');
-		}
-		*/
+		$period_end = date( 'Y-m-d', strtotime( $period_end ) + 86400 ); // Last day included
 
-		// Loop requested posts by type
-		$ignore = explode( "\n", preg_replace('/\r\n|\r/', "\n", get_option( 'word_stats_ignore_keywords' ) ) );
+		// Load the list of ignored keywords
+		$ignore = Word_Stats_Core::get_ignored_keywords();
+
+		// Load diagnostics thresholds
+		Word_Stats_Core::assign_thresholds( 	$threshold_too_short, $threshold_too_long, $threshold_too_difficult, $threshold_too_simple, $threshold_no_keywords, $threshold_spammed_keywords );
 
 		$report[ 'type_count' ][ 'custom' ] = 0;
+
+		// Initialize row counters for the diagnostics tables arrays
+		$dg_difficult_row = $dg_simple_row = $dg_short_row = $dg_long_row = $dg_no_keywords_row = 0;
+
+		$cached = 0; $not_cached = 0;
 		foreach( $wp_post_types as $post_type ) {
+
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 
 			// Load only content and custom post types
 			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
-				$rp_table_row = 0;
 
 				// Load the posts
 				$query = "SELECT * FROM $wpdb->posts WHERE ";
 				if ( !get_option( 'word_stats_count_unpublished' ) ) {
 					$query .= "post_status = 'publish' AND ";
 				}
-				$query .= " post_type = '" . $post_type->name . "' AND post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' ORDER BY post_date DESC";
+				$query .= " post_type = '" . mysql_real_escape_string( $post_type->name ) . "' AND post_date BETWEEN '" . mysql_real_escape_string( $period_start ) . "' AND '" . mysql_real_escape_string( $period_end ) . "' ORDER BY post_date DESC";
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
 
-					// Fetch keywords
-					$keywords = bst_keywords( $post->post_content, $ignore, 999, 0 );
+					// Are stats cached? Note that get_post_meta( , , true ) is counterintuitive: the value is an array, but we ask for a single value;
+					// otherwise, get_post_meta wraps the array into an array.
+					if ( get_post_meta( $post->ID, 'word_stats_cached', true ) ) {
+						$post_word_count = (int) get_post_meta( $post->ID, 'word_stats_word_count', true );
+						$keywords = unserialize( get_post_meta( $post->ID,  'word_stats_keywords', true ) );
+						$cached++;
+					} else {
+						Word_Stats_Core::cache_stats( $post->ID );
+						$post_word_count = (int) get_post_meta( $post->ID, 'word_stats_word_count', true );
+						$keywords = unserialize( get_post_meta( $post->ID,  'word_stats_keywords', true ) );
+						$not_cached++;
+					}
 
-					// Aggregate the keywords
+					// Count words per author. Group per month.
+					$post_month = mysql2date( 'Y-m', $post->post_date );
+					$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] += $post_word_count;
+					$report[ 'author_count_total' ][ $post->post_author ] += $post_word_count;
+					$report[ 'all_total_words' ] += $post_word_count;
+
+					// Divisor to calculate keyword density per 1000 words
+					$densityDivisor = ( intval( $post_word_count / 1000 ) ) ? intval( $post_word_count / 1000 ) : 1;
+
+					// Reset keyword diagnostics count
+					$dg_relevant_keywords = $dg_spammed_keywords = array();
+
+					// Remove ignored words.
+					$keywords = bst_regfilter_keyword_counts( $keywords, $ignore );
+
+					// Aggregate the keywords, then create two lists for keywords flagged as relevant and spammed, according to their density.
+					// Posts that are already flagged as too short aren't diagnosed as having no relevant keywords.
 					if ( $keywords && is_array( $keywords ) ) {
 						foreach( $keywords as $key=>$value ) {
 							if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
-							$report[ 'total_keywords' ][ $key ] += $value;
+							$report[ 'total_keywords' ][ $key ] += (int) $value;
+							if ( $post_word_count >= (int) $threshold_too_short && !array_key_exists( $key, $dg_relevant_keywords ) && $value  / $densityDivisor > intval( $threshold_no_keywords ) ) { $dg_relevant_keywords[ $key ] = true; }
+							if ( !array_key_exists( $key, $dg_spammed_keywords ) && $value  / $densityDivisor > intval( $threshold_spammed_keywords ) ) { $dg_spammed_keywords[ $key ] = $value; }
 						}
 					}
 
+					// Stats for posts by the selected author only
 					if ( $post->post_author == $author_graph ) {
 
 						// Counts per type. Custom post types are aggregated.
@@ -642,357 +621,96 @@ class word_stats_admin {
 							$report[ 'type_count' ][ $post_type->name ]++;
 						}
 
-						// Get the readability index
+						// Get the readability index.
 						$ARI = get_post_meta( $post->ID, 'readability_ARI', true ); $CLI = get_post_meta( $post->ID, 'readability_CLI', true ); $LIX = get_post_meta( $post->ID, 'readability_LIX', true );
-
-						// Calculate stats if they aren't cached
-						if ( !$ARI  || !$CLI || !$LIX ) {
-							word_stats_readability::cache_stats( $post->ID );
-							$ARI = get_post_meta( $post->ID, 'readability_ARI', true ); $CLI = get_post_meta( $post->ID, 'readability_CLI', true ); $LIX = get_post_meta( $post->ID, 'readability_LIX', true );
-						}
+						// In previous versions we called Word_Stats_Core::cache_stats( $post->ID ) here if the metas weren't set.
 
 						if ( $ARI  && $CLI && $LIX ) {
-							$ws_index_n = word_stats_readability::calc_ws_index( $ARI, $CLI, $LIX );
+							$ws_index_n = Word_Stats_Core::calc_ws_index( $ARI, $CLI, $LIX );
 							// Aggregate levels in 3 tiers like Google does (Basic, Intermediate, Advanced)
-							if ( $ws_index_n < 9) { $ws_index = 0; } elseif ( $ws_index_n < 16 ) { $ws_index = 1; } else { $ws_index = 2; }
+							if ( $ws_index_n < WS_RI_BASIC ) { $ws_index = 0; } elseif ( $ws_index_n < WS_RI_ADVANCED ) { $ws_index = 1; } else { $ws_index = 2; }
 							$report[ 'totals_readability' ][ $ws_index ]++;
 						}
-					}
 
-					// Count post words
-					$post_word_count = bst_count_words( $post->post_content );
+						// Diagnostics.
+						// Empty title fix.
+						$post_title = ( $post->post_title == '' ) ? '#' . $post->ID . ' ' . __( '(no title)', 'word-stats' ) : htmlentities( $post->post_title, null, 'utf-8' );
+						$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' .  $post_title . '</a>' : $post_title;
 
-					// Count words per author. Group per month.
-					$post_month = mysql2date( 'Y-m', $post->post_date );
-					//if ( !$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] ) { $report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] = 0; }
-					$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] += $post_word_count;
-					$report[ 'author_count_total' ][ $post->post_author ] += $post_word_count;
-					$report[ 'all_total_words' ] += $post_word_count;
+						// Difficult text table
+						if ( $ws_index_n > intval( $threshold_too_difficult ) && $post_word_count >= intval( $threshold_too_short ) ) {
+							$report[ 'diagnostic' ][ 'too_difficult' ][ $dg_difficult_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_difficult_row++;
+						}
 
-					// Store rows for the recent posts table
-					if ( $post->post_author == $author_graph ) {
-						$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' . htmlentities( $post->post_title, null, 'utf-8' ) . '</a>' : htmlentities( $post->post_title, null, 'utf-8' );
-						$row = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-index\'>' . round( $ws_index_n ) . '</td>';
-						$report[ 'recent_posts_rows' ][ $post_type->name ][ $rp_table_row ] = $row;
-						$rp_table_row++;
+						// Simple text table
+						if ( $ws_index_n < intval( $threshold_too_simple ) && $post_word_count >= intval( $threshold_too_short ) ) {
+							$report[ 'diagnostic' ][ 'too_simple' ][ $dg_simple_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_simple_row++;
+						}
+
+						// Short text table
+						if ( $post_word_count < intval( $threshold_too_short ) ) {
+							$report[ 'diagnostic' ][ 'too_short' ][ $dg_short_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_short_row++;
+						}
+
+						// Long text table
+						if ( $post_word_count > intval( $threshold_too_long ) ) {
+							$report[ 'diagnostic' ][ 'too_long' ][ $dg_long_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_long_row++;
+						}
+
+						// No keywords table
+						if ( empty( $dg_relevant_keywords )  && $post_word_count >= intval( $threshold_too_short ) ) {
+							$report[ 'diagnostic' ][ 'no_keywords' ][ $dg_no_keywords_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
+							$dg_no_keywords_row++;
+						}
+
+						// Keyword abuse table
+						if ( count( $dg_spammed_keywords ) > 0 ) {
+							$report[ 'diagnostic' ][ 'spammed_keywords' ][ $dg_spammed_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-keywords\'>' . implode( ', ', array_keys( $dg_spammed_keywords ) ) . '</td>';
+							$dg_spammed_row++;
+						}
 					}
-					/* For next version
-					if ( $can_write_csv ) {
-						// Store CSV data
-						$csv = array( $post->ID, $post->title, $post->post_date, $post_word_count, $ws_index_n, implode( ' ', array_keys( $keywords ) ) );
-						fputcsv( $csv_handle, $csv );
-					}
-					*/
 				}
 			}
 		}
-
-		/* if ( $can_write_csv ) { fclose( $csv_handle ); } */
 
 		// Sort keywords by frequency, descending
 		asort( $report[ 'total_keywords' ] );
 		$report[ 'total_keywords' ] = array_reverse( $report[ 'total_keywords' ], true );
 
 		// Sort timeline
-		if ( count( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'post' ] ); }
-		if ( count( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'page' ] ); }
-		if ( count( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) { ksort( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ); }
+		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'post' ] );
+		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'page' ] );
+		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'custom' ] );
 
 		return $report;
 	}
 
+	public function ws_diagnostics_table( $title, $fields, $id, $rows ) {
+		include( 'view-diagnostics-table.php' );
+	}
+
+	/*
+		Display the stats page if the caching is complete.
+	*/
 	public function ws_reports_page() {
-		global $user_ID;
-		global $current_user;
-		global $wp_post_types;
-		global $wpdb;
+
+		// Relevant when going straight to the graphs page right after installing the plugin.
+		if ( !get_option( 'word_stats_done_caching', false ) ) { return false; }
+
+		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
 		if( $_GET[ 'view-all' ] ) { $period_start = '1900-01-01'; } else { $period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 ); }
 		if( $_GET[ 'view-all' ] ) { $period_end = date( 'Y-m-d' ); } else { $period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' ); }
 
-
-
-		if ( $_GET[ 'author-tab' ] ) {
-			$author_graph = intval( $_GET[ 'author-tab' ] );
-		} else {
-			$author_graph = $user_ID;
-		}
-		$report = word_stats_admin::load_report_stats( $author_graph, $period_start, $period_end );
+		$author_graph = ( $_GET[ 'author-tab' ] ) ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
+		$report = Word_Stats_Admin::load_report_stats( $author_graph, $period_start, $period_end );
 
 		if ( $report ) {
-
-			// Get oldest date
-			if( $_GET[ 'view-all' ] ) {
-				$period_start = date( 'Y-m-d', min( bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ), bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ), bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) ) );
-			}
-
-			// Using WordPress built in jQuery, jQuery UI. Using jQuery UI datepicker 1.7.3 for WP < 3.1 compatibility
-			// Load jQuery Flot scripts to draw the graphs
-			echo '<!--[if lte IE 8]>';
-			$src = plugins_url( 'word-stats/js/excanvas.min.js' );
-			echo '<script type="text/javascript" src="' , $src, '"></script>';
-			echo '<![endif]-->';
-			$scripts = array(
-				plugins_url( 'word-stats/js/ui/ui.datepicker.min.js' ),
-				plugins_url( 'word-stats/js/flot/jquery.flot.js' ),
-				plugins_url( 'word-stats/js/flot/jquery.flot.resize.js' ),
-				plugins_url( 'word-stats/js/flot/jquery.flot.pie.js' )
-			);
-			foreach ( $scripts as $script ) {
-				echo '<script type="text/javascript" src="' , $script, '"></script>', "\n";
-			}
-
-			include( 'graph_options.php' );
-
-			echo '<div class="wrap ws-wrap">';
-
-			if( $_GET[ 'word-stats-action' ] == 'payment' ) {
-				$ws_message = __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' );
-			}
-			if( $_GET[ 'word-stats-action' ] == 'alternative' ) {
-				$ws_message = __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' ) . ' ' . __( 'Please, use the donation button to express your support.' , 'word-stats' );
-			}
-			if( $_GET[ 'word-stats-action' ] == 'donation' ) {
-				$ws_message = __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'With your support we can bring you even more premium features!', 'word-stats' );
-			}
-
-			if( $ws_message ) {
-				echo '<div id="ws-message">', $ws_message, '</div>';
-			}
-
-			if( !get_option( 'word_stats_premium' ) ) {
-				include ( 'premium.php' );
-			}
-
-			echo '<br />';
-
-			$i = 0;
-			if ( $_GET[ 'author-tab' ] ) {
-				$author_graph = intval( $_GET[ 'author-tab' ] );
-			} else {
-				$author_graph = $user_ID;
-			}
-			// Links to author tabs and collect stats from all authors
-			echo '<div id="ws-forms-wrapper">
-			<form id="authors-form" name="select-author" action="index.php" method="get">
-				<input type="hidden" name="page" value="word-stats-graphs" />',
-				__( 'View author:', 'word-stats' ), ' <select name="author-tab" id="authors-list">';
-
-			foreach ( $report[ 'author_count' ] as $id=>$post_type ) {
-				// Admin and Editor can view all stats, Author and Contributor can view only their stats.
-				$this_author = get_userdata( $id );
-			 	echo '<option class="author-graph-option" value="', $id, '"', ( $author_graph == $id ) ? ' selected="selected" ' : '', '>', $this_author->nickname, '</option>';
-			}
-			echo '</select>
-
-			', __( 'Period:', 'word-stats' ), ' <input type="text" name="period-start" id="period-start" value="', $period_start, '" /> - <input type="text" name="period-end" id="period-end" value="', $period_end, '" />
-<input type="checkbox" id="view-all" name="view-all"', ( $_GET[ 'view-all' ] ) ? ' checked="checked" ' : '', ' /> ', __( 'all time', 'word-stats' ), '
-
-<input id="ws-period-submit" type="submit" name="ws-submit" value="', __( 'View', 'word-stats' ), '" />
-		</form>
-			<script type="text/javascript">
-				jQuery("#authors-list").change( function() { jQuery( "#authors-form").submit(); } );
-				jQuery("#period-start").datepicker( { dateFormat: "yy-mm-dd" } );
-				jQuery("#period-end").datepicker( { dateFormat: "yy-mm-dd" } );
-			</script>';
-
-			include( 'donate.php' );
-			echo '</div>';
-
-			// Load stats for the currently selected author
-			$cur_author = get_userdata( $author_graph );
-			echo '<br style="clear:both" />';
-			echo
-			'<div id="ws-graph-wrapper">
-				<div id="ws-headlines">
-					<div style="float:left;">
-						<h2 id="ws-total">', number_format( $report[ 'author_count_total' ][ $author_graph ] ), '</h2>
-						<p id="ws-total-period">',
-						 sprintf( __( '%1$swords%2$s between %3$s and %4$s', 'word-stats' ), '<strong>', '</strong> ', $period_start, $period_end ), '</p>
-					</div>
-					<div id="ws-meters">
-						<table>
-							<tr><td  class="pt-meter pt-meter-label">', __( 'Posts', 'word-stats' ), '</td><td class="pt-meter" id="pt-meter-post"></td></tr>
-							<tr><td class="pt-meter pt-meter-label">', __( 'Pages', 'word-stats' ), '</td><td class="pt-meter" id="pt-meter-page"></td></tr>
-							<tr><td class="pt-meter pt-meter-label">', __( 'Custom', 'word-stats' ), '</td><td class="pt-meter" id="pt-meter-custom"></td></tr>
-							<tr><td class="pt-meter pt-meter-label">', __( 'All', 'word-stats' ), ' </td><td class="pt-meter" id="pt-meter-all"></td></tr>
-						</table>
-					</div>
-					<br style="clear:both" />
-
-					<div id="ws-graph-index-wrap">
-						<div id="ws-graph-index-pc" title="', __( 'Readability level', 'word-stats' ), '"></div>
-					</div>
-					<div id="ws-graph-total-wrap">
-						<div id="ws-graph-total-pc"  title="', __( 'Share of total words', 'word-stats' ), '"></div>
-					</div>
-
-				</div>
-
-				<div id="ws-graph-keywords-wrap">
-					<h3 class="ws-header ws-header-keywords">', __( 'Keywords', 'word-stats') . '</h3>
-					<div id="ws-graph-keywords"></div>
-				</div>
-
-				<br style="clear:both" />
-				<div id="ws-graph-timeline" width="258" height="390"></div>
-
-				<br style="clear:both;" />';
-
-			// Timeline tooltip
-			echo '<script type="text/javascript" src="', plugins_url( 'word-stats/js/timeline-tooltip.js' ), '"></script>', "\n";
-
-			echo '<script type="text/javascript">', "\n";
-
-			// Words per Month
-			$series = '[ ';
-			$z = 0;
-			if ( count( $report[ 'author_count' ][ $author_graph ] ) ) {
-				foreach ( $report[ 'author_count' ][ $author_graph ] as $type=>$months ) {
-
-					if ( $z ) { $series .= ', '; }
-					$z++;
-					$series .= '{ label: "' . $type . '", data: d' . $z . ' }';
-					$comma = false;
-					foreach ( $months as $month=>$count ) {
-						$total_per_type[ $type ] += $count;
-						//$month = str_replace( '-', '-01-', $month);
-						$month .= '-01';
-						$month = strtotime( $month ) * 1000;
-						// ToDo: Zero months with no words
-						if ( $comma ) { $data[ $z ] .= ', '; }
-						$data[ $z ] .= "[ $month, $count ]"; // Add a data point to the series
-						$comma = true;
-					}
-					echo "var d$z = [",  $data[ $z ], "];\n"; // Create the data array for each post type
-				}
-			} else {
-				$series .= '{ label: "' . __( 'No data', 'word-stats' ). '", data: 100, color: "#666" }';
-			}
-			$series .= ' ]';
-			echo "jQuery.plot(jQuery(\"#ws-graph-timeline\"), $series, ", ws_graph_options( 'timeline' ), ");\n";
-
-			// Percentage of each post type. We counted the totals in the loop for the main chart.
-			$series = '[ ';
-			$z = 0;
-			$comma = false;
-			foreach ( $report[ 'type_count' ] as $type=>$count ) {
-				$total_sum += $count;
-			}
-			if ( count( $total_per_type ) ) {
-				foreach ( $total_per_type as $type=>$count ) {
-					$z++;
-					if ( $comma ) { $series .= ', '; }
-					$series .= '{ label: "' . $type . '", data: ' . $count . ' }';
-					$comma = true;
-				}
-			} else {
-				$series .= '{ label: "' . __( 'No data', 'word-stats' ) . '", data: 100, color: "#666" }';
-			}
-
-			$series .= ' ]';
-			echo "jQuery.plot(jQuery(\"#ws-graph-total-pc\"), $series,", ws_graph_options( 'type' ), " );\n";
-
-			$series = '[ ';
-			$z = 0;
-			$comma = false;
-			if ( array_sum( $report[ 'totals_readability' ] ) ) {
-				foreach ( $report[ 'totals_readability' ] as $index=>$count ) {
-						$z++;
-						if ( $comma ) { $series .= ', '; }
-						switch( $index ) {
-							case 0: $label = __( 'Basic', 'word-stats' ); $color = '#19c'; break;
-							case 1: $label = __( 'Intermediate', 'word-stats' ); $color = '#1c9'; break;
-							case 2: $label = __( 'Advanced', 'word-stats' ); $color = '#c36'; break;
-						}
-						$series .= '{ label: "' . $label . '", data: ' . $count . ', color: \'' . $color . '\' }';
-						$comma = true;
-				}
-			} else {
-				$series .= '{ label: "' . __( 'No data', 'word-stats' ) . '", data: 100, color: "#666" }';
-			}
-			$series .= ' ]';
-			echo "jQuery.plot(jQuery(\"#ws-graph-index-pc\"), $series,", ws_graph_options( 'readability' ), " );\n";
-
-
-			// Keywords.
-			$series = '[ { label: "keywords", data: kw1, color: \'#38c\' } ]';
-			$comma = false;
-			$z = 0;
-			if( count( $report[ 'total_keywords' ] ) ) {
-				foreach ( $report[ 'total_keywords' ] as $key=>$value ) {
-						if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
-						$kw_data .= "[  $value, $z ]";
-						$var_kw_ticks .= '"' . $key . '"';
-						$comma = true;
-						$z++;
-						if ( $z == 20 ) { break; }
-				}
-			}
-			// Fill the blanks
-			if ( $z < 20 ) {
-				for( $i = 1; 20 - $z; $i++ ) {
-					if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
-					$kw_data .= "[  0, $z ]";
-					$var_kw_ticks .= '""';
-					$comma = true;
-					$z++;
-				}
-			}
-
-			echo "var kw1 = [",  $kw_data, "];\n"; // Create the data array for each post type
-			echo "var kw_ticks = new Array(",  $var_kw_ticks, ");\n"; // Create the data array for each post type
-
-			echo "	jQuery.plot(jQuery(\"#ws-graph-keywords\"), $series,", ws_graph_options( 'keywords' ), " );\n;";
-
-			// Post type counts
-			$bar_max_width = 125;
-			$total_posts =  $report[ 'type_count' ][ 'post' ];
-			$total_pages =  $report[ 'type_count' ][ 'page' ];
-			$total_custom = $report[ 'type_count' ][ 'custom' ];
-			$total_all_types = $total_posts + $total_pages + $total_custom;
-
-			if ( !$total_all_types ) { $total_all_types = 1; }
-			echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $bar_max_width * ( $total_posts / $total_all_types ) + 1, 'px\'></div> ', $total_posts, '");';
-			echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $bar_max_width * ( $total_pages / $total_all_types ) + 1, 'px\'></div> ', $total_pages, '");';
-			echo '	jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $bar_max_width * ( $total_custom / $total_all_types ) + 1, 'px\'></div> ', $total_custom, '");';
-			echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $bar_max_width + 1, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");';
-
-			echo '</script>
-
-				<div id="ws-recent-entries-wrap">
-				<h3 class="ws-header">', __( 'The Most Recent Entries', 'word-stats' ), '</h3>
-					<div id="ws-tables">
-						<table id="ws-recent-entries">';
-
-			// Recent posts table
-			if ( count( $report[ 'recent_posts_rows' ] ) ) {
-				foreach ( $report[ 'recent_posts_rows' ] as $type=>$rows) {
-					// Clip rows array
-					if ( count( $rows ) > 15 ) { $rows = array_slice( $rows, 0, 15 ); }
-					echo "<tr><td class='ws-table-block'>";
-					switch( $type ) {
-						case 'post': _e( 'post', 'word-stats' ); break;
-						case 'page': _e( 'page', 'word-stats' ); break;
-						default: echo $type; break;
-					}
-					echo '</td><td class="ws-table-block">', __( 'date', 'word-stats' ), '</td><td class="ws-table-block ws-table-count">', __( 'words', 'word-stats' ), '</td><td class="ws-table-block ws-table-index">', __( 'readability', 'word-stats' ), '</td></tr>';
-					$even = false;
-					foreach( $rows as $row ) {
-						echo '<tr', ( $even ) ? '' : ' class="ws-row-even" ', '>';
-						$even = !$even;
-						echo $row, '</tr>';
-					}
-				}
-			} else {
-				echo "<tr><td class='ws-row-even'>", __( 'No data', 'word-stats' ), '</td></tr>';
-			}
-			echo '</table>
-					</div>
-				</div>
-				<div id="ws-feedback-links" style="clear:both; padding-top: 2em;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
-			</div>';
-			echo '<br style="clear:both;"></div>'; // End wrap
+			include( 'view-report-graphs.php' );  // To Do: Finish separating View from Model/Controller
 		} else {
 			_e( 'Sorry, word counting failed for an unknown reason.', 'word-stats' );
 		}
@@ -1000,26 +718,47 @@ class word_stats_admin {
 }
 
 function word_stats_report_init() {
-		// wp_register_style( 'ws-google-font', 'http://fonts.googleapis.com/css?family=News+Cycle' );
 		wp_register_style( 'ws-reports-page', plugins_url() . '/word-stats/css/reports-page.css' );
 		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/jquery-ui-1.7.3.custom.css' );
 }
 
 function word_stats_report_styles() {
-		// wp_enqueue_style( 'ws-google-font' );
 		wp_enqueue_style( 'ws-reports-page' );
 		wp_enqueue_style( 'ws-jquery-ui' );
 }
+
 function word_stats_create_menu() {
-	add_action( 'admin_init', array( 'word_stats_admin', 'register_settings' ) );
-	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'word_stats_admin', 'settings_page' ) );
-	if ( get_option( 'word_stats_totals' ) || get_option( 'word_stats_totals' ) == '' ) {
-		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'word_stats_admin', 'ws_reports_page' ) );
+	add_action( 'admin_init', array( 'Word_Stats_Admin', 'init_settings' ) );
+	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'Word_Stats_Admin', 'settings_page' ) );
+	if ( get_option( 'word_stats_totals' ) || !Word_Stats_Core::is_option( 'word_stats_totals' ) ) {
+		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'Word_Stats_Admin', 'ws_reports_page' ) );
 		// Load styles for the reports page
 		add_action( 'admin_print_styles-' . $page, 'word_stats_report_styles' );
 	}
 }
 add_action( 'admin_init', 'word_stats_report_init' );
 add_action( 'admin_menu', 'word_stats_create_menu' );
+
+
+/* # Notices
+-------------------------------------------------------------- */
+function word_stats_notice( $mode = 'updated', $message ) { echo '<div class="', $mode, '"><p>', $message, '</p></div>'; }
+function word_stats_notice_cacheing() {
+	$posts_uncached = count( Word_Stats_Core::get_uncached_posts_ids() );
+	word_stats_notice( 'updated', sprintf( __( 'Word stats collection is underway (%s posts left). Graphs will be available at the end of the process.', 'word-stats' ), $posts_uncached ) );
+}
+function word_stats_notice_payment() {
+	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' ) );
+}
+function word_stats_notice_alternative() {
+	word_stats_notice( 'updated fade', __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' ) . ' ' . __( 'Please, use the donation button to express your support.' , 'word-stats' ) );
+}
+function word_stats_notice_donation() {
+	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'With your support we can bring you even more premium features!', 'word-stats' ) );
+}
+if( $_GET[ 'word-stats-action' ] == 'payment' ) { add_action( 'admin_notices', 'word_stats_notice_payment' );	}
+if( $_GET[ 'word-stats-action' ] == 'alternative' ) { add_action( 'admin_notices', 'word_stats_notice_alternative' );	}
+if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
+if ( !get_option( 'word_stats_done_caching', false ) ) { add_action( 'admin_notices', 'word_stats_notice_cacheing' ); }
 
 /* EOF */
