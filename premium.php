@@ -1,7 +1,7 @@
 <?php
 
-// Don't ask if they are somehow running WP < 3.0 (get_admin_url not available).
-//if( function_exists( get_admin_url() ) ) {
+	if( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
+
 	$notify_url = get_admin_url( '', '', 'admin' ) . 'index.php?page=word-stats-graphs&word-stats-action=alternative';
 
 	echo '<div id="ws-premium-overlay">
@@ -33,8 +33,5 @@
 
 	echo '</div>
 	<br style="clear:both;"></div></div>';
-//} else {
-	//echo 'ERROR';
-//}
 
 /* EOF */
