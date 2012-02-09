@@ -49,9 +49,9 @@ function bst_htmlentities_decode( $string, $charset = 'UTF-8' )
     $string = preg_replace( '~&#([0-9]+);~e', 'chr("\\1")', $string );
     // replace literal entities
 	if ( version_compare( phpversion(), '5.3.4' ) == -1) {
-	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, $charset ); // 2 arguments for PHP 5.2.x and earlier.
+	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, $charset ); // 2 arguments for PHP < 5.3.4
 	} else {
-	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, ENT_QUOTES,$charset ); // 2 arguments for PHP 5.2.x and earlier.
+	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, ENT_QUOTES,$charset );
 	}
     $trans_tbl = array_flip( $trans_tbl );
     return strtr( $string, $trans_tbl );
