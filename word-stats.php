@@ -40,7 +40,7 @@ define( 'WS_RI_ADVANCED', 15 );
 define( 'WS_NO_KEYWORDS', 2 );
 define( 'WS_SPAMMED_KEYWORDS', 20 );
 
-define( 'WS_CURRENT_VERSION', '4.0.2' );
+define( 'WS_CURRENT_VERSION', '4.0.3' );
 
 /* # Activate premium.
 -------------------------------------------------------------- */
