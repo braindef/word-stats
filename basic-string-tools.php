@@ -51,7 +51,7 @@ function bst_htmlentities_decode( $string, $charset = 'UTF-8' )
 	if ( version_compare( phpversion(), '5.3.4' ) == -1) {
 	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, $charset ); // 2 arguments for PHP 5.2.x and earlier.
 	} else {
-			include 'get-translation-table-legacy.php';
+	    $trans_tbl = get_html_translation_table( HTML_ENTITIES, ENT_QUOTES,$charset ); // 2 arguments for PHP 5.2.x and earlier.
 	}
     $trans_tbl = array_flip( $trans_tbl );
     return strtr( $string, $trans_tbl );
