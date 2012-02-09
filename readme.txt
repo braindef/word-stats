@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics, premium
 Requires at least: 3.0.0
 Tested up to: 3.3.1
-Stable tag: 4.0
+Stable tag: 4.0.1
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -53,6 +53,8 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.0.1 =
+* Fix: Parse error: get_html_translation_table takes only two arguments in PHP < 5.3.4.
 
 = 4.0 =
 * Feature: English and Spanish common words can be ignored for keyword counts (when supported, defaults to the blog's language setting).
