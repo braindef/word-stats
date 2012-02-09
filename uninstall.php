@@ -23,6 +23,9 @@ delete_option( 'word_stats_diagnostic_too_difficult' );
 delete_option( 'word_stats_diagnostic_too_simple' );
 delete_option( 'word_stats_diagnostic_no_keywords' );
 delete_option( 'word_stats_diagnostic_spammed_keywords' );
+delete_option( 'word_stats_ignore_common' );
+delete_option( 'word_stats_done_caching' );
+delete_option( 'word_stats_cache_start' );
 
 // Retained.
 //delete_option( 'word_stats_premium' );
@@ -31,15 +34,19 @@ delete_option( 'word_stats_diagnostic_spammed_keywords' );
 -------------------------------------------------------------- */
 global $wpdb;
 
-// Load the posts
-$query = "SELECT * FROM $wpdb->posts ORDER BY post_date DESC";
-$posts = $wpdb->get_results( $query, OBJECT );
+set_time_limit( 0 );
 
-foreach ( $posts as $post ) {
-		delete_post_meta( $post->ID, 'readability_ARI' );
-		delete_post_meta( $post->ID, 'readability_CLI' );
-		delete_post_meta( $post->ID, 'readability_LIX' );
-}
+// Delete the custom meta fields
+$query = "
+	DELETE FROM $wpdb->postmeta
+	WHERE $wpdb->postmeta.meta_key = 'readability_ARI'
+	OR $wpdb->postmeta.meta_key = 'readability_CLI'
+	OR $wpdb->postmeta.meta_key = 'readability_LIX'
+	OR $wpdb->postmeta.meta_key = 'word_stats_cached'
+	OR $wpdb->postmeta.meta_key = 'word_stats_keywords'
+	OR $wpdb->postmeta.meta_key = 'word_stats_word_count'
+";
 
-// Done
-?>
+$posts = $wpdb->query( $query, OBJECT );
+
+/* EOF */

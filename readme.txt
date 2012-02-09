@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics, premium
 Requires at least: 3.0.0
 Tested up to: 3.3.1
-Stable tag: 3.3
+Stable tag: 4.0
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -38,8 +38,10 @@ Spanish and Catalan translations are bundled with the plugin.
 
 Requires WordPress 3.0 and PHP 5.
 
-**Features planned for next versions**
+**Features planned for future versions**
 
+* Tag generation.
+* Limit keyword analytics to a custom list of keywords.
 * Send analytics reports by email.
 * Optionally include excerpts in stats.
 * Exportable analytics data.
@@ -50,74 +52,38 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
-== Installation ==
-
-1. Install it from the plugins admin page, or upload the zip with WordPress' built-in tool, or unzip it to 'wp-content/plugins'.
-2. Activate it.
-3. Go to Settings | Word Stats and set up the optional features.
-
-**Uninstall note**
-
-* All settings and post metadata, save the premium status, are deleted when you uninstall the plugin.
-* If you want to retain the settings and/or metadata, disable the plugin instead of uninstalling it, or delete it manually from the plugins folder.
-
-== Frequently Asked Questions ==
-
-**What do the readability numbers and colors mean?**
-
-For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level 1 corresponds to ages 6-8, grade 8 to 14 years old, grade 12 to 17 years old. The color code is 0-8: green; 8-12: yellow; 12-16: orange; 16-20: red; +20: purple.
-
-For LIX:
-
-* below 25: Children's Books (green)
-* 25 - 30: Simple texts (green)
-* 30 - 40: Normal Text / Fiction (yellow)
-* 40 - 50: Factual information, such as Wikipedia (orange)
-* 50 - 60: Technical texts (red)
-* over 60: Specialist texts / research / dissertations (purple)
-
-Each index uses a different algorithm:
-
-* ARI is based on word length and words per sentence.
-* CLI is based on characters per 100 words, excluding non-word characters, and sentences per 100 words
-* LIX is based on average words between pauses (periods, colons, semicolons, etc.) and average words longer than 6 characters.
-
-Check [http://en.wikipedia.org/wiki/Readability_test](http://en.wikipedia.org/wiki/Readability_test) for more information.
-
-**Why other common tests aren't included?**
-
-These three indexes don't rely on syllable counting, which is a bit more complicated and language dependent.
-
-**How accurate are the indexes?**
-
-Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
-
-**Do the indexes really reflect how easy is the text?**
-
-They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level.
-
-**Why the live counters seem to lag?**
-
-The calculations are refreshed every 5 seconds.
-
-**How does Word Stats pick the relevant keywords for the live stats?**
-
-It shows any keyword that appears at least three times and at least 1/5 times the top keyword. Words blacklisted in the settings page are excluded.
-
-Post tags can be counted optionally as keywords. They are added when the post is loaded. If you add new tags, save the post and reload it.
-
-**The anchors for the total word counts in the dashboard are blank**
-
-They are just for style consistence.
-
-== Screenshots ==
-
-1. Analytics page.
-2. Total word counts in the dashboard.
-3. Live stats for the post being edited.
-4. Extra column showing an aggregate of the readability indexes.
-
 == Changelog ==
+
+= 4.0 =
+* Feature: English and Spanish common words can be ignored for keyword counts (when supported, defaults to the blog's language setting).
+* Feature: Keyword settings and diagnostics are now relative to density per 1000 words. Default settings have been adjusted.
+* Feature: Keyword counts are cached in the 'word_stats_keywords' post meta.
+* Feature: Post word count is cached in the 'word_stats_word_count' post meta.
+* Feature/Fix: Posts that are already diagnosed as too short aren't listed as having no relevant keywords or being too simple/too difficult.
+* Fix: Added AJAX call to make the script work in the initial caching for all posts in the background. Should prevent timeouts when displaying all time stats shortly after installing the plugin.
+* Fix: Uninstall loop to delete custom fields was too slow in production servers, replaced with SQL query.
+* Fix: Admin notices were being displayed in the wrong place in the stats and diagnostics page.
+* Fix: English contractions and Catalonian interpuncts aren't split into different words.
+* Fix: Count unpublished default set to disabled.
+* Fix: Missing Unicode support for ignored keywords made patterns like [eé] not match the accented character.
+* Fix: Proper html entity decoding when counting keywords.
+* Fix: Posts with empty titles showed no link in the diagnostics tables.
+* Fix: Added check to prevent loading plugin script files directly.
+* Fix: Some upgrades from pre 3.1 versions ran during fresh installs, preloaded the ignored keywords list with one empty regexp.
+* Fix: Difficulty threshold settings weren't stored, apparently due to a limit in the length for setting keys.
+* Fix: Wrong counter was being used in the diagnostics table for difficult posts.
+* Fix: Greedy regexp was gluing together keywords at end and beggining of line.
+* Fix: Forward slashes weren't excluded from cached keywords.
+* Fix: Missing translation string for "Ignore these keywords:" in settings page.
+* Fix: Graphs area is hidden and a notice is displayed when JavaScript is off.
+* Code: Notices use now the WordPress built in admin_notices action.
+* Code: Capitalized class names to follow WordPress standards.
+* Code: Renamed core class from word_stats_readability to Word_Stats_Core. Moved functions from word_stats_counts to Word_Stats_Core.
+* Code: Diagnostics table template moved to view-diagnostics-table.php.
+* Code: Stats page graphs template moved to view-report-graphs.php.
+* Code: Live stats template moved to view-live-stats.php.
+* Code: Simplified some redundant code.
+
 = 3.3 =
 * Settings and metadata are deleted upon uninstall.
 * Live keyword count uses now the thresholds from the settings page. Spammed keywords are marked red. Top, not spammed keywords are marked green.
@@ -185,4 +151,82 @@ They are just for style consistence.
 * Fix: Duplicated readability index value when number was a round integer.
 
 == Upgrade Notice ==
-Please, upgrade if you are running version 3.2.1 or earlier. Several bugs are fixed in the latest version.
+= 4.0 =
+This is a major release with many fixes and code changes. Please, consider testing it first in a development install before deploying it to a production site.
+
+Note that the keyword thresholds now represent keyword density. For example, by default, when specifing 4 as threshold count for relevant keywords, it refers to 4 appareances per 1000 words.
+
+== Installation ==
+
+1. Install it from the plugins admin page, or upload the zip with WordPress' built-in tool, or unzip it to 'wp-content/plugins'.
+2. Activate it.
+3. Go to Settings | Word Stats and set up the optional features.
+
+**Uninstall note**
+
+* All settings and post metadata, save the premium status, are deleted when you uninstall the plugin.
+* If you want to retain the settings and/or metadata, disable the plugin instead of uninstalling it, or delete it manually from the plugins folder.
+
+== Frequently Asked Questions ==
+
+**What do the readability numbers and colors mean?**
+
+For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level 1 corresponds to ages 6-8, grade 8 to 14 years old, grade 12 to 17 years old.
+
+For LIX:
+
+* below 25: Children's Books (green)
+* 25 - 30: Simple texts (green)
+* 30 - 40: Normal Text / Fiction (yellow)
+* 40 - 50: Factual information, such as Wikipedia (orange)
+* 50 - 60: Technical texts (red)
+* over 60: Specialist texts / research / dissertations (purple)
+
+Each index uses a different algorithm:
+
+* ARI is based on word length and words per sentence.
+* CLI is based on characters per 100 words, excluding non-word characters, and sentences per 100 words
+* LIX is based on average words between pauses (periods, colons, semicolons, etc.) and average words longer than 6 characters.
+
+Check [http://en.wikipedia.org/wiki/Readability_test](http://en.wikipedia.org/wiki/Readability_test) for more information.
+
+**Why other common tests aren't included?**
+
+These three indexes don't rely on syllable counting, which is a bit more complicated and language dependent.
+
+**How accurate are the indexes?**
+
+Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
+
+**Do the indexes really reflect how easy is the text?**
+
+They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level.
+
+**Why the live counters seem to lag?**
+
+The calculations are refreshed every 5 seconds.
+
+**Are the ignored keywords counted in the total words?**
+
+Yes. They are ignored only for keyword counts.
+
+**Some common words show as keywords, even though the setting to exclude common words is activated**
+
+The built in lists only exclude some of the most common words. Performing many matches with regular expressions can be very slow.
+
+**The stats page timed out.**
+
+Try selecting a shorter period, disabling the setting to count drafts and pending posts, disabling the setting to ignore common words or shortening your list of ignored keywords. If your blog is very large and/or your server is slow the script may not be able to complete the counting before the script execution time limit.
+
+Also, counts are cached the first time you load the stats or save a post, so if you just installed the plugin, try again.
+
+**The anchors for the total word counts in the dashboard are blank**
+
+They are just for style consistence.
+
+== Screenshots ==
+
+1. Analytics page.
+2. Total word counts in the dashboard.
+3. Live stats for the post being edited.
+4. Extra column showing an aggregate of the readability indexes.
