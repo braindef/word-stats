@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.0.3
+Version: 4.0.4
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -40,15 +40,7 @@ define( 'WS_RI_ADVANCED', 15 );
 define( 'WS_NO_KEYWORDS', 2 );
 define( 'WS_SPAMMED_KEYWORDS', 20 );
 
-define( 'WS_CURRENT_VERSION', '4.0.3' );
-
-/* # Activate premium.
--------------------------------------------------------------- */
-// No special checks. This is open source, you could hack around it easily (if your time is less valuable than €2).
-if ( $_GET[ 'word-stats-action' ] == 'basic' ) { update_option( 'word_stats_premium', 0 ); } // Disables premium. Only for testing purposes.
-if ( $_GET[ 'word-stats-action' ] == 'alternative') {	update_option( 'word_stats_premium', 1 ); }
-if ( $_GET[ 'word-stats-action' ] == 'payment') {	update_option( 'word_stats_premium', 2 ); }
-if ( $_GET[ 'word-stats-action' ] == 'donation' ) { update_option( 'word_stats_premium', 3 ); }
+define( 'WS_CURRENT_VERSION', '4.0.4' );
 
 /* # Word Countswp-admin/
 -------------------------------------------------------------- */
@@ -60,34 +52,8 @@ require_once( 'basic-string-tools.php' );
 
 /* # Check version. Perform upgrades.
 -------------------------------------------------------------- */
-/* Pre 3.1 */
-// Fix inconsistent naming for some options
-if ( Word_Stats_Core::is_option( 'ws-premium' ) ) { Word_Stats_Core::move_option( 'ws-premium', 'word_stats_premium' ); }
-if ( Word_Stats_Core::is_option( 'ws-total-counts-cache' ) ) { Word_Stats_Core::move_option( 'ws-total-counts-cache', 'word_stats_total_counts_cache' ); }
-if ( Word_Stats_Core::is_option( 'ws-monthly-counts-cache' ) ) { Word_Stats_Core::move_option( 'ws-monthly-counts-cache', 'word_stats_monthly_counts_cache' ); }
-
-// There's an ignore list, but not plugin version = Pre 3.1 install.
-if ( !Word_Stats_Core::is_option( 'word_stats_version' ) && Word_Stats_Core::is_option( 'word_stats_ignore_keywords' ) ) {
-	$keywords_to_upgrade = explode( "\n", str_replace( "\r", '', get_option( 'word_stats_ignore_keywords' ) ) );
-	if ( count( $keywords_to_upgrade ) ) {
-		for ( $i = 0; $i < count( $keywords_to_upgrade ); $i++ ) {
-			// preg_replace to avoid duplicated start and end regex characters.
-			$keywords_to_upgrade[ $i ] =  '^' . preg_replace( '/^[\^]+||[\$]+$/', '', $keywords_to_upgrade[ $i ] ) . '$';
-		}
-		$i = null;
-		update_option( 'word_stats_ignore_keywords', implode( "\n", $keywords_to_upgrade ) );
-	}
-}
-/* End pre 3.1.0 */
-
-/* Reset keyword count relevance to defaults since the calculation method changed from 3.3 to 3.4 */
-if ( version_compare( get_option( 'word_stats_version' ), '3.4' ) == -1 ) {
-	update_option( 'word_stats_diagnostic_no_keywords', WS_NO_KEYWORDS );
-	update_option( 'word_stats_diagnostic_spammed_keywords', WS_SPAMMED_KEYWORDS );
-}
-
 //  Deprecated option
-if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'ws-counts-cache' ); }
+if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'word_stats_premium' ); }
 
 // Update version
 if ( get_option( 'word_stats_version' ) != WS_CURRENT_VERSION ) {
@@ -747,17 +713,9 @@ function word_stats_notice_cacheing() {
 	$posts_uncached = count( Word_Stats_Core::get_uncached_posts_ids() );
 	word_stats_notice( 'updated', sprintf( __( 'Word stats collection is underway (%s posts left). Graphs will be available at the end of the process.', 'word-stats' ), $posts_uncached ) );
 }
-function word_stats_notice_payment() {
-	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' ) );
-}
-function word_stats_notice_alternative() {
-	word_stats_notice( 'updated fade', __( 'Word Stats Plugin is now upgraded to Premium!', 'word-stats' ) . ' ' . __( 'Please, use the donation button to express your support.' , 'word-stats' ) );
-}
 function word_stats_notice_donation() {
 	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'With your support we can bring you even more premium features!', 'word-stats' ) );
 }
-if( $_GET[ 'word-stats-action' ] == 'payment' ) { add_action( 'admin_notices', 'word_stats_notice_payment' );	}
-if( $_GET[ 'word-stats-action' ] == 'alternative' ) { add_action( 'admin_notices', 'word_stats_notice_alternative' );	}
 if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
 if ( !get_option( 'word_stats_done_caching', false ) ) { add_action( 'admin_notices', 'word_stats_notice_cacheing' ); }
 

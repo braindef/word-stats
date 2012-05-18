@@ -37,8 +37,6 @@
 
 	echo '<div class="wrap ws-wrap"><h2></h2>'; // Important: The h2 is used by admin_notices to find where to insert the messages.
 
-	if( !get_option( 'word_stats_premium' ) ) { include( 'premium.php' ); }
-
 	$i = 0;
 	if ( $_GET[ 'author-tab' ] ) {
 		$author_graph = intval( $_GET[ 'author-tab' ] );
