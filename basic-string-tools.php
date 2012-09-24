@@ -2,11 +2,15 @@
 /*
 Basic String Tools
 by: Fran Ontanaya <email@franontanaya.com>
-Version: 0.4
+Version: 0.5
 License: GPLv2
 -------------------------------------------------------------- */
 
 /* Changelog
+= 0.5 =
+* Added Is_array check to first argument in bst_match_regarray
+* &nbsp; is replaced by normal spaces before running html_decode_entities, instead of after. Seems to get rid of a bug in which word counting for texts with a &nbsp; would fail.
+
 = 0.4 =
 * Added \/| to the last preg_replace in simple boundaries to take care of forward slashes.
 * keywords are trimmed before counting to catch some cases of trailing spaces/line breaks.
@@ -28,7 +32,8 @@ License: GPLv2
 */
 
 // Find if there is a match for a word in an array of regular expressions
-function bst_match_regarray( $regexArray, $text ) {
+function bst_match_regarray( $regex_array, $text ) {
+	if ( !is_array( $regex_array ) ) { return false; }
 	foreach( $regexArray as $r ) {
 		// Remove unnecessary regexp wrapper
 		$r = trim( $r, '/' );
@@ -169,11 +174,11 @@ function bst_simple_boundaries( $text ) {
 
 	$bst_regex[ "short_pauses" ] = '[\.]{3}|[;:\x{2026}\x{2015}\x{00B7}\x{0387}]';
 
-	// Make sure HTML entities are decoded
-	//$text = html_entity_decode( $text );
-
 	// Replace no break spaces
 	$text = preg_replace( '/\x{00A0}|\&nbsp;/u', ' ', $text );
+
+	// Make sure HTML entities are decoded
+	$text = html_entity_decode( $text );
 
 	// Remove combining marks et al, as they are meaningless for this purpose and can split words
 	$text = preg_replace( '/' . $bst_regex[ 'combining_marks' ] . '/u', '', $text );

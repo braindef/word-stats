@@ -2,8 +2,8 @@
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.0.0
-Tested up to: 3.3.1
-Stable tag: 4.0.4
+Tested up to: 3.4.2
+Stable tag: 4.0.5
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -53,6 +53,10 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.0.5 =
+* Fix: bst_match_regarray() in basic-string-tools.php now returns false instead of error when the first argument isn't an array.
+* Basic test on 3.4.2
+
 = 4.0.4 =
 * Fix: Enabled all access by default to conform with WordPress guidelines.
 

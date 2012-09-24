@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.0.4
+Version: 4.0.5
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -40,9 +40,9 @@ define( 'WS_RI_ADVANCED', 15 );
 define( 'WS_NO_KEYWORDS', 2 );
 define( 'WS_SPAMMED_KEYWORDS', 20 );
 
-define( 'WS_CURRENT_VERSION', '4.0.4' );
+define( 'WS_CURRENT_VERSION', '4.0.5' );
 
-/* # Word Countswp-admin/
+/* # Word Counts
 -------------------------------------------------------------- */
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
 
