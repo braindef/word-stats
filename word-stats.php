@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.0.5
+Version: 4.1.0
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -500,10 +500,16 @@ class Word_Stats_Admin {
 	public function load_report_stats( $author_graph, $period_start, $period_end ) {
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
-		// $report contains all the data needed to render the stats page
+		// Initializing variables. $report contains all the data needed to render the stats page
 		$report[ 'total_keywords' ] = $report[ 'recent_posts_rows' ] = array();
 		$report[ 'totals_readability' ][ 0 ] = $report[ 'totals_readability' ][ 1 ] = $report[ 'totals_readability' ][ 2 ] = 0;
-		$cur_author = get_userdata( $author_graph );
+		$report[ 'type_count' ][ 'custom' ] = 0;
+		// Initialize row counters for the diagnostics tables arrays
+		$dg_difficult_row = $dg_simple_row = $dg_short_row = $dg_long_row = $dg_no_keywords_row = 0;
+		// Counters to track how many posts have been cached.
+		$cached = 0; $not_cached = 0;
+
+		# Not used: $cur_author = get_userdata( $author_graph );
 
 		// Validate dates
 		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
@@ -515,14 +521,7 @@ class Word_Stats_Admin {
 		// Load diagnostics thresholds
 		Word_Stats_Core::assign_thresholds( 	$threshold_too_short, $threshold_too_long, $threshold_too_difficult, $threshold_too_simple, $threshold_no_keywords, $threshold_spammed_keywords );
 
-		$report[ 'type_count' ][ 'custom' ] = 0;
-
-		// Initialize row counters for the diagnostics tables arrays
-		$dg_difficult_row = $dg_simple_row = $dg_short_row = $dg_long_row = $dg_no_keywords_row = 0;
-
-		$cached = 0; $not_cached = 0;
 		foreach( $wp_post_types as $post_type ) {
-
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 
 			// Load only content and custom post types
@@ -577,8 +576,8 @@ class Word_Stats_Admin {
 						}
 					}
 
-					// Stats for posts by the selected author only
-					if ( $post->post_author == $author_graph ) {
+					// Unless the selected author is o (all), stats for posts by the selected author only
+					if ( $author_graph == 0 || $post->post_author == $author_graph ) {
 
 						// Counts per type. Custom post types are aggregated.
 						if ( $post_type->name != 'post' && $post_type->name != 'page' ) {

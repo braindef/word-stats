@@ -34,7 +34,7 @@ License: GPLv2
 // Find if there is a match for a word in an array of regular expressions
 function bst_match_regarray( $regex_array, $text ) {
 	if ( !is_array( $regex_array ) ) { return false; }
-	foreach( $regexArray as $r ) {
+	foreach( $regex_array as $r ) {
 		// Remove unnecessary regexp wrapper
 		$r = trim( $r, '/' );
 		if ( preg_match( '/\/[g,i]/', substr( $r, strlen( $r ) - 2, 2) ) ) { $r = substr( $r, 0, strlen( $r - 2 ) ); }
