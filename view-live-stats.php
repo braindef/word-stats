@@ -76,9 +76,12 @@
 					var wordHash = new Array;
 					var topCount = 0; ';
 
-					if ( get_option( 'word_stats_ignore_keywords' ) ) {
-						echo 'var ignKeywords = "' , strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) ), '";
-					ignKeywords = ignKeywords.split( "::" );';
+					# Find if we must retrieve ignored keywords and add them to an array.
+					if ( get_option( 'word_stats_ignore_keywords' ) || get_option( 'word_stats_ignore_common' ) || !Word_Stats_Core::is_option( 'word_stats_show_common' ) ) {
+						# echo 'var ignKeywords = "' , strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) );
+						# echo '";
+						# ignKeywords = ignKeywords.split( "::" );';
+						echo 'var ignKeywords = new Array("' , implode( Word_Stats_Core::get_ignored_keywords(), '", "' ), '");';
 					} else {
 						echo 'var ignKeywords = new Array;';
 					}

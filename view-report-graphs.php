@@ -52,11 +52,14 @@
 		<form id="authors-form" name="select-author" action="index.php" method="get">
 			<input type="hidden" name="page" value="word-stats-graphs" />',
 			__( 'View author:', 'word-stats' ),
-			' <select name="author-tab" id="authors-list">',
-	 			'<option class="author-graph-option" value="0"', ( $author_graph == $id ) ? ' selected="selected" ' : '', '>', __( 'All authors', 'word-stats' ), '</option>';
+			' <select name="author-tab" id="authors-list">';
 				foreach ( $report[ 'author_count' ] as $id=>$post_type ) {
-					$this_author = get_userdata( $id );
-				 	echo '<option class="author-graph-option" value="', $id, '"', ( $author_graph == $id ) ? ' selected="selected" ' : '', '>', $this_author->nickname, '</option>';
+					if ( $id == -1 ) {
+			 			echo '<option class="author-graph-option" value="-1"', ( $author_graph == '-1' ) ? ' selected="selected" ' : '', '>', __( 'All authors', 'word-stats' ), '</option>';
+					} else {
+						$this_author = get_userdata( $id );
+					 	echo '<option class="author-graph-option" value="', $id, '"', ( $author_graph == $id ) ? ' selected="selected" ' : '', '>', $this_author->nickname, '</option>';
+				 	}
 				}
 			echo '</select>
 			', __( 'Period:', 'word-stats' ), ' <input type="text" name="period-start" id="period-start" value="', $period_start, '" /> - <input type="text" name="period-end" id="period-end" value="', $period_end, '" />

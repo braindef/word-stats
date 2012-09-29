@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.0.0
 Tested up to: 3.4.2
-Stable tag: 4.1.0
+Stable tag: 4.2
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -53,6 +53,12 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.2 =
+* Feature: Common ignored keywords apply to the live stats too.
+* Fix: 'All authors' option in the reports page wasn't functional.
+* Fix: Keywords weren't counted separatedly for each author.
+* Fix: "they're" and "third" keywords not being ignored.
+
 = 4.1.0 =
 * Feature: The reports page can now display aggregate stats for all authors.
 * Fix: Invalid argument error in basic-string-tools.php

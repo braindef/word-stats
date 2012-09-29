@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.1.0
+Version: 4.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -28,7 +28,18 @@ Thanks to Allan Ellegaard for testing and input.
 */
 
 /*
-	Note: All bst_ functions come from basic_string_tools.php.
+	Quick Reference (WIP)
+	-------------------------------------------------------------
+	Background caching {
+		word_stats_call_cache_worker
+		word_stats_cache_worker
+	}
+	Retrieve posts {
+		Word_Stats_Core::get_posts
+	}
+	Load data for the analytics page {
+		Word_Stats_Admin::load_report_stats
+	}
 */
 
 /* # Constants.
@@ -40,7 +51,7 @@ define( 'WS_RI_ADVANCED', 15 );
 define( 'WS_NO_KEYWORDS', 2 );
 define( 'WS_SPAMMED_KEYWORDS', 20 );
 
-define( 'WS_CURRENT_VERSION', '4.0.5' );
+define( 'WS_CURRENT_VERSION', '4.2' ); # Used to perform upgrades
 
 /* # Word Counts
 -------------------------------------------------------------- */
@@ -52,10 +63,10 @@ require_once( 'basic-string-tools.php' );
 
 /* # Check version. Perform upgrades.
 -------------------------------------------------------------- */
-//  Deprecated option
+#  Deprecated option
 if ( get_option( 'ws-counts-cache' ) ) { delete_option( 'word_stats_premium' ); }
 
-// Update version
+# Update version
 if ( get_option( 'word_stats_version' ) != WS_CURRENT_VERSION ) {
 	update_option( 'word_stats_version', WS_CURRENT_VERSION );
 }
@@ -75,7 +86,7 @@ function word_stats_call_cache_worker() {
 	<script type="text/javascript" >
 		jQuery( document ).ready( function( $ ) {
 			var worker_call = { action: 'cache_pending' };
-			jQuery.post( ajaxurl, worker_call, function( response ) { return response; } ); // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+			jQuery.post( ajaxurl, worker_call, function( response ) { return response; } ); # since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
 		} );
 	</script>
 	<?php
@@ -84,7 +95,7 @@ function word_stats_cache_worker() {
 	update_option( 'word_stats_cache_start', time() );
 	echo Word_Stats_Core::cache_pending();
 	update_option( 'word_stats_cache_start', false );
-	die(); // this is required to return a proper result
+	die(); # this is required to return a proper result
 }
 $is_worker_free =  !get_option( 'word_stats_done_caching', false ) && ( !get_option( 'word_stats_cache_start' ) OR ( time() - get_option( 'word_stats_cache_start' ) > 300 ) );
 if ( $is_worker_free ) {
@@ -193,7 +204,7 @@ class Word_Stats_Core {
 	public function cache_pending() {
 		if ( get_option( 'word_stats_done_caching', false ) ) { return false; }
 		ignore_user_abort( true );
-		set_time_limit( 0 );  // Work for as long as necessary.
+		set_time_limit( 0 );  # Work for as long as necessary.
 		$posts = Word_Stats_Core::get_uncached_posts_ids();
 		if ( count( $posts ) ) {
 			$posts_checked = 0;
@@ -212,7 +223,7 @@ class Word_Stats_Core {
 		which in normal conditions means the plugin is a fresh install.
 	*/
 	public function cache_totals() {
-		set_time_limit( 0 );  // Work for as long as necessary.
+		set_time_limit( 0 );  # Work for as long as necessary.
 		global $wp_post_types;
 		$author_count = $totals = array();
 		foreach( $wp_post_types as $post_type ) {
@@ -249,13 +260,13 @@ class Word_Stats_Core {
 
 		if ( $all_text ) {
 			$stats = bst_split_text( $all_text );
-			$total_alphanumeric = mb_strlen( $stats[ 'alphanumeric' ] ); // mb_strlen = multibyte strlen
+			$total_alphanumeric = mb_strlen( $stats[ 'alphanumeric' ] ); # mb_strlen = multibyte strlen
 			$total_sentences = count( $stats[ 'sentences' ] );
 			$total_words = count( $stats[ 'words' ] );
 			$word_array = $stats[ 'words' ];
 			$all_text = $stats[ 'text' ];
 
-			if ( $total_words > 0 && $total_sentences > 0 ) { // No divisions by zero, thanks.
+			if ( $total_words > 0 && $total_sentences > 0 ) { # No divisions by zero, thanks.
 				$chars_per_word = intval( $total_alphanumeric / $total_words );
 				$chars_per_sentence = intval( $total_alphanumeric / $total_sentences );
 				$words_per_sentence = intval( $total_words / $total_sentences );
@@ -276,11 +287,11 @@ class Word_Stats_Core {
 				$ARI = $CLI = $LIX = '0';
 		}
 
-		// Remove ignored keywords
+		# Remove ignored keywords
 		$ignore = Word_Stats_Core::get_ignored_keywords();
 		$keywords = bst_regfilter_keyword_counts( bst_keywords( $the_post->post_content, 3, get_bloginfo( 'charset' ) ), $ignore );
 
-		// Update the total counts.
+		# Update the total counts.
 		$post_type = get_post_type( $id );
 		$old_total_words = get_post_meta( $id, 'word_stats_word_count', true );
 		Word_Stats_Core::get_cached_totals( $author_count, $totals );
@@ -295,7 +306,7 @@ class Word_Stats_Core {
 		$author_count[ $the_post->post_author ][ $post_type ][ Word_Stats_Core::get_year_month( $the_post->post_date ) ] += $total_words;
 		$totals[ $post_type ] -= $total_words;
 
-		// Cache the stats
+		# Cache the stats
 		update_post_meta( $id, 'readability_ARI', $ARI );
 		update_post_meta( $id, 'readability_CLI', $CLI );
 		update_post_meta( $id, 'readability_LIX', $LIX );
@@ -336,7 +347,7 @@ class Word_Stats_Core {
 			}
 		}
 
-		// Absolute total words
+		# Absolute total words
 		$text =  __( 'Total words', 'word-stats' );
 		$total_all =  number_format_i18n( $total_all );
 		if ( $mode == 'table' ) {
@@ -356,7 +367,7 @@ class Word_Stats_Core {
 	}
 
 	public function calc_ws_index( $ARI, $CLI, $LIX ) {
-		// Translate as Basic / Intermediate / Advanced
+		# Translate as Basic / Intermediate / Advanced
 		return ( floatval( $ARI ) + floatval( $CLI ) + ( ( floatval( $LIX ) - 10 ) / 2 ) ) / 3;
 	}
 
@@ -368,10 +379,10 @@ class Word_Stats_Core {
 			$LIX = get_post_meta( $post->ID, 'readability_LIX', true );
 
 			if ( !$ARI ) {
-				// If there is no data or the post is blank
+				# If there is no data or the post is blank
 				echo '<span style="color:#999;">--</span>';
 			} else {
-				// Trying to aggregate the indexes in a meaningful way.
+				# Trying to aggregate the indexes in a meaningful way.
 				$r_avg = Word_Stats_Core::calc_ws_index( $ARI, $CLI, $LIX );
 				if ( $r_avg < WS_RI_BASIC ) { echo '<span style="color: #06a;">', round( $r_avg, 1 ), '</span>'; }
 				if ( $r_avg >= WS_RI_BASIC && $r_avg < WS_RI_ADVANCED ) { echo '<span style="color: #0a6;">', round( $r_avg, 1 ), '</span>'; }
@@ -380,13 +391,13 @@ class Word_Stats_Core {
 		}
 	}
 
-	// Load style for the column
+	# Load style for the column
 	public function style_column() {
 		wp_register_style( 'word-stats-css', plugins_url() . '/word-stats/css/word-stats.css' );
 		wp_enqueue_style( 'word-stats-css' );
 	}
 
-	// Assign default or custom threshold values
+	# Assign default or custom threshold values
 	public function assign_thresholds( &$too_short = null, &$too_long = null, &$too_difficult = null, &$too_simple = null, &$no_keywords = null, &$spammed_keywords = null) {
 		$too_short = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_short' ) ) ? WS_TOO_SHORT : get_option( 'word_stats_diagnostic_too_short' );
 		$too_long = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_too_long' ) ) ? WS_TOO_LONG : get_option( 'word_stats_diagnostic_too_long' );
@@ -396,8 +407,8 @@ class Word_Stats_Core {
 		$spammed_keywords = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_spammed_kws' ) ) ? WS_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_kws' );
 	}
 
-	// Return an array with the user's list of ignored keywords merged with the selected (if any) or default list of common words.
-	// Using get_bloginfo( 'language' ) for the default list. Makes things smoother for new installs.
+	# Return an array with the user's list of ignored keywords merged with the selected (if any) or default list of common words.
+	# Using get_bloginfo( 'language' ) for the default list. Makes things smoother for new installs.
 	public function get_ignored_keywords() {
 		$ignore_lang = get_option( 'word_stats_ignore_common', null );
 		if ( $ignore_lang === null ) {
@@ -424,7 +435,7 @@ class Word_Stats_Core {
 		return $ignore;
 	}
 
-} // end class Word_Stats_Core
+} # end class Word_Stats_Core
 
 /* # Hooks
 -------------------------------------------------------------- */
@@ -478,7 +489,7 @@ class Word_Stats_Admin {
 		Settings page
 	*/
 	public function settings_page() {
-		// Default values
+		# Default values
 		$opt_RI_column = ( !Word_Stats_Core::is_option( 'word_stats_RI_column' ) ) ? 1 : get_option( 'word_stats_RI_column' );
 		$opt_totals = ( !Word_Stats_Core::is_option( 'word_stats_totals' ) ) ?  1 : get_option( 'word_stats_totals' );
 		$opt_replace_wc = ( !Word_Stats_Core::is_option( 'word_stats_replace_word_count' ) ) ? 1 : get_option( 'word_stats_replace_word_count') ;
@@ -490,7 +501,7 @@ class Word_Stats_Admin {
 		Word_Stats_Core::assign_thresholds( 	$opt_diagnostic_thresholds[ 'too_short' ], $opt_diagnostic_thresholds[ 'too_long' ], $opt_diagnostic_thresholds[ 'too_difficult' ], $opt_diagnostic_thresholds[ 'too_simple' ], $opt_diagnostic_thresholds[ 'no_keywords' ], $opt_diagnostic_thresholds[ 'spammed_keywords' ] );
 		$opt_ignore_common = ( !Word_Stats_Core::is_option( 'word_stats_ignore_common' ) ) ? substr( get_bloginfo( 'language' ), 0, 2 ) : get_option( 'word_stats_ignore_common' );
 
-		// Output the page.
+		# Output the page.
 		include( 'view-settings.php' );
 	}
 
@@ -500,34 +511,34 @@ class Word_Stats_Admin {
 	public function load_report_stats( $author_graph, $period_start, $period_end ) {
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
-		// Initializing variables. $report contains all the data needed to render the stats page
+		# Initializing variables. $report contains all the data needed to render the stats page
 		$report[ 'total_keywords' ] = $report[ 'recent_posts_rows' ] = array();
 		$report[ 'totals_readability' ][ 0 ] = $report[ 'totals_readability' ][ 1 ] = $report[ 'totals_readability' ][ 2 ] = 0;
 		$report[ 'type_count' ][ 'custom' ] = 0;
-		// Initialize row counters for the diagnostics tables arrays
+		# Initialize row counters for the diagnostics tables arrays
 		$dg_difficult_row = $dg_simple_row = $dg_short_row = $dg_long_row = $dg_no_keywords_row = 0;
-		// Counters to track how many posts have been cached.
+		# Counters to track how many posts have been cached.
 		$cached = 0; $not_cached = 0;
 
 		# Not used: $cur_author = get_userdata( $author_graph );
 
-		// Validate dates
+		# Validate dates
 		$period_start = date( 'Y-m-d', strtotime( $period_start ) );
-		$period_end = date( 'Y-m-d', strtotime( $period_end ) + 86400 ); // Last day included
+		$period_end = date( 'Y-m-d', strtotime( $period_end ) + 86400 ); # Last day included
 
-		// Load the list of ignored keywords
+		# Load the list of ignored keywords
 		$ignore = Word_Stats_Core::get_ignored_keywords();
 
-		// Load diagnostics thresholds
+		# Load diagnostics thresholds
 		Word_Stats_Core::assign_thresholds( 	$threshold_too_short, $threshold_too_long, $threshold_too_difficult, $threshold_too_simple, $threshold_no_keywords, $threshold_spammed_keywords );
 
 		foreach( $wp_post_types as $post_type ) {
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 
-			// Load only content and custom post types
+			# Load only content and custom post types
 			if ( $post_type->name != 'attachment' && $post_type->name != 'nav_menu_item' && $post_type->name != 'revision' ) {
 
-				// Load the posts
+				# Load the posts
 				$query = "SELECT * FROM $wpdb->posts WHERE ";
 				if ( !get_option( 'word_stats_count_unpublished' ) ) {
 					$query .= "post_status = 'publish' AND ";
@@ -537,8 +548,8 @@ class Word_Stats_Admin {
 
 				foreach( $posts as $post ) {
 
-					// Are stats cached? Note that get_post_meta( , , true ) is counterintuitive: the value is an array, but we ask for a single value;
-					// otherwise, get_post_meta wraps the array into an array.
+					# Are stats cached? Note that get_post_meta( , , true ) is counterintuitive: the value is an array, but we ask for a single value;
+					# otherwise, get_post_meta wraps the array into an array.
 					if ( get_post_meta( $post->ID, 'word_stats_cached', true ) ) {
 						$post_word_count = (int) get_post_meta( $post->ID, 'word_stats_word_count', true );
 						$keywords = unserialize( get_post_meta( $post->ID,  'word_stats_keywords', true ) );
@@ -550,89 +561,91 @@ class Word_Stats_Admin {
 						$not_cached++;
 					}
 
-					// Count words per author. Group per month.
+					# Add up words per author and aggregated. Group per month.
 					$post_month = mysql2date( 'Y-m', $post->post_date );
+					$report[ 'author_count' ][ -1 ][ $post_type->name ][ $post_month ] += $post_word_count;
 					$report[ 'author_count' ][ $post->post_author ][ $post_type->name ][ $post_month ] += $post_word_count;
 					$report[ 'author_count_total' ][ $post->post_author ] += $post_word_count;
-					$report[ 'all_total_words' ] += $post_word_count;
+					$report[ 'author_count_total' ][ -1 ] += $post_word_count;
+					$report[ 'all_total_words' ] += $post_word_count; # redundant, should get replaced everywhere with author_count_total[-1] until a cleaner solution is implemented.
 
-					// Divisor to calculate keyword density per 1000 words
+					# Divisor to calculate keyword density per 1000 words
 					$densityDivisor = ( intval( $post_word_count / 1000 ) ) ? intval( $post_word_count / 1000 ) : 1;
 
-					// Reset keyword diagnostics count
-					$dg_relevant_keywords = $dg_spammed_keywords = array();
+					# Unless the selected author is -1 (all), stats for posts by the selected author only
+					if ( $author_graph == -1 || $post->post_author == $author_graph ) {
 
-					// Remove ignored words.
-					$keywords = bst_regfilter_keyword_counts( $keywords, $ignore );
+						# Reset keyword diagnostics count
+						$dg_relevant_keywords = $dg_spammed_keywords = array();
 
-					// Aggregate the keywords, then create two lists for keywords flagged as relevant and spammed, according to their density.
-					// Posts that are already flagged as too short aren't diagnosed as having no relevant keywords.
-					if ( $keywords && is_array( $keywords ) ) {
-						foreach( $keywords as $key=>$value ) {
-							if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
-							$report[ 'total_keywords' ][ $key ] += (int) $value;
-							if ( $post_word_count >= (int) $threshold_too_short && !array_key_exists( $key, $dg_relevant_keywords ) && $value  / $densityDivisor > intval( $threshold_no_keywords ) ) { $dg_relevant_keywords[ $key ] = true; }
-							if ( !array_key_exists( $key, $dg_spammed_keywords ) && $value  / $densityDivisor > intval( $threshold_spammed_keywords ) ) { $dg_spammed_keywords[ $key ] = $value; }
+						# Remove ignored words.
+						$keywords = bst_regfilter_keyword_counts( $keywords, $ignore );
+
+						# Aggregate the keywords, then create two lists for keywords flagged as relevant and spammed, according to their density.
+						# Posts that are already flagged as too short aren't diagnosed as having no relevant keywords.
+						if ( $keywords && is_array( $keywords ) ) {
+							foreach( $keywords as $key=>$value ) {
+								if( $report[ 'total_keywords' ][ $key ] === null ) { $report[ 'total_keywords' ][ $key ] = 0; }
+								$report[ 'total_keywords' ][ $key ] += (int) $value;
+								if ( $post_word_count >= (int) $threshold_too_short && !array_key_exists( $key, $dg_relevant_keywords ) && $value  / $densityDivisor > intval( $threshold_no_keywords ) ) { $dg_relevant_keywords[ $key ] = true; }
+								if ( !array_key_exists( $key, $dg_spammed_keywords ) && $value  / $densityDivisor > intval( $threshold_spammed_keywords ) ) { $dg_spammed_keywords[ $key ] = $value; }
+							}
 						}
-					}
 
-					// Unless the selected author is o (all), stats for posts by the selected author only
-					if ( $author_graph == 0 || $post->post_author == $author_graph ) {
-
-						// Counts per type. Custom post types are aggregated.
+						# Counts per type. Custom post types are aggregated.
 						if ( $post_type->name != 'post' && $post_type->name != 'page' ) {
 							$report[ 'type_count' ][ 'custom' ]++;
 						} else {
 							$report[ 'type_count' ][ $post_type->name ]++;
 						}
 
-						// Get the readability index.
+						# Get the readability index.
 						$ARI = get_post_meta( $post->ID, 'readability_ARI', true ); $CLI = get_post_meta( $post->ID, 'readability_CLI', true ); $LIX = get_post_meta( $post->ID, 'readability_LIX', true );
-						// In previous versions we called Word_Stats_Core::cache_stats( $post->ID ) here if the metas weren't set.
+						# In previous versions we called Word_Stats_Core::cache_stats( $post->ID ) here if the metas weren't set.
 
 						if ( $ARI  && $CLI && $LIX ) {
 							$ws_index_n = Word_Stats_Core::calc_ws_index( $ARI, $CLI, $LIX );
-							// Aggregate levels in 3 tiers like Google does (Basic, Intermediate, Advanced)
+							# Aggregate levels in 3 tiers like Google does (Basic, Intermediate, Advanced)
 							if ( $ws_index_n < WS_RI_BASIC ) { $ws_index = 0; } elseif ( $ws_index_n < WS_RI_ADVANCED ) { $ws_index = 1; } else { $ws_index = 2; }
 							$report[ 'totals_readability' ][ $ws_index ]++;
 						}
 
-						// Diagnostics.
-						// Empty title fix.
+						# Diagnostics.
+						# Empty title fix.
 						$post_title = ( $post->post_title == '' ) ? '#' . $post->ID . ' ' . __( '(no title)', 'word-stats' ) : htmlentities( $post->post_title, null, 'utf-8' );
 						$post_link = ( current_user_can( 'edit_post', $post->ID ) ) ? '<a href=\'' . get_edit_post_link( $post->ID ) . '\'>' .  $post_title . '</a>' : $post_title;
 
-						// Difficult text table
+						# Difficult text table
 						if ( $ws_index_n > intval( $threshold_too_difficult ) && $post_word_count >= intval( $threshold_too_short ) ) {
 							$report[ 'diagnostic' ][ 'too_difficult' ][ $dg_difficult_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
 							$dg_difficult_row++;
 						}
 
-						// Simple text table
+						# Simple text table
 						if ( $ws_index_n < intval( $threshold_too_simple ) && $post_word_count >= intval( $threshold_too_short ) ) {
 							$report[ 'diagnostic' ][ 'too_simple' ][ $dg_simple_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
 							$dg_simple_row++;
 						}
 
-						// Short text table
+						# Short text table
 						if ( $post_word_count < intval( $threshold_too_short ) ) {
 							$report[ 'diagnostic' ][ 'too_short' ][ $dg_short_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
 							$dg_short_row++;
 						}
 
-						// Long text table
+						# Long text table
 						if ( $post_word_count > intval( $threshold_too_long ) ) {
 							$report[ 'diagnostic' ][ 'too_long' ][ $dg_long_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
 							$dg_long_row++;
 						}
 
-						// No keywords table
+						# No keywords table
 						if ( empty( $dg_relevant_keywords )  && $post_word_count >= intval( $threshold_too_short ) ) {
 							$report[ 'diagnostic' ][ 'no_keywords' ][ $dg_no_keywords_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-table-word-count\'>' . number_format( $post_word_count ) . '</td><td class=\'ws-table-readability\'>' . round( $ws_index_n ) . '</td>';
 							$dg_no_keywords_row++;
 						}
 
-						// Keyword abuse table
+						# Keyword abuse table
 						if ( count( $dg_spammed_keywords ) > 0 ) {
 							$report[ 'diagnostic' ][ 'spammed_keywords' ][ $dg_spammed_row ] = '<td class=\'ws-table-title\'> ' . $post_link . '</td><td class=\'ws-table-type\'>' . $post_type->name . '<td class=\'ws-table-date\'>' . mysql2date('Y-m-d', $post->post_date ) . '</td><td class=\'ws-keywords\'>' . implode( ', ', array_keys( $dg_spammed_keywords ) ) . '</td>';
 							$dg_spammed_row++;
@@ -642,11 +655,11 @@ class Word_Stats_Admin {
 			}
 		}
 
-		// Sort keywords by frequency, descending
+		# Sort keywords by frequency, descending
 		asort( $report[ 'total_keywords' ] );
 		$report[ 'total_keywords' ] = array_reverse( $report[ 'total_keywords' ], true );
 
-		// Sort timeline
+		# Sort timeline
 		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'post' ] );
 		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'page' ] );
 		Word_Stats_Core::safe_ksort( $report[ 'author_count' ][ $author_graph ][ 'custom' ] );
@@ -663,7 +676,7 @@ class Word_Stats_Admin {
 	*/
 	public function ws_reports_page() {
 
-		// Relevant when going straight to the graphs page right after installing the plugin.
+		# Relevant when going straight to the graphs page right after installing the plugin.
 		if ( !get_option( 'word_stats_done_caching', false ) ) { return false; }
 
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
@@ -675,7 +688,7 @@ class Word_Stats_Admin {
 		$report = Word_Stats_Admin::load_report_stats( $author_graph, $period_start, $period_end );
 
 		if ( $report ) {
-			include( 'view-report-graphs.php' );  // To Do: Finish separating View from Model/Controller
+			include( 'view-report-graphs.php' );  # To Do: Finish separating View from Model/Controller
 		} else {
 			_e( 'Sorry, word counting failed for an unknown reason.', 'word-stats' );
 		}
@@ -697,7 +710,7 @@ function word_stats_create_menu() {
 	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'Word_Stats_Admin', 'settings_page' ) );
 	if ( get_option( 'word_stats_totals' ) || !Word_Stats_Core::is_option( 'word_stats_totals' ) ) {
 		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'Word_Stats_Admin', 'ws_reports_page' ) );
-		// Load styles for the reports page
+		# Load styles for the reports page
 		add_action( 'admin_print_styles-' . $page, 'word_stats_report_styles' );
 	}
 }
