@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.2.1
+Version: 4.2.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -555,7 +555,9 @@ class Word_Stats_Admin {
 						$keywords = unserialize( get_post_meta( $post->ID,  'word_stats_keywords', true ) );
 
 						# 4.2 Bug: Recache the stats if the keywords include double quotes.
-						if ( strpos( implode( array_keys( $keywords ), ' ' ), '"' ) ) { Word_Stats_Core::cache_stats( $post->ID ); }
+						if ( is_array( $keywords ) && !empty( $keywords ) ) {
+							if ( strpos( implode( array_keys( $keywords ), ' ' ), '"' ) ) { Word_Stats_Core::cache_stats( $post->ID ); }
+						}
 
 						$cached++;
 					} else {
