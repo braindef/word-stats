@@ -199,7 +199,7 @@
 		foreach ( $report[ 'total_keywords' ] as $key=>$value ) {
 				if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
 				$kw_data .= "[  $value, $z ]";
-				$var_kw_ticks .= '"' . $key . '"';
+				$var_kw_ticks .= '"' . str_replace( '"', '\"', $key ) . '"'; # Double check for unescaped quotes
 				$comma = true;
 				$z++;
 				if ( $z == 20 ) { break; }
@@ -227,10 +227,14 @@
 	$total_all_types = $total_posts + $total_pages + $total_custom;
 
 	if ( !$total_all_types ) { $total_all_types = 1; }
-	echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $bar_max_width * ( $total_posts / $total_all_types ) + 1, 'px\'></div> ', $total_posts, '");';
-	echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $bar_max_width * ( $total_pages / $total_all_types ) + 1, 'px\'></div> ', $total_pages, '");';
-	echo '	jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $bar_max_width * ( $total_custom / $total_all_types ) + 1, 'px\'></div> ', $total_custom, '");';
-	echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $bar_max_width + 1, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");';
+	$meter_post_width = intval( $bar_max_width * ( $total_posts / $total_all_types ) + 1 );
+	$meter_page_width = 	intval( $bar_max_width * ( $total_pages / $total_all_types ) + 1);
+	$meter_custom_width = intval( $bar_max_width * ( $total_custom / $total_all_types ) + 1);
+	$meter_all_width = intval( $bar_max_width + 1 );
+	echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $meter_post_width, 'px\'></div> ', $total_posts, '");';
+	echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $meter_page_width, 'px\'></div> ', $total_pages, '");';
+	echo '	jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $meter_custom_width, 'px\'></div> ', $total_custom, '");';
+	echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $meter_all_width, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");';
 
 	echo '</script>
 		</div>
