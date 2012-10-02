@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.2.2
+Version: 4.2.3
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2010 Fran Ontanaya
@@ -51,7 +51,7 @@ define( 'WS_RI_ADVANCED', 15 );
 define( 'WS_NO_KEYWORDS', 2 );
 define( 'WS_SPAMMED_KEYWORDS', 20 );
 
-define( 'WS_CURRENT_VERSION', '4.2.1' ); # Used to perform upgrades
+define( 'WS_CURRENT_VERSION', '4.2.3' ); # Used to perform upgrades
 
 /* # Word Counts
 -------------------------------------------------------------- */
@@ -256,7 +256,7 @@ class Word_Stats_Core {
 			$id = $post->ID;
 		}
 		$the_post = get_post( $id );
-		$all_text = bst_html_stripper( $the_post->post_content, get_bloginfo( 'charset' ) );
+		$all_text = bst_html_stripper( strip_shortcodes( $the_post->post_content ), get_bloginfo( 'charset' ) );
 
 		if ( $all_text ) {
 			$stats = bst_split_text( $all_text );
@@ -554,9 +554,10 @@ class Word_Stats_Admin {
 						$post_word_count = (int) get_post_meta( $post->ID, 'word_stats_word_count', true );
 						$keywords = unserialize( get_post_meta( $post->ID,  'word_stats_keywords', true ) );
 
-						# 4.2 Bug: Recache the stats if the keywords include double quotes.
+						# 4.2 Bug: Recache the stats if the keywords include some bad characters
 						if ( is_array( $keywords ) && !empty( $keywords ) ) {
-							if ( strpos( implode( array_keys( $keywords ), ' ' ), '"' ) ) { Word_Stats_Core::cache_stats( $post->ID ); }
+							$keywords_string = implode( array_keys( $keywords ), ' ' );
+							if ( strpos( $keywords_string, '"' ) !== false || strpos( $keywords_string, '=' ) !== false || strpos( $keywords_string, '[' ) !== false || strpos( $keywords_string, ']' ) !== false   ) { Word_Stats_Core::cache_stats( $post->ID ); }
 						}
 
 						$cached++;

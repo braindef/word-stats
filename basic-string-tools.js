@@ -88,8 +88,13 @@ function bstSimpleBoundaries( text ) {
 		return this.split('').reverse().join('');
 	};
 
-	/* Replace no break spaces */
-	text = text.replace( new RegExp( "\u00A0|\&nbsp;", "g" ), " " );
+	/* Replace some special characters */
+	text = text.replace( new RegExp( "=|-", "g" ), " " );
+
+	text = text.replace( new RegExp( "[\[]|\]", "g" ), " " );
+	text = text.replace( new RegExp( "\\\\", "g" ), " " );
+
+	text = text.replace( new RegExp( "\u00A0|\&nbsp;|\"", "g" ), " " );
 
 	/* Remove combining marks et al, as they are meaningless for this purpose and can split words */
 	text = text.replace( new RegExp( bstAllCombiningMarks, "g" ), "" );

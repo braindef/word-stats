@@ -174,8 +174,8 @@ function bst_simple_boundaries( $text ) {
 
 	$bst_regex[ "short_pauses" ] = '[\.]{3}|[;:\x{2026}\x{2015}\x{00B7}\x{0387}]';
 
-	// Replace no break spaces and double quotes
-	$text = preg_replace( '/\x{00A0}|\&nbsp;|\"/u', ' ', $text );
+	// Replace some special characters
+	$text = preg_replace( '/\x{00A0}|\&nbsp;|\"|=|[\[]|\]|\\\\|\+|-/u', ' ', $text );
 
 	// Make sure HTML entities are decoded
 	$text = html_entity_decode( $text );

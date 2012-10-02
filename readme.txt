@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.0.0
 Tested up to: 3.4.2
-Stable tag: 4.2.2
+Stable tag: 4.2.3
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -53,6 +53,9 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.2.3 =
+* Fix: Some non word characters (square brackets, equals) weren't being removed from keywords.
+
 = 4.2.2 =
 * Fix: PHP array_keys() warnings being thrown when keywords list was empty.
 
