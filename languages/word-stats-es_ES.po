@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Word Stats Plugin 4.0 es_ES\n"
+"Project-Id-Version: Word Stats Plugin 4.3 es_ES\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-02-08 05:49+0100\n"
-"PO-Revision-Date: 2012-02-08 05:50+0100\n"
+"POT-Creation-Date: 2012-11-20 03:06+0100\n"
+"PO-Revision-Date: 2012-11-20 04:23+0100\n"
 "Last-Translator: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language-Team: Fran Ontanaya <contacto@franontanaya.com>\n"
 "Language: \n"
@@ -18,247 +18,166 @@ msgstr ""
 "X-Poedit-Language: Spanish\n"
 "X-Poedit-Country: SPAIN\n"
 
-#: donate.php:3
-#: premium.php:3
+#: donate.php:2
 #: uninstall.php:5
 #: view-diagnostics-table.php:3
-#: view-live-stats.php:3
+#: view-live-stats.php:2
 #: view-report-graphs.php:3
 #: view-settings.php:3
 msgid "Please, don't load this file directly"
 msgstr "Por favor, no cargue este archivo directamente"
 
-#: premium.php:10
-msgid "Unlock this screen"
-msgstr "Desbloquea esta página"
-
-#: premium.php:11
-msgid "Get access to this screen and future premium features with a single contribution."
-msgstr "Accede a esta página y a futuras características premium con una sola contribución."
-
-#: premium.php:12
+#: view-feedback-links.php:4
 #, php-format
-msgid "Problems activating the premium features? %sClick here%s"
-msgstr "¿Problemas activando las características premium? %sHaz clic aquí%s"
+msgid "Feedback, questions, bugs? Send them to the %1$splugin support forum%2$s or %3$semail%2$s the author."
+msgstr "¿Reportes, dudas, problemas? Envíalos al %1$sforo de soporte del plugin%2$s o %3$scontacta%2$s con el autor."
 
-#: premium.php:22
-msgid "Your rating"
-msgstr "Tu puntuación"
-
-#: premium.php:23
-msgid "Meh, whatever"
-msgstr "Bleh, lo que sea"
-
-#: premium.php:23
-#: premium.php:24
-#: premium.php:25
-#, php-format
-msgid "€%1$s.%2$s"
-msgstr "%1$s,%2$s€"
-
-#: premium.php:24
-msgid "Good plugin!"
-msgstr "¡Buen plugin!"
-
-#: premium.php:25
-msgid "Awesomesauce!"
-msgstr "¡La pera limonera!"
-
-#: view-live-stats.php:137
-#: view-live-stats.php:139
+#: view-live-stats.php:132
+#: view-live-stats.php:134
 msgid "Keywords:"
 msgstr "Palabras clave:"
 
-#: view-live-stats.php:137
+#: view-live-stats.php:132
 msgid "No relevant keywords."
 msgstr "Ninguna palabra clave relevante."
 
-#: view-live-stats.php:143
-#: view-live-stats.php:155
+#: view-live-stats.php:138
+#: view-live-stats.php:150
 msgid "Readability:"
 msgstr "Legibilidad:"
 
-#: view-live-stats.php:145
-#: view-live-stats.php:157
+#: view-live-stats.php:140
+#: view-live-stats.php:152
 msgid "characters"
 msgstr "caracteres"
 
-#: view-live-stats.php:146
-#: view-live-stats.php:158
+#: view-live-stats.php:141
+#: view-live-stats.php:153
 msgid "alphanumeric characters"
 msgstr "caracteres alfanuméricos"
 
-#: view-live-stats.php:147
-#: view-live-stats.php:159
+#: view-live-stats.php:142
+#: view-live-stats.php:154
 msgid "words"
 msgstr "palabras"
 
-#: view-live-stats.php:148
-#: view-live-stats.php:160
+#: view-live-stats.php:143
+#: view-live-stats.php:155
 msgid "sentences"
 msgstr "frases"
 
-#: view-live-stats.php:149
-#: view-live-stats.php:161
+#: view-live-stats.php:144
+#: view-live-stats.php:156
 msgid "characters per word"
 msgstr "caracteres por palabra"
 
-#: view-live-stats.php:150
-#: view-live-stats.php:162
+#: view-live-stats.php:145
+#: view-live-stats.php:157
 msgid "characters per sentence"
 msgstr "caracteres por frase"
 
-#: view-live-stats.php:151
-#: view-live-stats.php:163
+#: view-live-stats.php:146
+#: view-live-stats.php:158
 msgid "words per sentence"
 msgstr "palabras por frase"
 
-#: view-live-stats.php:172
+#: view-live-stats.php:167
 msgid "Word count:"
 msgstr "Cuenta de palabras:"
 
-#: view-live-stats.php:172
+#: view-live-stats.php:167
 msgid "(Word Stats plugin)"
 msgstr "(plugin Word Stats)"
 
-#: view-report-graphs.php:31
+#: view-report-graphs.php:27
 msgid "JavaScript is disabled. Enable it to load the graphs."
 msgstr "JavaScript está desactivado. Habilítalo para cargar las gráficas."
 
-#: view-report-graphs.php:53
+#: view-report-graphs.php:42
 msgid "View author:"
 msgstr "Ver autor:"
 
-#: view-report-graphs.php:62
+#: view-report-graphs.php:47
+msgid "All authors"
+msgstr "Todos los autores"
+
+#: view-report-graphs.php:54
 msgid "Period:"
 msgstr "Periodo:"
 
-#: view-report-graphs.php:63
+#: view-report-graphs.php:55
 msgid "all time"
 msgstr "todo"
 
-#: view-report-graphs.php:65
+#: view-report-graphs.php:56
 msgid "View"
 msgstr "Ver"
 
-#: view-report-graphs.php:85
+#: view-report-graphs.php:77
 #, php-format
 msgid "%1$swords%2$s between %3$s and %4$s"
 msgstr "%1$spalabras%2$s entre %3$s y %4$s"
 
-#: view-report-graphs.php:89
+#: view-report-graphs.php:81
 msgid "Posts"
 msgstr "Entradas"
 
-#: view-report-graphs.php:90
+#: view-report-graphs.php:82
 msgid "Pages"
 msgstr "Páginas"
 
-#: view-report-graphs.php:91
+#: view-report-graphs.php:83
 msgid "Custom"
 msgstr "Otras"
 
-#: view-report-graphs.php:92
+#: view-report-graphs.php:84
 msgid "All"
 msgstr "Todas"
 
-#: view-report-graphs.php:98
+#: view-report-graphs.php:90
 msgid "Readability level"
 msgstr "Nivel de legibilidad"
 
-#: view-report-graphs.php:101
+#: view-report-graphs.php:93
 msgid "Share of total words"
 msgstr "Porción de las palabras totales"
 
-#: view-report-graphs.php:107
-#: view-settings.php:75
+#: view-report-graphs.php:99
 msgid "Keywords"
 msgstr "Palabras clave"
 
-#: view-report-graphs.php:143
-#: view-report-graphs.php:163
-#: view-report-graphs.php:185
+#: view-report-graphs.php:136
+#: view-report-graphs.php:156
+#: view-report-graphs.php:178
 msgid "No data"
 msgstr "No hay datos"
 
-#: view-report-graphs.php:177
+#: view-report-graphs.php:170
 msgid "Basic"
 msgstr "Básico"
 
-#: view-report-graphs.php:178
+#: view-report-graphs.php:171
 msgid "Intermediate"
 msgstr "Intermedio"
 
-#: view-report-graphs.php:179
+#: view-report-graphs.php:172
 msgid "Advanced"
 msgstr "Avanzado"
 
-#: view-report-graphs.php:235
-#: view-settings.php:11
+#: view-report-graphs.php:233
+#: view-settings.php:17
 msgid "Diagnostics"
 msgstr "Diagnósticos"
-
-#: view-report-graphs.php:239
-#: view-report-graphs.php:244
-msgid "Title"
-msgstr "Título"
-
-#: view-report-graphs.php:239
-#: view-report-graphs.php:244
-msgid "Post Type"
-msgstr "Tipo de entrada"
-
-#: view-report-graphs.php:239
-#: view-report-graphs.php:244
-msgid "Date"
-msgstr "Fecha"
-
-#: view-report-graphs.php:239
-msgid "Spammed Keywords"
-msgstr "Palabras clave espameadas"
-
-#: view-report-graphs.php:241
-msgid "Spammed keywords"
-msgstr "Palabras clave espameadas"
-
-#: view-report-graphs.php:244
-msgid "Word Count"
-msgstr "Cuenta de palabras"
-
-#: view-report-graphs.php:244
-#: view-settings.php:38
-msgid "Readability"
-msgstr "Legibilidad"
-
-#: view-report-graphs.php:246
-msgid "No relevant keywords"
-msgstr "Ninguna palabra clave relevante"
-
-#: view-report-graphs.php:249
-msgid "Difficult text"
-msgstr "Texto difícil"
-
-#: view-report-graphs.php:252
-msgid "Simple text"
-msgstr "Texto simple"
-
-#: view-report-graphs.php:255
-msgid "Text may be too long"
-msgstr "El texto puede ser demasiado largo"
-
-#: view-report-graphs.php:258
-msgid "Text may be too short"
-msgstr "El texto puede ser demasiado corto"
 
 #: view-settings.php:7
 msgid "Word Stats Options"
 msgstr "Opciones de Word Stats"
 
-#: view-settings.php:14
+#: view-settings.php:19
 msgid "Posts below this word count will be flagged as too short."
 msgstr "Las entradas por debajo de este número de palabras se marcarán como demasiado breves."
 
-#: view-settings.php:18
+#: view-settings.php:20
 msgid "Posts above this word count will be flagged as too long."
 msgstr "Las entradas por encima de este número de palabras se marcarán como demasiado largas."
 
@@ -266,168 +185,173 @@ msgstr "Las entradas por encima de este número de palabras se marcarán como de
 msgid "Posts above this average readability level will be flagged as too difficult."
 msgstr "Las entradas por encima de este nivel de legibilidad medio se marcarán como demasiado difíciles."
 
-#: view-settings.php:26
+#: view-settings.php:23
 msgid "Posts below this average readability level will be flagged as too simple."
 msgstr "Las entradas por debajo de este nivel de legibilidad medio se marcarán como demasiado simples."
 
-#: view-settings.php:30
+#: view-settings.php:24
 msgid "Posts without any keyword count per 1000 words greater than this value, and not flagged already as too short, will be diagnosed as having no relevant keywords."
 msgstr "Las entradas sin ninguna palabra clave por encima de esta densidad por mil palabras, que no estén marcadas ya como demasiado breves, se diagnosticarán como sin palabras clavas relevantes."
 
-#: view-settings.php:34
+#: view-settings.php:25
 msgid "Posts with any keyword count per 1000 words greater than this value will be diagnosed as having keyword spam."
 msgstr "Las entradas con alguna palabra clave por encima de esta densidad por mil palabras se diagnosticarán como spam de palabras clave."
 
-#: view-settings.php:42
+#: view-settings.php:27
+#: word-stats.php:781
+msgid "Readability"
+msgstr "Legibilidad"
+
+#: view-settings.php:28
 msgid "Display aggregate readability column in the manage posts list."
 msgstr "Mostrar columna de legibilidad agregada en la lista de administración de entradas."
 
-#: view-settings.php:47
-msgid "Display live keyword count."
-msgstr "Habilitar cuentas totales de palabras."
-
-#: view-settings.php:50
+#: view-settings.php:30
 msgid "Total word counts"
 msgstr "Palabras totales"
 
-#: view-settings.php:54
-msgid "Enable total word counts (dashboard, widget and shortcode)."
-msgstr "Habilitar cuentas totales de palabras (escritorio, widget y shortcode)."
+#: view-settings.php:31
+msgid "Display total word counts in the dashboard."
+msgstr "Mostrar cuentas totales de palabras en el escritorio."
 
-#: view-settings.php:55
-msgid "This may slow down post saving in large blogs."
-msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
-
-#: view-settings.php:60
+#: view-settings.php:32
 msgid "Count words from drafts and posts pending review."
 msgstr "Contar palabras de borradores y entradas pendientes de revisión."
 
-#: view-settings.php:63
+#: view-settings.php:34
 msgid "Live stats"
 msgstr "Estadísticas en vivo"
 
-#: view-settings.php:67
+#: view-settings.php:35
 msgid "Replace WordPress live word count with Word Stats word count."
 msgstr "Sustituir la cuenta de palabras en vivo de WordPress por la cuenta de palabras de Word Stats"
 
-#: view-settings.php:72
+#: view-settings.php:36
 msgid "Display live character/word/sentence averages."
 msgstr "Mostrar las medias en vivo de caracteres/palabras/frases."
 
-#: view-settings.php:79
+#: view-settings.php:37
+msgid "Display live keyword count."
+msgstr "Habilitar cuentas totales de palabras."
+
+#: view-settings.php:38
 msgid "Add the last saved tags to the live keyword count."
 msgstr "Añadir las últimas etiquetas guardadas a la cuenta en vivo de palabras clave"
 
-#: view-settings.php:82
-msgid "Ignore these keywords:"
-msgstr "Ignorar estas palabras clave:"
+#: view-settings.php:40
+msgid "Ignored keywords"
+msgstr "Palabras clave ignoradas"
 
-#: view-settings.php:85
+#: view-settings.php:43
 msgid "Ignore common words for:"
 msgstr "Ignorar palabras comunes para:"
 
-#: view-settings.php:87
+#: view-settings.php:45
 msgid "English"
 msgstr "Inglés"
 
-#: view-settings.php:88
+#: view-settings.php:46
 msgid "Spanish"
 msgstr "Español"
 
-#: view-settings.php:89
+#: view-settings.php:47
 msgid "(disabled)"
 msgstr "(desactivado)"
 
-#: view-settings.php:94
+#: view-settings.php:50
+msgid "Ignore also these keywords:"
+msgstr "Ignorar también estas palabras clave:"
+
+#: view-settings.php:52
 #, php-format
 msgid "One %1$sregular expression%2$s per line, without slashes."
 msgstr "Una %1$sexpresión regular%2$s por línea, sin barras."
 
-#: view-settings.php:95
+#: view-settings.php:53
 msgid "Example: ^apples?$ = good, /^apples?$/ = bad."
 msgstr "Ejemplo: ^apples?$ = bien, /^apples?$/ = mal."
 
-#: view-settings.php:96
-msgid "Note: A long ignore list can impact performance when saving posts or loading analytics for the entire blog."
-msgstr "Nota: Una lista de palabras ignoradas larga puede afectar el rendimiento al guardar entradas o cargar analíticas para todo el blog."
+#: view-settings.php:54
+msgid "Note: A long ignore list can impact performance."
+msgstr "Nota: Una lista de palabras ignoradas larga puede afectar el rendimiento."
 
-#: view-settings.php:100
+#: view-settings.php:58
 msgid "Writing basic regular expressions:"
 msgstr "Escribiendo expresiones regulares básicas:"
 
-#: view-settings.php:101
+#: view-settings.php:59
 msgid "^ matches the beggining of the word."
 msgstr "^ coincide con el principio de la palabra."
 
-#: view-settings.php:101
+#: view-settings.php:59
 msgid "Example: \"^where\" matches \"wherever\" but not \"anywhere\"."
 msgstr "Ejemplo: \"^donde\" coincide con \"dondequiera\" pero no \"adonde\"."
 
-#: view-settings.php:102
+#: view-settings.php:60
 msgid "$ matches the end of the word."
 msgstr "$ coincide con el final de la palabra."
 
-#: view-settings.php:102
+#: view-settings.php:60
 msgid "Example: \"where$\" matches \"anywhere\" but not \"wherever\"."
 msgstr "Ejemplo: \"donde$\" coincide con \"adonde\" pero no con \"dondequiera\"."
 
-#: view-settings.php:103
+#: view-settings.php:61
 msgid "^keyword$ matches only the whole keyword."
 msgstr "^palabra$ coincide sólo con la palabra completa."
 
-#: view-settings.php:103
+#: view-settings.php:61
 msgid "Example: \"^where$\" matches \"where\" but not \"anywhere\" or \"wherever\"."
 msgstr "Ejemplo: \"^donde$\" coincide con \"donde\" pero no con \"dondequiera\" o \"adonde\"."
 
-#: view-settings.php:104
+#: view-settings.php:62
 msgid "? matches the previous character zero or one time."
 msgstr "? coincide con el carácter anterior cero o una vez."
 
-#: view-settings.php:104
+#: view-settings.php:62
 msgid "Example: \"^apples?$\" matches \"apple\" and \"apples\"."
 msgstr "Ejemplo: \"^manzanas?$\" coincide con \"manzana\" y \"manzanas\"."
 
-#: view-settings.php:105
+#: view-settings.php:63
 msgid "* matches the previous character zero or more times."
 msgstr "* coincide con el carácter anterior cero o más veces."
 
-#: view-settings.php:105
+#: view-settings.php:63
 msgid "Example: \"^10*$\" matches \"1\", \"10\", \"1000000\", etc."
 msgstr "Ejemplo: \"^10*$\" coincide con \"1\", \"10\", \"1000000\", etc."
 
-#: view-settings.php:106
+#: view-settings.php:64
 msgid "+ matches the previous character one or more times."
 msgstr "+ coincide con el carácter anterior una o más veces."
 
-#: view-settings.php:106
+#: view-settings.php:64
 msgid "Example: \"^10+$\" matches \"10\", \"1000000\", etc., but not \"1\"."
 msgstr "Ejemplo: \"^10+$\" coincide con \"10\", \"1000000\", etc., pero no con \"1\"."
 
-#: view-settings.php:107
+#: view-settings.php:65
 msgid "() matches groups of characters."
 msgstr "() coincide con grupos de caracteres."
 
-#: view-settings.php:107
+#: view-settings.php:65
 msgid "Example: \"^silver(light)?$\" matches \"silver\" and \"silverlight\"."
 msgstr "Ejemplo: \"^contra(luz)?$\" coincide con \"contra\" y \"contraluz\"."
 
-#: view-settings.php:108
+#: view-settings.php:66
 msgid "| matches either side of it. Use it instead of [] for unicode characters "
 msgstr "| coincide con cualquiera de ambos lados del mismo. Utilízalo en vez de [] para caracteres Unicode."
 
-#: view-settings.php:108
+#: view-settings.php:66
 msgid "Example: \"^qu(e|é)$\" matches \"que\" and \"qué\"."
 msgstr "Ejemplo: \"^qu(e|é)?$\" coincide con \"que\" y \"qué\"."
 
-#: view-settings.php:109
+#: view-settings.php:67
 msgid "[] matches any of the characters between the brackets."
 msgstr "[] coincide con cualquiera de los caracteres entre los corchetes."
 
-#: view-settings.php:109
+#: view-settings.php:67
 msgid "Example: \"^take[ns]?$\" matches \"take\", \"taken\" and \"takes\"."
 msgstr "Ejemplo: \"^toma[ns]?$\" coincide con \"toma\", \"tomas\" y \"toman\"."
 
-#: view-settings.php:113
+#: view-settings.php:71
 msgid "Save Changes"
 msgstr "Guardar cambios"
 
@@ -444,48 +368,130 @@ msgstr "Muestra las cuentas de palabras de todos los tipos de entrada públicos"
 msgid "Title:"
 msgstr "Título:"
 
-#: word-stats.php:361
+#: word-stats.php:498
 msgid "Words"
 msgstr "Palabras"
 
-#: word-stats.php:371
+#: word-stats.php:504
 msgid "Total words"
 msgstr "Palabras totales"
 
-#: word-stats.php:385
-msgid "R.I."
-msgstr "I.L."
+#: word-stats.php:522
+msgid "Level"
+msgstr "Nivel"
 
-#: word-stats.php:634
+#: word-stats.php:700
 msgid "(no title)"
 msgstr "(sin título)"
 
-#: word-stats.php:712
+#: word-stats.php:768
+#: word-stats.php:777
+msgid "Title"
+msgstr "Título"
+
+#: word-stats.php:769
+#: word-stats.php:778
+msgid "Post Type"
+msgstr "Tipo de entrada"
+
+#: word-stats.php:770
+#: word-stats.php:779
+msgid "Date"
+msgstr "Fecha"
+
+#: word-stats.php:771
+#: word-stats.php:780
+msgid "Word Count"
+msgstr "Cuenta de palabras"
+
+#: word-stats.php:772
+msgid "Spammed Keywords"
+msgstr "Palabras clave espameadas"
+
+#: word-stats.php:775
+msgid "Spammed keywords"
+msgstr "Palabras clave espameadas"
+
+#: word-stats.php:785
+msgid "No relevant keywords"
+msgstr "Ninguna palabra clave relevante"
+
+#: word-stats.php:787
+msgid "Difficult text"
+msgstr "Texto difícil"
+
+#: word-stats.php:789
+msgid "Simple text"
+msgstr "Texto simple"
+
+#: word-stats.php:791
+msgid "Text may be too long"
+msgstr "El texto puede ser demasiado largo"
+
+#: word-stats.php:793
+msgid "Text may be too short"
+msgstr "El texto puede ser demasiado corto"
+
+#: word-stats.php:828
 msgid "Sorry, word counting failed for an unknown reason."
 msgstr "Disculpas. La cuenta de palabras falló por un motivo desconocido."
 
-#: word-stats.php:745
+#: word-stats.php:863
 #, php-format
-msgid "Word stats collection is underway (%s posts left). Graphs will be available at the end of the process."
-msgstr "Se están recopilando las estadísticas de palabras (faltan %s entradas). Las gráficas estarán disponibles al final del proceso."
+msgid "Word stats collection is scheduled (%s posts left). Stats will be available in a little while."
+msgstr "Se ha programado la recopilación de estadísticas de palabras (faltan %s entradas). Las estadísticas estarán disponibles pronto."
 
-#: word-stats.php:748
-#: word-stats.php:754
+#: word-stats.php:867
 msgid "Thanks for your contribution!"
 msgstr "¡Gracias por tu contribución!"
 
-#: word-stats.php:748
-#: word-stats.php:751
-msgid "Word Stats Plugin is now upgraded to Premium!"
-msgstr "¡Word Stats Plugin está ahora actualizado a Premium!"
-
-#: word-stats.php:751
-msgid "Please, use the donation button to express your support."
-msgstr "Por favor, usa el botón de donaciones para expresar tu apoyo."
-
-#: word-stats.php:754
+#: word-stats.php:867
 msgid "With your support we can bring you even more premium features!"
 msgstr "¡Con tu apoyo podemos traer aún más características premium!"
+
+#~ msgid "Unlock this screen"
+#~ msgstr "Desbloquea esta página"
+
+#~ msgid ""
+#~ "Get access to this screen and future premium features with a single "
+#~ "contribution."
+#~ msgstr ""
+#~ "Accede a esta página y a futuras características premium con una sola "
+#~ "contribución."
+
+#~ msgid "Problems activating the premium features? %sClick here%s"
+#~ msgstr "¿Problemas activando las características premium? %sHaz clic aquí%s"
+
+#~ msgid "Your rating"
+#~ msgstr "Tu puntuación"
+
+#~ msgid "Meh, whatever"
+#~ msgstr "Bleh, lo que sea"
+
+#~ msgid "€%1$s.%2$s"
+#~ msgstr "%1$s,%2$s€"
+
+#~ msgid "Good plugin!"
+#~ msgstr "¡Buen plugin!"
+
+#~ msgid "Awesomesauce!"
+#~ msgstr "¡La pera limonera!"
+
+#~ msgid "Enable total word counts (dashboard, widget and shortcode)."
+#~ msgstr ""
+#~ "Habilitar cuentas totales de palabras (escritorio, widget y shortcode)."
+
+#~ msgid "This may slow down post saving in large blogs."
+#~ msgstr "Esto puede ralentizar el guardado de entradas en blogs grandes."
+
+#~ msgid "R.I."
+#~ msgstr "I.L."
+
+#~ msgid "Word Stats Plugin is now upgraded to Premium!"
+#~ msgstr "¡Word Stats Plugin está ahora actualizado a Premium!"
+
+#~ msgid "Please, use the donation button to express your support."
+#~ msgstr "Por favor, usa el botón de donaciones para expresar tu apoyo."
 
 #~ msgid ""
 #~ "Posts with any keyword count above this value will be flagged for keyword "

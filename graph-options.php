@@ -1,8 +1,6 @@
 <?php
-function ws_graph_options( $option ) {
-	switch( $option ) {
-		case 'timeline':
-			return ' {
+$graph_options = array(
+	'timeline' => '{
 						series: {
 							lines: { show: true, fill: true },
 							points: { show: true }
@@ -22,10 +20,8 @@ function ws_graph_options( $option ) {
 						legend: {
 							position: "nw"
 						}
-					}';
-			break;
-		case 'type':
-			return ' {
+					}',
+	'type' => ' {
 					series: {
 						pie: {
 							show: true,
@@ -45,10 +41,8 @@ function ws_graph_options( $option ) {
 					legend: {
 						show: false
 					}
-				}';
-			break;
-		case 'keywords':
-			return ' {
+				}',
+	'keywords' => ' {
 					series: {
 						bars: {
 							horizontal: true,
@@ -75,10 +69,8 @@ function ws_graph_options( $option ) {
 					legend: {
 						show: false
 					}
-				}';
-			break;
-		case 'readability':
-			return ' {
+				}',
+	'readability' => ' {
 					series: {
 						pie: {
 							show: true,
@@ -97,9 +89,7 @@ function ws_graph_options( $option ) {
 					legend: {
 						show: false
 					}
-				}';
-			break;
-	}
-}
+				}'
+	);
 
 /* EOF */

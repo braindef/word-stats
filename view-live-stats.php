@@ -1,6 +1,6 @@
 <?php
 
-	if( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
+	if ( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
 
 	echo '
 	<script type="text/javascript">
@@ -45,16 +45,16 @@
 				/* Automated Readability Index */
 				var ARI = 4.71 * ( totalAlphanumeric / totalWords ) + 0.5 * ( totalWords / totalSentences ) - 21.43;
 				ARI = ARI.toFixed( 1 );
-				if ( ARI < ', WS_RI_BASIC, ' ) { ARItext = \'<span style="color: #06a;">\' + ARI + "</span>"; }
-				if ( ARI >= ', WS_RI_BASIC, ' && ARI < ', WS_RI_ADVANCED, ' ) { ARItext = \'<span style="color: #0a6;">\' + ARI + "</span>"; }
-				if ( ARI >= ', WS_RI_ADVANCED, ' ) { ARItext = \'<span style="color: #c36;">\' + ARI + "</span>"; }
+				if ( ARI < ', $word_stats_options[ 'diagnostic_too_simple' ], ' ) { ARItext = \'<span style="color: #06a;">\' + ARI + "</span>"; }
+				if ( ARI >= ', $word_stats_options[ 'diagnostic_too_simple' ], ' && ARI < ', $word_stats_options[ 'diagnostic_too_difficult' ], ' ) { ARItext = \'<span style="color: #0a6;">\' + ARI + "</span>"; }
+				if ( ARI >= ', $word_stats_options[ 'diagnostic_too_difficult' ], ' ) { ARItext = \'<span style="color: #c36;">\' + ARI + "</span>"; }
 
 				/* Coleman-Liau Index */
 				var CLI = 5.88 * ( totalAlphanumeric / totalWords ) - 29.6 * ( totalSentences / totalWords ) - 15.8;
 				CLI = CLI.toFixed( 1 );
-				if ( CLI < ', WS_RI_BASIC, ' ) { CLItext = \'<span style="color: #06a;">\' + CLI + "</span>"; }
-				if ( CLI >= ', WS_RI_BASIC, ' && CLI < ', WS_RI_ADVANCED, ' ) { CLItext = \'<span style="color: #0a6;">\' + CLI + "</span>"; }
-				if ( CLI >= ', WS_RI_ADVANCED, ' ) { CLItext = \'<span style="color: #c36;">\' + CLI + "</span>"; }
+				if ( CLI < ', $word_stats_options[ 'diagnostic_too_simple' ], ' ) { CLItext = \'<span style="color: #06a;">\' + CLI + "</span>"; }
+				if ( CLI >= ', $word_stats_options[ 'diagnostic_too_simple' ], ' && CLI < ', $word_stats_options[ 'diagnostic_too_difficult' ], ' ) { CLItext = \'<span style="color: #0a6;">\' + CLI + "</span>"; }
+				if ( CLI >= ', $word_stats_options[ 'diagnostic_too_difficult' ], ' ) { CLItext = \'<span style="color: #c36;">\' + CLI + "</span>"; }
 
 				/* LIX */
 				var LIXlongwords = 0;
@@ -69,7 +69,7 @@
 				if ( LIX >= 55 ) { LIXtext = \'<span style="color: #c36;">\' + LIX + "</span>"; }
 
 				temp = "";';
-				if ( get_option( 'word_stats_show_keywords' ) || !Word_Stats_Core::is_option( 'word_stats_show_keywords' ) ) {
+				if ( $word_stats_options[ 'live_keywords' ] ) {
 
 					echo '
 					/* Find keywords */
@@ -77,14 +77,8 @@
 					var topCount = 0; ';
 
 					# Find if we must retrieve ignored keywords and add them to an array.
-					if ( get_option( 'word_stats_ignore_keywords' ) || get_option( 'word_stats_ignore_common' ) || !Word_Stats_Core::is_option( 'word_stats_show_common' ) ) {
-						# echo 'var ignKeywords = "' , strtolower( str_replace( "\r", '', str_replace( "\n", '::', get_option( 'word_stats_ignore_keywords' ) ) ) );
-						# echo '";
-						# ignKeywords = ignKeywords.split( "::" );';
-						echo 'var ignKeywords = new Array("' , implode( Word_Stats_Core::get_ignored_keywords(), '", "' ), '");';
-					} else {
-						echo 'var ignKeywords = new Array;';
-					}
+					echo ( ( $word_stats_options[ 'ignore_keywords' ] || $word_stats_options[ 'ignore_common' ] ) ?
+						'var ignKeywords = new Array("' . implode( Word_Stats_Core::get_ignored_keywords(), '", "' ) . '");' : 'var ignKeywords = new Array;' );
 
 					echo '
 					for (var i = 0; i < wordArray.length; i = i + 1) {
@@ -99,7 +93,7 @@
 					}';
 
 					// Add tags. Note $post has been declared global above.
-					if ( get_option( 'word_stats_add_tags' ) && get_the_tags( $post->ID ) ) {
+					if ( $word_stats_options[ 'add_tags' ] && get_the_tags( $post->ID ) ) {
 						echo '/* Add last saved tags */', "\n";
 						foreach ( get_the_tags( $post->ID ) as $tag ) {
 							$tag->name = strtolower( esc_attr( $tag->name ) );
@@ -113,22 +107,20 @@
 						}
 					}
 
-					$threshold_no_keywords = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_no_keywords' ) ) ? WS_NO_KEYWORDS : get_option( 'word_stats_diagnostic_no_keywords' );
-					$threshold_spammed_keywords = ( !Word_Stats_Core::is_option( 'word_stats_diagnostic_spammed_keywords' ) ) ? WS_SPAMMED_KEYWORDS : get_option( 'word_stats_diagnostic_spammed_keywords' );
-					if ( $threshold_no_keywords < 1 ) { $threshold_no_keywords = 1; }
-					if ( $threshold_spammed_keywords < 1 ) { $threshold_spammed_keywords = 1; }
+					if ( $word_stats_options[ 'diagnostic_no_keywords' ] < 1 ) { $word_stats_options[ 'diagnostic_no_keywords' ] = 1; }
+					if ( $word_stats_options[ 'diagnostic_spammed_keywords' ] < 1 ) { $word_stats_options[ 'diagnostic_spammed_keywords' ] = 1; }
 
 					echo '
 					for ( var j in wordHash ) {
 						if ( wordHash[j] / densityDivisor > ';
-						echo $threshold_no_keywords;
+						echo $word_stats_options[ 'diagnostic_no_keywords' ];
 					echo' ) {
 							if ( wordHash[j]  / densityDivisor >= ';
-							echo $threshold_spammed_keywords;
+							echo $word_stats_options[ 'diagnostic_spammed_keywords' ];
 							echo ' ) {
 								temp = temp + \'<span style="font-weight:bold; color:#c30;">\' + j + " (" + wordHash[j] + ")</span> ";
 							} else if ( wordHash[j]  / densityDivisor > ';
-							echo intval( $threshold_spammed_keywords - ( ( $threshold_spammed_keywords - $threshold_no_keywords ) / 1.5 ) );
+							echo intval( $word_stats_options[ 'diagnostic_spammed_keywords' ] - ( ( $word_stats_options[ 'diagnostic_spammed_keywords' ] - $word_stats_options[ 'diagnostic_no_keywords' ] ) / 1.5 ) );
 							echo ' ) {
 								temp = temp + \'<span style="font-weight:bold;color:#090;">\' + j + " (" + wordHash[j] + ")</span> ";
 							} else {
@@ -145,7 +137,7 @@
 				}
 				echo '	if ( statusInfo.innerHTML.indexOf( "edit-word-stats" ) < 1 ) {
 						statusInfo.innerHTML = statusInfo.innerHTML + "<tbody><tr><td id=\'edit-word-stats\' style=\'padding-left:7px; padding-bottom:4px;\' colspan=\'2\'><strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI</a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
-				if ( get_option( 'word_stats_averages' ) || !Word_Stats_Core::is_option( 'word_stats_averages' ) ) {
+				if ( $word_stats_options[ 'live_averages' ] ) {
 					echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
 						'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
 						'; " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ),
@@ -157,7 +149,7 @@
 				echo ' + temp + "</td></tr></tbody>";
 					} else {
 					 	document.getElementById( "edit-word-stats").innerHTML = "<strong>', esc_attr( __( 'Readability:', 'word-stats' ) ), '</strong><br><a title=\'Automated Readability Index\'>ARI</a>: " + ARItext + "&nbsp; <a title=\'Coleman-Liau Index\'>CLI</a>: " + CLItext + "&nbsp; <a title=\'Läsbarhetsindex\'>LIX</a>: " + LIXtext ';
-				if ( get_option( 'word_stats_averages' ) || !Word_Stats_Core::is_option( 'word_stats_averages' ) ) {
+				if ( $word_stats_options[ 'live_averages' ] ) {
 					echo '+ "<br>" + totalCharacters + " ', esc_attr( __( 'characters', 'word-stats' ) ),
 						'; " + totalAlphanumeric + " ', esc_attr( __( 'alphanumeric characters', 'word-stats' ) ),
 						'; " + totalWords + " ', esc_attr( __( 'words', 'word-stats' ) ),
@@ -170,7 +162,7 @@
 					}';
 
 				// Replace WordPress' word count
-				if ( get_option( 'word_stats_replace_word_count' ) || !Word_Stats_Core::is_option( 'word_stats_replace_word_count' ) ) {
+				if ( $word_stats_options[ 'replace_word_count' ] ) {
 					echo '
 					if ( document.getElementById( "wp-word-count") != null ) { /* WP 3.2 */
 						document.getElementById( "wp-word-count").innerHTML = "' . __( 'Word count:' ) . ' " + totalWords + " <small>' . __( '(Word Stats plugin)', 'word-stats' ) . '</small>";

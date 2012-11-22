@@ -317,5 +317,4 @@ function bst_regfilter_keyword_counts( $keywords, $filter ) {
 	return $filtered_result;
 }
 
-
 /* EOF */

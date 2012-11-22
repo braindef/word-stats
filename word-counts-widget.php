@@ -11,10 +11,10 @@
 */
 class widget_ws_word_counts extends WP_Widget {
 	function widget_ws_word_counts() {
-		parent::WP_Widget( false, $name = __( 'Total Word Counts', 'word-stats' ), array('description' => __( 'Displays the word counts of all public post types', 'word-stats' ) ) );
+		parent::WP_Widget( false, $name = __( 'Total Word Counts', 'word-stats' ), array( 'description' => __( 'Displays the word counts of all public post types', 'word-stats' ) ) );
 	}
 
-	function form($instance) {
+	function form( $instance ) {
 		$title = esc_attr( $instance[ 'title' ] );
 		echo '<p><label for="', $this->get_field_id( 'title' ), '">', __( 'Title:', 'word-stats' ), ' <input class="widefat" id="', $this->get_field_id( 'title' ), '" name="', $this->get_field_name( 'title' ), '" type="text" value="', $title, '"" /></label></p>';
 	}

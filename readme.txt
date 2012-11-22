@@ -2,8 +2,8 @@
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.0.0
-Tested up to: 3.4.2
-Stable tag: 4.2.3
+Tested up to: 3.5
+Stable tag: 4.3
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -40,6 +40,7 @@ Requires WordPress 3.0 and PHP 5.
 
 **Features planned for future versions**
 
+* Improved analytics page.
 * Tag generation.
 * Limit keyword analytics to a custom list of keywords.
 * Send analytics reports by email.
@@ -53,6 +54,24 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.3 =
+* Fix/Code: Word Stats uses now WP Cron instead of admin side AJAX calls to work on caching the word stats. Removes javascript bug that prevented caching from starting.
+* Fix: Dashboard/shortcode/widget total word counts are now recounted every time. Fixes several inconsistencies due to caching/bugs.
+* Fix: The caching worker function was echoing debug output.
+* Fix/Code: set_time_limit replaced with ini_set to prevent warnings.
+* Fix: Bad HTML formatting in the regular expressions description.
+* Design: Removed decimal from readability index column values. Changed column title, made values bold.
+* Code: Tested with WP 3.5.
+* Code: Plugin options grouped in arrays.
+* Code: Replaced get_option calls and constants by global variables.
+* Code: Cleaned and simplified code and updated documentation.
+* Code: Removed functions assign_thresholds and get_cached_totals.
+* Code: Added Word_Stats_Admin::options_section and Word_Stats_Admin::options_field to generate html for the options page.
+* Code: ws_diagnostics_table renamed to diagnostics_table.
+* Code: graph-options.php's include moved from view-report-graphs.php to word-stats.php. Options are stored in an array instead of a function.
+* Code: Simplified get_ignored_keywords.
+* Code: The caching worker updates on its state more often.
+
 = 4.2.3 =
 * Fix: Some non word characters (square brackets, equals) weren't being removed from keywords.
 
@@ -118,77 +137,11 @@ Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/
 * Code: Live stats template moved to view-live-stats.php.
 * Code: Simplified some redundant code.
 
-= 3.3 =
-* Settings and metadata are deleted upon uninstall.
-* Live keyword count uses now the thresholds from the settings page. Spammed keywords are marked red. Top, not spammed keywords are marked green.
-* Default thresholds for keywords changed to 4 (relevant) and 10 (spammed).
-* Fix: Quote entities being counted as keywords.
-* Fix: Options weren't properly tested for existence, affected first install defaults and word count replacement option.
-* Fix: Lowered character length threshold for live counting keywords from 3 to 2.
-* Tested with WordPress 3.3.1.
-
-= 3.2.2 =
-* Fix: Messed ignored words list linked to version check bug. Duplicated characters at the beggining and end of each expression should be removed upon upgrade.
-* Uniformized three colors scheme for readability values on the posts list and live stats.
-* Some default thresholds in the code moved into constants.
-
-= 3.2.1 =
-* Fix: Default diagnostics thresholds weren't read.
-
-= 3.2 =
-* Feature: New length, readability and keyword density diagnostics for the reports page.
-* New settings for diagnostics thresholds.
-* Live count now refreshes every 5 seconds.
-* Fix: Live stats not updating when the post is empty.
-* Fix: Live stats not trimming empty elements was adding 1 to the total count.
-* Fix: Period end day wasn't included in the reports page. I. e. freshly published posts weren't counted.
-* Fix: Typo in options page.
-* Fix: Inconsistent file name (graph_options.php → graph-options.php).
-* Fix: Open anchor tag in live stats.
-* Compatibility update to WordPress 3.3.
-* Deleted extant css file from trunk.
-* Settings page template moved to a separate file (view-settings.php).
-
-= 3.1.1 =
-* PHP close tags removed to prevent accidental submission of headers.
-* Support links added at the bottom of the analytics and options pages.
-* Updated Readme.txt.
-
-= 3.1 =
-* Feature: Ignored words list now uses regular expressions. Old plain keywords are updated on upgrade.
-* Design: Taller ignored words list textbox.
-* Design: Options organized by category.
-* Fix: Some underscore versus hyphen inconsistencies for internal option names.
-
-= 3.0.5 =
-* Fix: Inaccurate total counts on stats page.
-
-= 3.0.4 =
-* Fix: Broken live count.
-
-= 3.0.3 =
-* Fix: Bug in stats page query when 'Count words from drafts and posts pending review' option was off.
-* Fix: Bug displaying saved options.
-
-= 3.0.2 =
-* Fix: Covered some analytics page error cases when there is no data within the period.
-* Fix: Missing translation string.
-
-= 3.0.1 =
-* Fix: Removed operator ?: unsupported in older PHP 5 versions.
-* Fix: Description typo.
-
-= 3.0 =
-* New premium stats page.
-* Allowed all users with access to the stats page to see stats for all authors.
-* Readability Index column is calculated when viewing the posts list.
-* Fix: Duplicated readability index value when number was a round integer.
-
 == Upgrade Notice ==
-= 4.0 =
-This is a major release with many fixes and code changes. Please, consider testing it first in a development install before deploying it to a production site.
+= 4.3 =
+Although no new features are included, this is a substantial code rewrite. Test it before using it in a production enviroment!
 
-Note that the keyword thresholds now represent keyword density. For example, by default, when specifing 4 as threshold count for relevant keywords, it refers to 4 appareances per 1000 words.
+If you have been having problems with stats caching getting stuck, this release may help. Caching is now done via WP-Cron instead of an AJAX call. Also caching of unpublished posts is deferred until the option to count them is selected. The changes also cover the possible source of some reported problems with stats not updating correctly.
 
 == Installation ==
 
@@ -203,18 +156,52 @@ Note that the keyword thresholds now represent keyword density. For example, by 
 
 == Frequently Asked Questions ==
 
-**What do the readability numbers and colors mean?**
+**The stats caching notice seems stuck**
+
+* If your version is older than 4.3, try upgrading.
+* Sometimes WP Cron doesn't start a scheduled work right away. Wait a minute and load any page.
+* Check that WP Cron isn't disabled.
+
+**The word count/readability calculation isn't accurate**
+
+Word Stats uses simple algorithms (but more elaborate than the PHP word counter). For fairly ordinary English texts they will closely match human counting. The margin of error will be greater for short pieces, text with complex punctuation or in other languages, but they should be still good indicators.
+
+**Some HTML/shortcode words are being counted as keywords**
+
+Some cases are still not filtered out. Report them in the plugin support forum or via email.
+
+**This plugin makes my site slow**
+
+Some of the plugin's tasks can be a bit intensive, specially on large blogs. Try disabling counting for unpublished posts, and live stats when you don't need them. Our resources are limited, for now we are working on features rather than optimization.
+
+**Some common words show as keywords, even though the setting to exclude common words is activated**
+
+The built in lists only exclude some of the most common words. Performing many matches with regular expressions can be very slow.
+
+**Why the live counters seem to lag?**
+
+The calculations are refreshed every few seconds.
+
+**Are the ignored keywords counted in the total words?**
+
+Yes. They are ignored only for keyword counts.
+
+**Do the indexes really reflect how easy is the text?**
+
+They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level.
+
+**What do the readability number mean?**
 
 For ARI and CLI, they are the U.S. grade level of the text. Roughly, grade level 1 corresponds to ages 6-8, grade 8 to 14 years old, grade 12 to 17 years old.
 
 For LIX:
 
-* below 25: Children's Books (green)
-* 25 - 30: Simple texts (green)
-* 30 - 40: Normal Text / Fiction (yellow)
-* 40 - 50: Factual information, such as Wikipedia (orange)
-* 50 - 60: Technical texts (red)
-* over 60: Specialist texts / research / dissertations (purple)
+* below 25: Children's Books
+* 25 - 30: Simple texts
+* 30 - 40: Normal Text / Fiction
+* 40 - 50: Factual information, such as Wikipedia
+* 50 - 60: Technical texts
+* over 60: Specialist texts / research / dissertations
 
 Each index uses a different algorithm:
 
@@ -228,35 +215,9 @@ Check [http://en.wikipedia.org/wiki/Readability_test](http://en.wikipedia.org/wi
 
 These three indexes don't rely on syllable counting, which is a bit more complicated and language dependent.
 
-**How accurate are the indexes?**
-
-Word Stats uses simple algorithms. For fairly ordinary English texts they will closely match human counting; for example, the algorithm for Coleman-Liau produces the same result for the example piece in the Wikipedia article. The margin of error will be greater for short pieces with dashes and apostrophes or in other languages, but they should be still good indicators.
-
-**Do the indexes really reflect how easy is the text?**
-
-They try to reflect how easy the text is to read. You can write an article about relativity in simple English and it will be rated as low level.
-
-**Why the live counters seem to lag?**
-
-The calculations are refreshed every 5 seconds.
-
-**Are the ignored keywords counted in the total words?**
-
-Yes. They are ignored only for keyword counts.
-
-**Some common words show as keywords, even though the setting to exclude common words is activated**
-
-The built in lists only exclude some of the most common words. Performing many matches with regular expressions can be very slow.
-
 **The stats page timed out.**
 
-Try selecting a shorter period, disabling the setting to count drafts and pending posts, disabling the setting to ignore common words or shortening your list of ignored keywords. If your blog is very large and/or your server is slow the script may not be able to complete the counting before the script execution time limit.
-
-Also, counts are cached the first time you load the stats or save a post, so if you just installed the plugin, try again.
-
-**The anchors for the total word counts in the dashboard are blank**
-
-They are just for style consistence.
+Try selecting a shorter period, disabling the setting to count drafts and pending posts, disabling the setting to ignore common words or shortening your list of ignored keywords.
 
 == Screenshots ==
 

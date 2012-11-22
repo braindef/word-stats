@@ -1,20 +1,15 @@
 <?php
 
-	if( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
-
-	# ToDo: Finish separating View from Model/Controller
-
-	# Get oldest date
-	if( $_GET[ 'view-all' ] ) {
-		$period_start = date( 'Y-m-d', min( bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ), bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ), bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) ) );
-	}
+	if ( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
 
 	# Using WordPress built in jQuery, jQuery UI. Using jQuery UI datepicker 1.7.3 for WP < 3.1 compatibility
 	# Load jQuery Flot scripts to draw the graphs
 	echo '<!--[if lte IE 8]>';
+
 	$src = plugins_url( 'word-stats/js/excanvas.min.js' );
-	echo '<script type="text/javascript" src="' , $src, '"></script>';
-	echo '<![endif]-->';
+	echo '
+		<script type="text/javascript" src="' , $src, '"></script>
+		<![endif]-->';
 	$scripts = array(
 		plugins_url( 'word-stats/js/ui/ui.datepicker.min.js' ),
 		plugins_url( 'word-stats/js/flot/jquery.flot.js' ),
@@ -31,30 +26,23 @@
 			', __( 'JavaScript is disabled. Enable it to load the graphs.', 'word-stats' ),
 		'</p></div><br />
 	</noscript>
-	';
-
-	include( 'graph-options.php' );
-
-	echo '<div class="wrap ws-wrap"><h2></h2>'; # Important: The h2 is used by admin_notices to find where to insert the messages.
+	<div class="wrap ws-wrap"><h2></h2>'; # Important: The h2 is used by admin_notices to find where to insert the messages.
 
 	$i = 0;
-	if ( $_GET[ 'author-tab' ] ) {
-		$author_graph = intval( $_GET[ 'author-tab' ] );
-	} else {
-		$author_graph = $user_ID;
-	}
+	$author_graph = ( $_GET[ 'author-tab' ] ) ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
 
 	/*
 		Links to author tabs (starting with an option for all authors) and date range selector.
 	*/
-	echo
-	'<div id="ws-forms-wrapper">
+	echo	'
+	<div id="ws-forms-wrapper">
 		<form id="authors-form" name="select-author" action="index.php" method="get">
 			<input type="hidden" name="page" value="word-stats-graphs" />',
 			__( 'View author:', 'word-stats' ),
 			' <select name="author-tab" id="authors-list">';
 				foreach ( $report[ 'author_count' ] as $id=>$post_type ) {
 					if ( $id == -1 ) {
+						# All authors option. This data is loaded into $report[ 'author_count_total' ][ -1 ], etc.
 			 			echo '<option class="author-graph-option" value="-1"', ( $author_graph == '-1' ) ? ' selected="selected" ' : '', '>', __( 'All authors', 'word-stats' ), '</option>';
 					} else {
 						$this_author = get_userdata( $id );
@@ -71,13 +59,12 @@
 			jQuery("#period-start").datepicker( { dateFormat: "yy-mm-dd" } );
 			jQuery("#period-end").datepicker( { dateFormat: "yy-mm-dd" } );
 		</script>';
-		include( 'donate.php' );
+	include 'donate.php';
 	echo '</div>';
 
 	/*
 		Display stats for the currently selected author
 	*/
-	# Not used: delete after tests. $cur_author = get_userdata( $author_graph );
 	echo '<br style="clear:both" />';
 	echo
 	'<div id="ws-graph-wrapper">
@@ -117,8 +104,9 @@
 		<br style="clear:both;" />';
 
 	# Timeline tooltip
-	echo '<script type="text/javascript" src="', plugins_url( 'word-stats/js/timeline-tooltip.js' ), '"></script>', "\n";
-	echo '<script type="text/javascript">', "\n";
+	echo
+		'<script type="text/javascript" src="', plugins_url( 'word-stats/js/timeline-tooltip.js' ), '"></script>', "\n",
+		'<script type="text/javascript">', "\n";
 
 	# Words per Month
 	$series = '[ '; $z = 0;
@@ -131,7 +119,6 @@
 				$comma = false;
 				foreach ( $months as $month=>$count ) {
 					$total_per_type[ $type ] += $count;
-					//$month = str_replace( '-', '-01-', $month);
 					$month .= '-01';
 					$month = strtotime( $month ) * 1000;
 					# ToDo: Zero months with no words
@@ -146,7 +133,7 @@
 		$series .= '{ label: "' . __( 'No data', 'word-stats' ). '", data: 100, color: "#666" }';
 	}
 	$series .= ' ]';
-	echo "jQuery.plot(jQuery(\"#ws-graph-timeline\"), $series, ", ws_graph_options( 'timeline' ), ");\n";
+	echo "jQuery.plot(jQuery(\"#ws-graph-timeline\"), $series, ", $graph_options[ 'timeline' ], ");\n";
 
 	# Percentage of each post type. We counted the totals in the loop for the main chart.
 	$series = '[ ';
@@ -167,7 +154,7 @@
 	}
 
 	$series .= ' ]';
-	echo "jQuery.plot(jQuery(\"#ws-graph-total-pc\"), $series,", ws_graph_options( 'type' ), " );\n";
+	echo "jQuery.plot(jQuery(\"#ws-graph-total-pc\"), $series,", $graph_options[ 'type' ], " );\n";
 
 	$series = '[ ';
 	$z = 0;
@@ -188,7 +175,7 @@
 		$series .= '{ label: "' . __( 'No data', 'word-stats' ) . '", data: 100, color: "#666" }';
 	}
 	$series .= ' ]';
-	echo "jQuery.plot(jQuery(\"#ws-graph-index-pc\"), $series,", ws_graph_options( 'readability' ), " );\n";
+	echo "jQuery.plot(jQuery(\"#ws-graph-index-pc\"), $series,", $graph_options[ 'readability' ], " );\n";
 
 
 	# Keywords.
@@ -216,10 +203,11 @@
 		}
 	}
 
-	echo "var kw1 = [",  $kw_data, "];\n"; # Create the data array for each post type
-	echo "var kw_ticks = new Array(",  $var_kw_ticks, ");\n"; # Create the data array for each post type
-
-	echo "	jQuery.plot(jQuery(\"#ws-graph-keywords\"), $series,", ws_graph_options( 'keywords' ), " );\n;";
+	# 1. Create the data array for each post type. 2. Create the data array for each post type (ticks)
+	echo "
+		var kw1 = [",  $kw_data, "];\n
+		var kw_ticks = new Array(",  $var_kw_ticks, ");\n
+		jQuery.plot(jQuery(\"#ws-graph-keywords\"), $series,", $graph_options[ 'keywords' ], " );\n;";
 
 	# Post type counts
 	$bar_max_width = 125;
@@ -231,44 +219,22 @@
 	$meter_page_width = 	intval( $bar_max_width * ( $total_pages / $total_all_types ) + 1);
 	$meter_custom_width = intval( $bar_max_width * ( $total_custom / $total_all_types ) + 1);
 	$meter_all_width = intval( $bar_max_width + 1 );
-	echo '	jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $meter_post_width, 'px\'></div> ', $total_posts, '");';
-	echo '	jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $meter_page_width, 'px\'></div> ', $total_pages, '");';
-	echo '	jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $meter_custom_width, 'px\'></div> ', $total_custom, '");';
-	echo '	jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $meter_all_width, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");';
-
-	echo '</script>
-		</div>
-		<div id="ws-diagnostics-wrap">
+	echo '
+			jQuery("#pt-meter-post").html("<div class=\'pt-meter-bar pt-meter-post-bar\' style=\'width:', $meter_post_width, 'px\'></div> ', $total_posts, '");
+			jQuery("#pt-meter-page").html("<div class=\'pt-meter-bar pt-meter-page-bar\' style=\'width:', $meter_page_width, 'px\'></div> ', $total_pages, '");
+			jQuery("#pt-meter-custom").html("<div class=\'pt-meter-bar pt-meter-custom-bar\'  style=\'width:', $meter_custom_width, 'px\'></div> ', $total_custom, '");
+			jQuery("#pt-meter-all").html("<div class=\'pt-meter-bar pt-meter-all-bar\' style=\'width:', $meter_all_width, 'px\'></div> ', $total_posts + $total_pages + $total_custom, '");
+		</script>
+	</div>
+	<div id="ws-diagnostics-wrap">
 		<h3 class="ws-header">', __( 'Diagnostics', 'word-stats' ), '</h3>
 			<div id="ws-tables">';
 
-	# Diagnostics tables.
-	$table_fields = array( __( 'Title', 'word-stats' ), __( 'Post Type', 'word-stats'), __( 'Date', 'word-stats' ), __( 'Spammed Keywords', 'word-stats' ) );
-	if ( count( $report[ 'diagnostic' ][ 'spammed_keywords' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'Spammed keywords', 'word-stats' ), $table_fields, 'spammed-keywords', $report[ 'diagnostic' ][ 'spammed_keywords' ] );
-	}
+	echo $diagnostic_tables;
 
-	$table_fields = array( __( 'Title', 'word-stats' ), __( 'Post Type', 'word-stats'), __( 'Date', 'word-stats' ), __( 'Word Count', 'word-stats' ), __( 'Readability' , 'word-stats' ) );
-	if ( count( $report[ 'diagnostic' ][ 'no_keywords' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'No relevant keywords', 'word-stats' ), $table_fields, 'no_keywords', $report[ 'diagnostic' ][ 'no_keywords' ] );
-	}
-	if ( count( $report[ 'diagnostic' ][ 'too_difficult' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'Difficult text', 'word-stats' ), $table_fields, 'too-difficult', $report[ 'diagnostic' ][ 'too_difficult' ] );
-	}
-	if ( count( $report[ 'diagnostic' ][ 'too_simple' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'Simple text', 'word-stats' ), $table_fields, 'too-simple', $report[ 'diagnostic' ][ 'too_simple' ] );
-	}
-	if ( count( $report[ 'diagnostic' ][ 'too_long' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'Text may be too long', 'word-stats' ), $table_fields, 'too-long', $report[ 'diagnostic' ][ 'too_long' ] );
-	}
-	if ( count( $report[ 'diagnostic' ][ 'too_short' ] ) ) {
-		word_stats_admin::ws_diagnostics_table( __( 'Text may be too short', 'word-stats' ), $table_fields, 'too-short', $report[ 'diagnostic' ][ 'too_short' ] );
-	}
-
-	echo '
-			</div>
-		<div id="ws-feedback-links" style="clear:both; padding-top: 2em;"><img style="float:left; margin-top: -2px; margin-right: 4px;" src="', plugins_url(), '/word-stats/img/pin-blue.png" /> Feedback, questions, bugs? Send them to the <a href="http://wordpress.org/tags/word-stats">plugin support forum</a> or <a href="mailto:email@franontanaya.com?subject=Word Stats support">email</a> the author.</div>
-	</div>';
-	echo '<br style="clear:both;"></div>'; # End wrap
+	echo '	</div>';
+	include 'view-feedback-links.php';
+	echo '</div>
+		<br style="clear:both;"></div>'; # End wrap
 
 /* EOF */
