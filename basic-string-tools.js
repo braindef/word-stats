@@ -54,6 +54,8 @@ var bstAllWordChars =
 	"\u1700-\u1714"; // Tagalog
 // * This list is incomplete.
 
+var 	bstInWordMarks = "\'(?![A-Za-z])";
+
 var bstAllShortPauses =
 	"[\.]{3}|[;:\u2026\u2015" +
 	"\u00B7\u0387]"; // Greek
@@ -81,11 +83,18 @@ function bstHtmlStripper( text ) {
 
 /* Note that parsing for non-Latin scripts may be incomplete. */
 function bstSimpleBoundaries( text ) {
-	/* Requires jQuery - Make sure HTML entities are decoded */
-	/* text = $( "<div/>" ).html( text ).text(); */
+	/* Add reverse() function, so we can fake regexp lookbehind. */
+	String.prototype.reverse = function () {
+		return this.split('').reverse().join('');
+	};
 
-	/* Replace no break spaces */
-	text = text.replace( new RegExp( "\u00A0|\&nbsp;", "g" ), " " );
+	/* Replace some special characters */
+	text = text.replace( new RegExp( "=|-", "g" ), " " );
+
+	text = text.replace( new RegExp( "[\[]|\]", "g" ), " " );
+	text = text.replace( new RegExp( "\\\\", "g" ), " " );
+
+	text = text.replace( new RegExp( "\u00A0|\&nbsp;|\"", "g" ), " " );
 
 	/* Remove combining marks et al, as they are meaningless for this purpose and can split words */
 	text = text.replace( new RegExp( bstAllCombiningMarks, "g" ), "" );
@@ -99,8 +108,14 @@ function bstSimpleBoundaries( text ) {
 	/* Replace all remaining short pauses with colons */
 	text = text.replace( new RegExp( bstAllShortPauses, "g" ), "," );
 
+	/* Remove single quotes around words, but not inside words. Because JavaScript doesn't support lookbehind, we reverse the string instead. */
+	text = text.replace( new RegExp( bstInWordMarks, "g" ), " ");
+	text = text.reverse();
+	text = text.replace( new RegExp( bstInWordMarks, "g" ), " ");
+	text = text.reverse();
+
 	/* Replace non-word characters, save short pauses and end of sentence, with spaces */
-	text = text.replace( new RegExp( "[^" + bstAllWordChars + ",\.\n]", "g" ), " ");
+	text = text.replace( new RegExp( "[^" + bstAllWordChars + ",\'\.\n]", "g" ), " ");
 
 	var result = new Array();
 	result[ "text" ] = text;
@@ -111,8 +126,8 @@ function bstSimpleBoundaries( text ) {
 
  function bstTrimArray( array ) {
 	/* Remove the first and last items if they are empty */
-	if ( array[ 0 ] == "" ) { array.slice( 1, array.length ); }
-	if ( array[ array.length - 1 ] == "" ) { array.slice( 0, array.length - 1 ); }
+	if ( array[ 0 ] == "" || array[ 0 ] == "\n" ) { array = array.slice( 1, array.length ); }
+	if ( array[ array.length - 1 ] == "" || array[ array.length -1 ] == "\n" ) { array = array.slice( 0, array.length - 1 ); }
 	return array;
 }
 
@@ -129,7 +144,7 @@ function trim( s ) {
 
 function bstTrimText( text ) {
 	// Trim spaces
-	text = text.replace( new RegExp( "[ ]+[\.\n]", "g"), '' );
+	text = text.replace( new RegExp( "[ ]+(?=[\.\n])", "g"), '' );
 	return trim( text );
 }
 
@@ -144,12 +159,19 @@ function bstSplitWords( text ) {
 }
 
 function bstSplitText( text ) {
-	var simplified = bstSimpleBoundaries( text );
 	var stats = new Array();
-	stats[ "text" ] = simplified[ "text" ];
-	simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
-	stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
-	stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
-	stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	if ( text == "" ) {
+		stats[ "text" ] = "";
+		stats[ "sentences" ] = "";
+		stats[ "words" ] = "";
+		stats[ "alphanumeric" ] = "";
+	} else {
+		var simplified = bstSimpleBoundaries( text );
+		stats[ "text" ] = simplified[ "text" ];
+		simplified[ "text" ] = bstTrimText( simplified[ "text" ] );
+		stats[ "sentences" ] = bstSplitSentences( simplified[ "text" ] );
+		stats[ "words" ] = bstSplitWords( simplified[ "text" ] );
+		stats[ "alphanumeric" ] = simplified[ "alphanumeric" ];
+	}
 	return stats;
 }
