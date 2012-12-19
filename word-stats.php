@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://bestseller.franontanaya.com/?p=101
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.3
+Version: 4.3.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2012 Fran Ontanaya
@@ -542,12 +542,14 @@ class Word_Stats_Admin {
 		foreach( $wp_post_types as $post_type ) {
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 			# Load only content and custom post types
+
 			if ( Word_Stats_Core::is_content_type( $post_type->name ) ) {
 				$query =  "SELECT * FROM $wpdb->posts
 									WHERE post_type = '" . mysql_real_escape_string( $post_type->name ) . "' AND " .
 									( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
-									"post_date BETWEEN '" . mysql_real_escape_string( $period_start ) . "' AND '" . mysql_real_escape_string( $period_end ) . "' " .
+									"post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' " .
 									"ORDER BY post_date DESC";
+
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
@@ -726,17 +728,20 @@ class Word_Stats_Admin {
 			$period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 );
 			$period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' );
 		}
+
 		$author_graph = $_GET[ 'author-tab' ] ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
 
 		$report = Word_Stats_Admin::load_report_stats( $author_graph, $period_start, $period_end );
 
 		if ( $report ) {
 			# Get oldest date (for the graph)
-			$period_start = date( 'Y-m-d', min(
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ),
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ),
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) )
-			);
+			if( $_GET[ 'view-all' ] ) {
+				$period_start = date( 'Y-m-d', min(
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ),
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ),
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) )
+				);
+			}
 			include 'graph-options.php';
 			$diagnostic_tables = Word_Stats_Admin::diagnostics_tables( $report );
 			include 'view-report-graphs.php';
@@ -748,7 +753,7 @@ class Word_Stats_Admin {
 
 function word_stats_report_init() {
 		wp_register_style( 'ws-reports-page', plugins_url() . '/word-stats/css/reports-page.css' );
-		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/jquery-ui-1.7.3.custom.css' );
+		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/css/custom/jquery-ui-1.9.2.custom.min.css' );
 }
 function word_stats_report_styles() {
 		wp_enqueue_style( 'ws-reports-page' );

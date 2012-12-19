@@ -2,16 +2,16 @@
 
 	if ( !WS_CURRENT_VERSION ) { exit( __( 'Please, don\'t load this file directly', 'word-stats' ) ); }
 
-	# Using WordPress built in jQuery, jQuery UI. Using jQuery UI datepicker 1.7.3 for WP < 3.1 compatibility
-	# Load jQuery Flot scripts to draw the graphs
 	echo '<!--[if lte IE 8]>';
 
 	$src = plugins_url( 'word-stats/js/excanvas.min.js' );
 	echo '
 		<script type="text/javascript" src="' , $src, '"></script>
 		<![endif]-->';
+	# Loading custom jquery-ui seems to fix a problem loading datepicker with the built-in jquery-ui provided with WordPress
 	$scripts = array(
-		plugins_url( 'word-stats/js/ui/ui.datepicker.min.js' ),
+		plugins_url( 'word-stats/js/ui/jquery.ui.1.9.2.js' ),
+		plugins_url( 'word-stats/js/ui/jquery.ui.datepicker.min.js' ),
 		plugins_url( 'word-stats/js/flot/jquery.flot.js' ),
 		plugins_url( 'word-stats/js/flot/jquery.flot.resize.js' ),
 		plugins_url( 'word-stats/js/flot/jquery.flot.pie.js' )

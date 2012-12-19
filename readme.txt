@@ -1,9 +1,9 @@
 === Plugin Name ===
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
-Requires at least: 3.0.0
+Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 4.3
+Stable tag: 4.3.1
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -54,6 +54,12 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.3.1 =
+* Fix: datepicker plugin had stopped working.
+* Fix: Reports page was displaying an incorrect period start date.
+* Design: Datepicker theme matches better the admin user interface.
+* Minimum WP version required raised to 3.1.
+
 = 4.3 =
 * Fix/Code: Word Stats uses now WP Cron instead of admin side AJAX calls to work on caching the word stats. Removes javascript bug that prevented caching from starting.
 * Fix: Dashboard/shortcode/widget total word counts are now recounted every time. Fixes several inconsistencies due to caching/bugs.
