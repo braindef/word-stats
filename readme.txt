@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 4.3.1
+Stable tag: 4.4
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -54,6 +54,12 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.4 =
+* Fix: Some posts were showing 0 words counted upon saving due to bad html entity decoding. A custom entity decoding dictionary has been added to address this.
+* Fix: Several fixes/minor improvements to the server side counting patterns.
+* Fix: Added Chinese ideograms to the list of recognized word characters.
+* UTF-8 character documentation moved out of basic-string-tools.php to basic-string-tools.md.
+
 = 4.3.1 =
 * Fix: datepicker plugin had stopped working.
 * Fix: Reports page was displaying an incorrect period start date.

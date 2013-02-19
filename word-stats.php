@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: Word Stats
-Plugin URI: http://bestseller.franontanaya.com/?p=101
+Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.3.1
+Version: 4.4
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2012 Fran Ontanaya
@@ -30,7 +30,7 @@ Thanks to Allan Ellegaard, Eric Johnson and Feuerwächter for testing and input.
 /* # Setup
 -------------------------------------------------------------- */
 # Used to perform upgrades
-define( 'WS_CURRENT_VERSION', '4.3' );
+define( 'WS_CURRENT_VERSION', '4.4' );
 
 # Load translation strings
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
@@ -785,4 +785,4 @@ function word_stats_notice_donation() {
 if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
 if ( Word_Stats_State::is_worker_needed() ) { add_action( 'admin_notices', 'word_stats_notice_cacheing' ); }
 
-/* EOF */
+# EOF
