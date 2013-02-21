@@ -2,8 +2,8 @@
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.1
-Tested up to: 3.5
-Stable tag: 4.4
+Tested up to: 3.5.1
+Stable tag: 4.4.1
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -54,6 +54,9 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.4.1 =
+* Fix: Forcing a recount of all posts to clear bad stats.
+
 = 4.4 =
 * Fix: Some posts were showing 0 words counted upon saving due to bad html entity decoding. A custom entity decoding dictionary has been added to address this.
 * Fix: Several fixes/minor improvements to the server side counting patterns.

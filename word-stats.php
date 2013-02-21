@@ -4,10 +4,10 @@ Plugin Name: Word Stats
 Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.4
+Version: 4.4.1
 Author URI: http://www.franontanaya.com
 
-Copyright (C) 2012 Fran Ontanaya
+Copyright (C) 2013 Fran Ontanaya
 contacto@franontanaya.com
 http://bestseller.franontanaya.com/?p=101
 
@@ -24,13 +24,13 @@ http://bestseller.franontanaya.com/?p=101
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Thanks to Allan Ellegaard, Eric Johnson and Feuerwächter for testing and input.
+Thanks to Allan Ellegaard, Eric Johnson, Feuerwächter and Chedr for testing and feedback.
 */
 
 /* # Setup
 -------------------------------------------------------------- */
 # Used to perform upgrades
-define( 'WS_CURRENT_VERSION', '4.4' );
+define( 'WS_CURRENT_VERSION', '4.4.1' );
 
 # Load translation strings
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
@@ -84,6 +84,11 @@ if ( !Word_Stats_Core::is_option( 'word_stats_options' ) && get_option( 'word_st
 	delete_option( 'word_stats_done_caching' );
 	delete_option( 'word_stats_cache_start' );
 	Word_Stats_State::set( 'cache_start', false );
+}
+
+# Force recache to clear bad stats.
+if ( version_compare( $word_stats_options[ 'version' ], '4.4.1' ) < 0 ) {
+	Word_Stats_Core::recount_all();
 }
 
 # Update version
@@ -298,6 +303,12 @@ class Word_Stats_Core {
 			}
 		}
 		return $posts_checked;
+	}
+
+	# Resets the cache status of all posts.
+	public function recount_all()  {
+		global $wpdb;
+		return $wpdb->query( "UPDATE $wpdb->postmeta SET meta_value = 0 WHERE meta_key = 'word_stats_cached'" );
 	}
 
 	#	Calculates the various stats for the current or specified post, saves them in post metas,
