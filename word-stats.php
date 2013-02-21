@@ -1,13 +1,13 @@
 <?php
 /*
 Plugin Name: Word Stats
-Plugin URI: http://bestseller.franontanaya.com/?p=101
+Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.3
+Version: 4.4.1
 Author URI: http://www.franontanaya.com
 
-Copyright (C) 2012 Fran Ontanaya
+Copyright (C) 2013 Fran Ontanaya
 contacto@franontanaya.com
 http://bestseller.franontanaya.com/?p=101
 
@@ -24,13 +24,13 @@ http://bestseller.franontanaya.com/?p=101
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Thanks to Allan Ellegaard, Eric Johnson and Feuerwächter for testing and input.
+Thanks to Allan Ellegaard, Eric Johnson, Feuerwächter and Chedr for testing and feedback.
 */
 
 /* # Setup
 -------------------------------------------------------------- */
 # Used to perform upgrades
-define( 'WS_CURRENT_VERSION', '4.3' );
+define( 'WS_CURRENT_VERSION', '4.4.1' );
 
 # Load translation strings
 load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
@@ -84,6 +84,11 @@ if ( !Word_Stats_Core::is_option( 'word_stats_options' ) && get_option( 'word_st
 	delete_option( 'word_stats_done_caching' );
 	delete_option( 'word_stats_cache_start' );
 	Word_Stats_State::set( 'cache_start', false );
+}
+
+# Force recache to clear bad stats.
+if ( version_compare( $word_stats_options[ 'version' ], '4.4.1' ) < 0 ) {
+	Word_Stats_Core::recount_all();
 }
 
 # Update version
@@ -298,6 +303,12 @@ class Word_Stats_Core {
 			}
 		}
 		return $posts_checked;
+	}
+
+	# Resets the cache status of all posts.
+	public function recount_all()  {
+		global $wpdb;
+		return $wpdb->query( "UPDATE $wpdb->postmeta SET meta_value = 0 WHERE meta_key = 'word_stats_cached'" );
 	}
 
 	#	Calculates the various stats for the current or specified post, saves them in post metas,
@@ -542,12 +553,14 @@ class Word_Stats_Admin {
 		foreach( $wp_post_types as $post_type ) {
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 			# Load only content and custom post types
+
 			if ( Word_Stats_Core::is_content_type( $post_type->name ) ) {
 				$query =  "SELECT * FROM $wpdb->posts
 									WHERE post_type = '" . mysql_real_escape_string( $post_type->name ) . "' AND " .
 									( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
-									"post_date BETWEEN '" . mysql_real_escape_string( $period_start ) . "' AND '" . mysql_real_escape_string( $period_end ) . "' " .
+									"post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' " .
 									"ORDER BY post_date DESC";
+
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
@@ -726,17 +739,20 @@ class Word_Stats_Admin {
 			$period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 );
 			$period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' );
 		}
+
 		$author_graph = $_GET[ 'author-tab' ] ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
 
 		$report = Word_Stats_Admin::load_report_stats( $author_graph, $period_start, $period_end );
 
 		if ( $report ) {
 			# Get oldest date (for the graph)
-			$period_start = date( 'Y-m-d', min(
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ),
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ),
-				bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) )
-			);
+			if( $_GET[ 'view-all' ] ) {
+				$period_start = date( 'Y-m-d', min(
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ),
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ),
+					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'custom' ] ) ) )
+				);
+			}
 			include 'graph-options.php';
 			$diagnostic_tables = Word_Stats_Admin::diagnostics_tables( $report );
 			include 'view-report-graphs.php';
@@ -748,7 +764,7 @@ class Word_Stats_Admin {
 
 function word_stats_report_init() {
 		wp_register_style( 'ws-reports-page', plugins_url() . '/word-stats/css/reports-page.css' );
-		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/jquery-ui-1.7.3.custom.css' );
+		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/css/custom/jquery-ui-1.9.2.custom.min.css' );
 }
 function word_stats_report_styles() {
 		wp_enqueue_style( 'ws-reports-page' );
@@ -780,4 +796,4 @@ function word_stats_notice_donation() {
 if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
 if ( Word_Stats_State::is_worker_needed() ) { add_action( 'admin_notices', 'word_stats_notice_cacheing' ); }
 
-/* EOF */
+# EOF
