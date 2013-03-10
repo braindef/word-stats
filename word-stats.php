@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.4.1
+Version: 4.4.2
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2013 Fran Ontanaya
@@ -101,8 +101,10 @@ if ( $word_stats_options[ 'version' ] != WS_CURRENT_VERSION ) {
 /* # Hooks
 -------------------------------------------------------------- */
 # Hook live stats. Load only when editing a post.
-if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER[ 'SCRIPT_FILENAME' ], 'post-new.php' ) === false ) {
-	add_action( 'admin_footer', array( 'Word_Stats_Core' , 'live_stats' ) );
+if ( isset( $_GET[ 'action' ] ) ) {
+	if ( $_GET[ 'action' ] == 'edit' || !strpos( $_SERVER[ 'SCRIPT_FILENAME' ], 'post-new.php' ) === false ) {
+		add_action( 'admin_footer', array( 'Word_Stats_Core' , 'live_stats' ) );
+	}
 }
 
 #	Hook stats caching when a post is saved
@@ -732,21 +734,21 @@ class Word_Stats_Admin {
 
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
 
-		if( $_GET[ 'view-all' ] ) {
+		if( isset( $_GET[ 'view-all' ] ) ) {
 			$period_start = '1900-01-01';
 			$period_end = date( 'Y-m-d' );
 		} else {
-			$period_start = $_GET[ 'period-start' ] ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 );
-			$period_end = $_GET[ 'period-end' ] ? $_GET[ 'period-end' ] : date( 'Y-m-d' );
+			$period_start = isset( $_GET[ 'period-start' ] ) ? $_GET[ 'period-start' ] : date( 'Y-m-d', time() - 15552000 );
+			$period_end = isset( $_GET[ 'period-end' ] ) ? $_GET[ 'period-end' ] : date( 'Y-m-d' );
 		}
 
-		$author_graph = $_GET[ 'author-tab' ] ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
+		$author_graph = isset( $_GET[ 'author-tab' ] ) ? intval( $_GET[ 'author-tab' ] ) : $user_ID;
 
 		$report = Word_Stats_Admin::load_report_stats( $author_graph, $period_start, $period_end );
 
 		if ( $report ) {
 			# Get oldest date (for the graph)
-			if( $_GET[ 'view-all' ] ) {
+			if( isset( $_GET[ 'view-all' ] ) ) {
 				$period_start = date( 'Y-m-d', min(
 					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'post' ] ) ),
 					bst_Ym_to_unix( bst_array_first( $report[ 'author_count' ][ $author_graph ][ 'page' ] ) ),
@@ -776,8 +778,8 @@ function word_stats_create_menu() {
 	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'Word_Stats_Admin', 'settings_page' ) );
 	if ( !Word_Stats_State::is_worker_needed() ) {
 		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'Word_Stats_Admin', 'reports_page' ) );
+		add_action( 'admin_print_styles-' . $page, 'word_stats_report_styles' );  # Load styles for the reports page
 	}
-	add_action( 'admin_print_styles-' . $page, 'word_stats_report_styles' );  # Load styles for the reports page
 }
 add_action( 'admin_init', 'word_stats_report_init' );
 add_action( 'admin_menu', 'word_stats_create_menu' );
@@ -793,7 +795,9 @@ function word_stats_notice_cacheing() {
 function word_stats_notice_donation() {
 	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'With your support we can bring you even more premium features!', 'word-stats' ) );
 }
-if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
+if( isset( $_GET[ 'word-stats-action' ] ) ) {
+	if( $_GET[ 'word-stats-action' ] == 'donation' ) { add_action( 'admin_notices', 'word_stats_notice_donation' ); }
+}
 if ( Word_Stats_State::is_worker_needed() ) { add_action( 'admin_notices', 'word_stats_notice_cacheing' ); }
 
 # EOF
