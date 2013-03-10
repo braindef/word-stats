@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 3.1
 Tested up to: 3.5.1
-Stable tag: 4.4.1
+Stable tag: 4.4.2
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -54,6 +54,10 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.4.2 =
+* Fix: 'Undefined index' notices in debug mode due to using $_GET variables before checking if they were set.
+* Fix: 'Undefined variable' notice due to word_stats_report_styles action being loaded when the worker was still busy collecting stats and add_submenu_page was disabled, therefore $page not being defined for the action.
+
 = 4.4.1 =
 * Fix: Forcing a recount of all posts to clear bad stats.
 
