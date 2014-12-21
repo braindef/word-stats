@@ -13,10 +13,10 @@
 			*/
 			echo settings_fields( 'word-stats-settings-group' ); # Echo WP's built in hidden fields
 			Word_Stats_Admin::options_section( __( 'Diagnostics', 'word-stats' ) );
-			$width = '70px'; $align = 'right';
+			$width = '100px'; $align = 'right';
 			Word_Stats_Admin::options_field( 'word_stats_options[diagnostic_too_short]', 'number', intval( $word_stats_options[ 'diagnostic_too_short' ] ), false, false, '0', '90000', $width, $align, __( 'Posts below this word count will be flagged as too short.', 'word-stats' ) );
 			Word_Stats_Admin::options_field( 'word_stats_options[diagnostic_too_long]', 'number', intval( $word_stats_options[ 'diagnostic_too_long' ] ), false, false, '140', '90000', $width, $align, __( 'Posts above this word count will be flagged as too long.', 'word-stats' ) );
-			$width = '30px';
+			$width = '70px';
 			Word_Stats_Admin::options_field( 'word_stats_options[diagnostic_too_difficult]', 'number', intval( $word_stats_options[ 'diagnostic_too_difficult' ] ), false, false, '1', '150', $width, $align, __( 'Posts above this average readability level will be flagged as too difficult.', 'word-stats' ) );
 			Word_Stats_Admin::options_field( 'word_stats_options[diagnostic_too_simple]', 'number', intval( $word_stats_options[ 'diagnostic_too_simple' ] ), false, false, '0', '150', $width, $align, __( 'Posts below this average readability level will be flagged as too simple.', 'word-stats' ) );
 			Word_Stats_Admin::options_field( 'word_stats_options[diagnostic_no_keywords]', 'number', intval( $word_stats_options[ 'diagnostic_no_keywords' ] ), false, false, '0', '50', $width, $align, __( 'Posts without any keyword count per 1000 words greater than this value, and not flagged already as too short, will be diagnosed as having no relevant keywords.', 'word-stats' ) );
