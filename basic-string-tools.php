@@ -2,11 +2,15 @@
 /*
 Basic String Tools
 by: Fran Ontanaya <email@franontanaya.com>
-Version: 0.6
+Version: 0.7
 License: GPLv2
 -------------------------------------------------------------- */
 
 /* Changelog
+= 0.7 =
+* Strip shortcodes. Should be optional in the future.
+* Renamed bst_html_stripper to bst_strip_html
+
 = 0.6 =
 * Replaced html_entity_decode with our own entity dictionary.
 * Several fixes/improvements to the text simplification regex patterns.
@@ -24,8 +28,8 @@ License: GPLv2
 * Added bst_htmlentities_decode.
 * Split ignored keywords filter to bst_regfilter_keyword_counts
 * Removed deprecated arguments from bst_keywords
-* bst_keywords and bst_html_stripper now can take $charset
-* Added trim to bst_html_stripper
+* bst_keywords and bst_strip_html now can take $charset
+* Added trim to bst_strip_html
 
 = 0.3 =
 * Added bst_get_common_words() with English and Spanish lists.
@@ -125,7 +129,7 @@ function bst_html_entity_decode( $text ) {
 }
 
 # Strip HTML tags without gluing words. We assume the HTML is not encoded into entities.
-function bst_html_stripper ( $text ) {
+function bst_strip_html( $text, $charset = null ) {
 	$search = array( '@<script[^>]*?>.*?</script>@si',  # Strip out javaScript
 		            '@<[\/\!]*?[^<>]*?>@si',            # Strip out HTML tags
 		            '@<style[^>]*?>.*?</style>@siU',    # Strip style tags properly
@@ -133,6 +137,11 @@ function bst_html_stripper ( $text ) {
 	);
 	$text = preg_replace( $search, ' ', $text );
 	return trim( $text );
+}
+
+# Strip shortcodes, e.g. WordPress, bbCodes, etc.
+function bst_strip_shortcodes( $text ) {
+    return preg_replace( '@\[[a-zA-Z0-9\s\"\-\_]+\]]@si', ' ', $text );
 }
 
 # Helper functions
@@ -224,8 +233,8 @@ function bst_keywords( $text, $minimum = 0, $charset = 'UTF-8' ) {
 
 	if ( !$text ) { return false; }
 	if ( !$ignore ) { $ignore = array(); }
-
-	$text = bst_html_stripper( $text, $charset );
+	$text = bst_strip_html( $text, $charset );
+	$text = bst_strip_shortcodes( $text );
 
 	$word_hash = array();
 	$top_word_count = 0;

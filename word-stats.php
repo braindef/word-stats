@@ -4,10 +4,10 @@ Plugin Name: Word Stats
 Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.4.2
+Version: 4.5.0
 Author URI: http://www.franontanaya.com
 
-Copyright (C) 2013 Fran Ontanaya
+Copyright (C) 2014 Fran Ontanaya
 contacto@franontanaya.com
 http://bestseller.franontanaya.com/?p=101
 
@@ -30,10 +30,13 @@ Thanks to Allan Ellegaard, Eric Johnson, Feuerwächter and Chedr for testing and
 /* # Setup
 -------------------------------------------------------------- */
 # Used to perform upgrades
-define( 'WS_CURRENT_VERSION', '4.4.1' );
+define( 'WS_CURRENT_VERSION', '4.5.0' );
+
+define( 'WS_DIR_PATH', plugin_dir_path( __FILE__ ) );
+define( 'WS_FOLDER', basename( WS_DIR_PATH ) );
 
 # Load translation strings
-load_plugin_textdomain( 'word-stats', '/wp-content/plugins/word-stats/languages/', 'word-stats/languages/' );
+load_plugin_textdomain( 'word-stats', false, WS_FOLDER . '/languages/' );
 
 # Generic functions to do string stuff
 require_once 'basic-string-tools.php';
@@ -45,49 +48,8 @@ $word_stats_options = Word_Stats_Core::load_options();
 /*
 	Check version. Perform upgrades.
 */
-#	Move old individual options to new options array. We assume if there was a "version" option stored already, then it's an old install.
-# We don't delete the old options till the update is done, in case of script interruption while moving the options.
-if ( !Word_Stats_Core::is_option( 'word_stats_options' ) && get_option( 'word_stats_version' ) ) {
-	$word_stats_options[ 'version' ] = get_option( 'word_stats_version', WS_CURRENT_VERSION );
-	$word_stats_options[ 'ignore_keywords' ] = get_option( 'word_stats_ignore_keywords', '' );
-	$word_stats_options[ 'count_unpublished' ] = get_option( 'word_stats_count_unpublished', false );
-	$word_stats_options[ 'live_keywords' ] = get_option( 'word_stats_show_keywords', true );
-	$word_stats_options[ 'add_tags' ] = get_option( 'word_stats_add_tags', false );
-	$word_stats_options[ 'totals' ] = get_option( 'word_stats_totals', true );
-	$word_stats_options[ 'live_averages' ] = get_option( 'word_stats_averages', true );
-	$word_stats_options[ 'replace_word_count' ] = get_option( 'word_stats_replace_word_count', true );
-	$word_stats_options[ 'RI_column' ] = get_option( 'word_stats_RI_Column', true );
-	$word_stats_options[ 'diagnostic_too_short' ] = get_option( 'word_stats_diagnostic_too_short', 150 );
-	$word_stats_options[ 'diagnostic_too_long' ] = get_option( 'word_stats_diagnostic_too_long', 1500 );
-	$word_stats_options[ 'diagnostic_too_difficult' ] = get_option( 'word_stats_diagnostic_too_difficult', 7 );
-	$word_stats_options[ 'diagnostic_too_simple' ] = get_option( 'word_stats_diagnostic_too_simple', 15 );
-	$word_stats_options[ 'diagnostic_no_keywords' ] = get_option( 'word_stats_diagnostic_no_keywords', 2 );
-	$word_stats_options[ 'diagnostic_spammed_keywords' ] = get_option( 'word_stats_diagnostic_spammed_keywords', 20 );
-	$word_stats_options[ 'ignore_common' ] = get_option( 'word_stats_ignore_common', substr( get_bloginfo( 'language' ), 0, 2 ) );
-	update_option( 'word_stats_options', $word_stats_options );
-	delete_option( 'word_stats_version' );
-	delete_option( 'word_stats_ignore_keywords' );
-	delete_option( 'word_stats_count_unpublished' );
-	delete_option( 'word_stats_show_keywords' );
-	delete_option( 'word_stats_add_tags' );
-	delete_option( 'word_stats_totals' );
-	delete_option( 'word_stats_averages' );
-	delete_option( 'word_stats_replace_word_count' );
-	delete_option( 'word_stats_RI_Column' );
-	delete_option( 'word_stats_diagnostic_too_short' );
-	delete_option( 'word_stats_diagnostic_too_long' );
-	delete_option( 'word_stats_diagnostic_too_difficult' );
-	delete_option( 'word_stats_diagnostic_too_simple' );
-	delete_option( 'word_stats_diagnostic_no_keywords' );
-	delete_option( 'word_stats_diagnostic_spammed_keywords' );
-	delete_option( 'word_stats_ignore_common' );
-	delete_option( 'word_stats_done_caching' );
-	delete_option( 'word_stats_cache_start' );
-	Word_Stats_State::set( 'cache_start', false );
-}
-
-# Force recache to clear bad stats.
-if ( version_compare( $word_stats_options[ 'version' ], '4.4.1' ) < 0 ) {
+# Force recache to update stats.
+if ( version_compare( $word_stats_options[ 'version' ], '4.5.0' ) < 0 ) {
 	Word_Stats_Core::recount_all();
 }
 
@@ -171,16 +133,25 @@ class Word_Stats_State {
 	#	2. Is there no caching started, OR is it longer than 30 seconds since the last caching iteration?
 	public function is_worker_needed() {
 		global $word_stats_options;
+		if ( !count( Word_Stats_Core::get_uncached_posts_ids() ) ) { return false; }
 		$status = Word_Stats_State::get( 'cache_start' );
-		return count( Word_Stats_Core::get_uncached_posts_ids() ) && ( !$status OR ( time() - $status > 30 ) );
+		return ( !$status OR ( time() - $status > 30 ) );
 	}
 	public function get( $var ) {
 		$status = get_option( 'word_stats_state', false );
 		if ( is_array( $var ) ) {
-			foreach ( $var as $v ) { $result[ $v ] = $status[ $v ]; }
+			foreach ( $var as $v ) {
+			    if ( isset( $status[ $v ] ) ) {
+    			    $result[ $v ] = $status[ $v ];
+                }
+			}
 			return $result;
 		} else {
-			return $status[ $var ];
+		    if ( isset( $status[ $var ] ) ) {
+    			return $status[ $var ];
+            } else {
+                return null;
+            }
 		}
 	}
 	public function set( $var, $value ) {
@@ -225,9 +196,11 @@ class Word_Stats_Core {
 	# Select posts according to the count unpublished option
 	public function get_posts( $post_type_name ) {
 		global $wpdb, $word_stats_options;
-		$query = "SELECT * FROM $wpdb->posts WHERE ";
-		$query .= ( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' );
-		$query .=  "post_type = '" . mysql_real_escape_string( $post_type_name ) . "' ORDER BY ID DESC";
+		$query = $wpdb->prepare(
+		    "SELECT * FROM $wpdb->posts WHERE " .
+		    !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' .
+		    "post_type = %s ORDER BY ID DESC",
+		    $post_type_name );
 		return $wpdb->get_results( $query, OBJECT );
 	}
 
@@ -267,18 +240,19 @@ class Word_Stats_Core {
 	*/
 	public function get_uncached_posts_ids() {
 		global $wpdb, $word_stats_options;
-		$query =  "SELECT $wpdb->posts.ID
-							FROM $wpdb->posts
-							WHERE $wpdb->posts.ID NOT IN (
-								SELECT DISTINCT post_id
-								FROM $wpdb->postmeta
-								WHERE meta_key = 'word_stats_cached'
-								AND meta_value = TRUE
-							)
-							AND $wpdb->posts.post_type != 'attachment'
-							AND $wpdb->posts.post_type != 'nav_menu_item'
-							AND $wpdb->posts.post_type != 'revision'
-							" . ( !$word_stats_options[ 'count_unpublished' ] ? " AND $wpdb->posts.post_status = 'publish'" : '' );
+		# Use $wpdb->prepare here if you add any variables
+		$query = "SELECT $wpdb->posts.ID " .
+			"FROM $wpdb->posts " .
+			"WHERE $wpdb->posts.ID NOT IN ( " .
+				"SELECT DISTINCT post_id " .
+				"FROM $wpdb->postmeta " .
+				"WHERE meta_key = 'word_stats_cached' " .
+				"AND meta_value = TRUE " .
+			") " .
+			"AND $wpdb->posts.post_type != 'attachment' " .
+			"AND $wpdb->posts.post_type != 'nav_menu_item' " .
+			"AND $wpdb->posts.post_type != 'revision' " .
+			( !$word_stats_options[ 'count_unpublished' ] ? " AND $wpdb->posts.post_status = 'publish'" : '' );
 		$result = $wpdb->get_results( $query, OBJECT );
 		return $result;
 	}
@@ -294,10 +268,17 @@ class Word_Stats_Core {
 	public function cache_pending() {
 		ignore_user_abort( true ); # Don't stop if the user browses away. Probably not needed.
 		ini_set( 'max_execution_time', 600 );  # Try to work for ten minutes. This is better than set_time_limit, which is just a wrapper.
+        $actual_MET = ini_get( 'max_execution_time' ); # In case setting the execution time is disabled on the server
+        if ( isset( $actual_MET ) ) {
+            $timeout = max( time() + $actual_MET - 5, 25 ); # Exit a few seconds before we run out of time.
+        } else {
+            $timeout = time() + 25;
+        }
 		$posts = Word_Stats_Core::get_uncached_posts_ids();
 		if ( count( $posts ) ) {
 			$posts_checked = 0;
 			foreach ( $posts as $post ) {
+			    if ( time() > $timeout ) { exit(); }
 				Word_Stats_State::set( 'cache_start', time() );
 				if ( !Word_Stats_Core::is_plugin_plugged( 'word-stats' ) ) { exit(); }
 				$posts_checked++;
@@ -323,41 +304,43 @@ class Word_Stats_Core {
 			$id = $post->ID;
 		}
 		$the_post = get_post( $id );
-		$all_text = bst_html_stripper( strip_shortcodes( $the_post->post_content ), get_bloginfo( 'charset' ) );
+		if ( strlen( $the_post->post_content ) !== 0 ) {
+            $no_shortcodes = strip_shortcodes( $the_post->post_content );
+            $charset = get_bloginfo( 'charset' );
+		    $all_text = bst_strip_html( $no_shortcodes, $charset );
+		    if ( $all_text ) {
+			    $stats = bst_split_text( $all_text );
+			    $total_alphanumeric = mb_strlen( $stats[ 'alphanumeric' ] ); # mb_strlen = multibyte strlen
+			    $total_sentences = count( $stats[ 'sentences' ] );
+			    $total_words = count( $stats[ 'words' ] );
+			    $word_array = $stats[ 'words' ];
+			    $all_text = $stats[ 'text' ];
+			    if ( $total_words > 0 && $total_sentences > 0 ) { # No divisions by zero, thanks.
+				    $chars_per_word = intval( $total_alphanumeric / $total_words );
+				    $chars_per_sentence = intval( $total_alphanumeric / $total_sentences );
+				    $words_per_sentence = intval( $total_words / $total_sentences );
 
-		if ( $all_text ) {
-			$stats = bst_split_text( $all_text );
-			$total_alphanumeric = mb_strlen( $stats[ 'alphanumeric' ] ); # mb_strlen = multibyte strlen
-			$total_sentences = count( $stats[ 'sentences' ] );
-			$total_words = count( $stats[ 'words' ] );
-			$word_array = $stats[ 'words' ];
-			$all_text = $stats[ 'text' ];
+				    $ARI = max( round( 4.71 * ( $total_alphanumeric / $total_words ) + 0.5 * ( $total_words / $total_sentences ) - 21.43, 1 ), 0 );
+				    $CLI = max( round( 5.88 * ( $total_alphanumeric / $total_words ) - 29.6 * ( $total_sentences / $total_words ) - 15.8, 1), 0 );
 
-			if ( $total_words > 0 && $total_sentences > 0 ) { # No divisions by zero, thanks.
-				$chars_per_word = intval( $total_alphanumeric / $total_words );
-				$chars_per_sentence = intval( $total_alphanumeric / $total_sentences );
-				$words_per_sentence = intval( $total_words / $total_sentences );
-
-				$ARI = round( 4.71 * ( $total_alphanumeric / $total_words ) + 0.5 * ( $total_words / $total_sentences ) - 21.43, 1);
-				$CLI = round( 5.88 * ( $total_alphanumeric / $total_words ) - 29.6 * ( $total_sentences / $total_words ) - 15.8, 1);
-
-				$LIXlongwords = 0;
-				for ($i = 0; $i < count( $word_array ); $i = $i + 1 ) {
-					if ( mb_strlen( $word_array[ $i ] ) > 6 ) { $LIXlongwords++; }
-				}
-				$temp = preg_split( '/[,;\.\(\:]/', $all_text );
-				$LIX = round( $total_words / count( $temp ) + ( $LIXlongwords * 100 ) / $total_words, 1) ;
-			} else {
-				$ARI = $CLI = $LIX = '0';
-			}
-		} else {
-				$ARI = $CLI = $LIX = '0';
-		}
-
-		# Remove ignored keywords
-		$ignore = Word_Stats_Core::get_ignored_keywords();
-		$keywords = bst_regfilter_keyword_counts( bst_keywords( $the_post->post_content, 3, get_bloginfo( 'charset' ) ), $ignore );
-
+				    $LIXlongwords = 0;
+				    for ($i = 0; $i < count( $word_array ); $i = $i + 1 ) {
+					    if ( mb_strlen( $word_array[ $i ] ) > 6 ) { $LIXlongwords++; }
+				    }
+				    $temp = preg_split( '/[,;\.\(\:]/', $all_text );
+				    $LIX = max( round( $total_words / count( $temp ) + ( $LIXlongwords * 100 ) / $total_words, 1 ), 0 );
+			    } else {
+				    $ARI = $CLI = $LIX = '0';
+			    }
+		    } else {
+				    $ARI = $CLI = $LIX = '0';
+		    }
+		    # Remove ignored keywords
+		    $ignore = Word_Stats_Core::get_ignored_keywords();
+		    $keywords = bst_regfilter_keyword_counts( bst_keywords( $the_post->post_content, 3, get_bloginfo( 'charset' ) ), $ignore );
+	    } else {
+	        $ARI = 0; $CLI = 0; $LIX = 0; $total_words = 0; $keywords = array();
+	    }
 		# Cache the stats
 		update_post_meta( $id, 'readability_ARI', $ARI );
 		update_post_meta( $id, 'readability_CLI', $CLI );
@@ -379,11 +362,14 @@ class Word_Stats_Core {
 			$report[ 'type_count' ][ $post_type->name ] = 0;
 			# Load only content and custom post types
 			if ( Word_Stats_Core::is_content_type( $post_type->name ) ) {
-				$query =  "SELECT * FROM $wpdb->posts
-									WHERE post_type = '" . mysql_real_escape_string( $post_type->name ) . "' AND " .
-									( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
-									"post_date BETWEEN '" . mysql_real_escape_string( $period_start ) . "' AND '" . mysql_real_escape_string( $period_end ) . "' " .
-									"ORDER BY post_date DESC";
+
+				$query = $wpdb->prepare(
+	                "SELECT * FROM $wpdb->posts " .
+					"WHERE post_type = %s AND " .
+					!$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' .
+					"post_date BETWEEN %s AND %s " .
+					"ORDER BY post_date DESC",
+                    $post_type->name, $period_start, $period_end );
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
@@ -455,7 +441,7 @@ class Word_Stats_Core {
 	}
 
 	# Aggregate all indexes into one
-	public function calc_ws_index( $ARI, $CLI, $LIX ) { return ( floatval( $ARI ) + floatval( $CLI ) + ( ( floatval( $LIX ) - 10 ) / 2 ) ) / 3; }
+	public function calc_ws_index( $ARI, $CLI, $LIX ) { return max( ( floatval( $ARI ) + floatval( $CLI ) + ( max( floatval( $LIX ) - 10, 0 ) / 2 ) ) / 3, 0 ); }
 
 	public function create_posts_list_column( $name ) {
 		global $post, $word_stats_options;
@@ -480,7 +466,7 @@ class Word_Stats_Core {
 
 	# Load style for the column
 	public function style_column() {
-		wp_register_style( 'word-stats-css', plugins_url() . '/word-stats/css/word-stats.css' );
+		wp_register_style( 'word-stats-css', plugins_url( WS_FOLDER . '/css/word-stats.css' ) );
 		wp_enqueue_style( 'word-stats-css' );
 	}
 
@@ -540,6 +526,7 @@ class Word_Stats_Admin {
 	*/
 	public function load_report_stats( $author_graph, $period_start, $period_end ) {
 		global $user_ID, $current_user, $wp_post_types, $wpdb, $word_stats_options;
+		ini_set( 'max_execution_time', 300 ); # Loading the stats can timeout on some servers with 30s max execution and "all time" is selected
 
 		$report[ 'total_keywords' ] = $report[ 'recent_posts_rows' ] = array();
 		$report[ 'totals_readability' ][ 0 ] = $report[ 'totals_readability' ][ 1 ] = $report[ 'totals_readability' ][ 2 ] = $report[ 'type_count' ][ 'custom' ] =
@@ -557,12 +544,13 @@ class Word_Stats_Admin {
 			# Load only content and custom post types
 
 			if ( Word_Stats_Core::is_content_type( $post_type->name ) ) {
-				$query =  "SELECT * FROM $wpdb->posts
-									WHERE post_type = '" . mysql_real_escape_string( $post_type->name ) . "' AND " .
-									( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
-									"post_date BETWEEN '" . $period_start . "' AND '" . $period_end . "' " .
-									"ORDER BY post_date DESC";
-
+                $query = $wpdb->prepare(
+                    "SELECT * FROM $wpdb->posts
+					WHERE post_type = %s AND " .
+					( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
+					"post_date BETWEEN %s AND %s " .
+					"ORDER BY post_date DESC",
+					$post_type->name, $period_start, $period_end );
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
@@ -730,9 +718,12 @@ class Word_Stats_Admin {
 		Display the stats page if the caching is complete.
 	*/
 	public function reports_page() {
-		if ( Word_Stats_State::is_worker_needed() ) { return false; } 	# Relevant when going straight to the graphs page right after installing the plugin.
-
 		global $user_ID, $current_user, $wp_post_types, $wpdb;
+
+		if ( Word_Stats_State::is_worker_needed() ) {
+		    _e( 'Stats collection hasn\'t completed yet. Try again later.', 'word-stats' );
+		    return false;
+		} 	# Relevant when going straight to the graphs page right after installing the plugin.
 
 		if( isset( $_GET[ 'view-all' ] ) ) {
 			$period_start = '1900-01-01';
@@ -765,8 +756,8 @@ class Word_Stats_Admin {
 }
 
 function word_stats_report_init() {
-		wp_register_style( 'ws-reports-page', plugins_url() . '/word-stats/css/reports-page.css' );
-		wp_register_style( 'ws-jquery-ui', plugins_url() . '/word-stats/js/ui/css/custom/jquery-ui-1.9.2.custom.min.css' );
+		wp_register_style( 'ws-reports-page', plugins_url( WS_FOLDER . '/css/reports-page.css' ) );
+		wp_register_style( 'ws-jquery-ui', plugins_url( WS_FOLDER . '/js/ui/css/custom/jquery-ui-1.9.2.custom.min.css' ) );
 }
 function word_stats_report_styles() {
 		wp_enqueue_style( 'ws-reports-page' );
@@ -776,10 +767,10 @@ function word_stats_create_menu() {
 	global $word_stats_options;
 	add_action( 'admin_init', array( 'Word_Stats_Admin', 'init_settings' ) );
 	add_options_page( 'Word Stats Plugin Settings', 'Word Stats', 'manage_options', 'word-stats-options', array( 'Word_Stats_Admin', 'settings_page' ) );
-	if ( !Word_Stats_State::is_worker_needed() ) {
+	//if ( !Word_Stats_State::is_worker_needed() ) {
 		$page = add_submenu_page( 'index.php', 'Word Stats Plugin Stats', 'Word Stats', 'edit_posts', 'word-stats-graphs', array( 'Word_Stats_Admin', 'reports_page' ) );
 		add_action( 'admin_print_styles-' . $page, 'word_stats_report_styles' );  # Load styles for the reports page
-	}
+	//}
 }
 add_action( 'admin_init', 'word_stats_report_init' );
 add_action( 'admin_menu', 'word_stats_create_menu' );
@@ -790,7 +781,9 @@ add_action( 'admin_menu', 'word_stats_create_menu' );
 function word_stats_notice( $mode = 'updated', $message ) { echo '<div class="', $mode, '"><p>', $message, '</p></div>'; }
 function word_stats_notice_cacheing() {
 	$posts_uncached = count( Word_Stats_Core::get_uncached_posts_ids() );
-	word_stats_notice( 'updated', sprintf( __( 'Word stats collection is scheduled (%s posts left). Stats will be available in a little while.', 'word-stats' ), $posts_uncached ) );
+	if ( $posts_uncached > 0 ) {
+    	word_stats_notice( 'updated', sprintf( __( 'Word stats collection is scheduled (%s posts left). Stats will be available in a little while.', 'word-stats' ), $posts_uncached ) );
+    }
 }
 function word_stats_notice_donation() {
 	word_stats_notice( 'updated fade', __( 'Thanks for your contribution!' , 'word-stats' ) . ' ' . __( 'With your support we can bring you even more premium features!', 'word-stats' ) );

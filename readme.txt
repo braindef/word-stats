@@ -1,9 +1,9 @@
 === Plugin Name ===
 Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
-Requires at least: 3.1
-Tested up to: 3.5.1
-Stable tag: 4.4.2
+Requires at least: 4.1.0
+Tested up to: 4.1.0
+Stable tag: 4.5.0
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -36,17 +36,6 @@ Word Stats includes basic support for Unicode scripts, including cyrillic, greek
 
 Spanish and Catalan translations are bundled with the plugin.
 
-Requires WordPress 3.0 and PHP 5.
-
-**Features planned for future versions**
-
-* Improved analytics page.
-* Tag generation.
-* Limit keyword analytics to a custom list of keywords.
-* Send analytics reports by email.
-* Optionally include excerpts in stats.
-* Exportable analytics data.
-
 **Contact**
 
 Feel free to send feedback, requests or suggestions at email@franontanaya.com.
@@ -54,6 +43,20 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.5.0 =
+* Fix: PHP 5.5 compatibility issue.
+* Fix: Strip shortcodes.
+* Fix: Provisionally raised max_execution_time to 5 minutes on load_report_stats to avoid timeouts when viewing all time stats.
+* Fix: Added isset checks on worker state function to avoid Illegal string offset warnings on upgrade.
+* Fix: Option boxes width.
+* Fix: Both LIX and the average readability index now floor at 0
+* Fix: Dash submenu is not disabled during stats collection -- will just alert that counting is underway
+* Fix: Stats collection alert was displayed with 0 posts left.
+* Fix: Changed some paths so they still work when Word Stats is installed in a folder different from default
+* Removed pre 4.4.1 version upgrade code.
+* Replaced the Donate button with a LinkedIn link.
+* Tentatively added a timeout check to the stats collection worker
+
 = 4.4.2 =
 * Fix: 'Undefined index' notices in debug mode due to using $_GET variables before checking if they were set.
 * Fix: 'Undefined variable' notice due to word_stats_report_styles action being loaded when the worker was still busy collecting stats and add_submenu_page was disabled, therefore $page not being defined for the action.
