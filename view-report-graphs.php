@@ -4,17 +4,17 @@
 
 	echo '<!--[if lte IE 8]>';
 
-	$src = plugins_url( 'word-stats/js/excanvas.min.js' );
+	$src = plugins_url( WS_FOLDER . '/js/excanvas.min.js' );
 	echo '
 		<script type="text/javascript" src="' , $src, '"></script>
 		<![endif]-->';
 	# Loading custom jquery-ui seems to fix a problem loading datepicker with the built-in jquery-ui provided with WordPress
 	$scripts = array(
-		plugins_url( 'word-stats/js/ui/jquery.ui.1.9.2.js' ),
-		plugins_url( 'word-stats/js/ui/jquery.ui.datepicker.min.js' ),
-		plugins_url( 'word-stats/js/flot/jquery.flot.js' ),
-		plugins_url( 'word-stats/js/flot/jquery.flot.resize.js' ),
-		plugins_url( 'word-stats/js/flot/jquery.flot.pie.js' )
+		plugins_url( WS_FOLDER . '/js/ui/jquery.ui.1.9.2.js' ),
+		plugins_url( WS_FOLDER . '/js/ui/jquery.ui.datepicker.min.js' ),
+		plugins_url( WS_FOLDER . '/js/flot/jquery.flot.js' ),
+		plugins_url( WS_FOLDER . '/js/flot/jquery.flot.resize.js' ),
+		plugins_url( WS_FOLDER . '/js/flot/jquery.flot.pie.js' )
 	);
 	foreach ( $scripts as $script ) { echo '<script type="text/javascript" src="' , $script, '"></script>', "\n"; }
 
@@ -105,7 +105,7 @@
 
 	# Timeline tooltip
 	echo
-		'<script type="text/javascript" src="', plugins_url( 'word-stats/js/timeline-tooltip.js' ), '"></script>', "\n",
+		'<script type="text/javascript" src="', plugins_url( WS_FOLDER . '/js/timeline-tooltip.js' ), '"></script>', "\n",
 		'<script type="text/javascript">', "\n";
 
 	# Words per Month
