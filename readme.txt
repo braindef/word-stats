@@ -160,10 +160,10 @@ Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/
 * Code: Simplified some redundant code.
 
 == Upgrade Notice ==
-= 4.3 =
-Although no new features are included, this is a substantial code rewrite. Test it before using it in a production enviroment!
+= 4.5.0 =
+No new features are added, but some long standing bugs and issues have been fixed. I encourage you to ugprade.
 
-If you have been having problems with stats caching getting stuck, this release may help. Caching is now done via WP-Cron instead of an AJAX call. Also caching of unpublished posts is deferred until the option to count them is selected. The changes also cover the possible source of some reported problems with stats not updating correctly.
+This version is tested on WordPress 4.1. It should work still on 3.x versions, but YMMV.
 
 == Installation ==
 
