@@ -3,7 +3,7 @@ Contributors: Fran Ontanaya
 Tags: seo, keywords, words, statistics, analytics, diagnostics, counters, readability, linguistics
 Requires at least: 4.1.0
 Tested up to: 4.1.0
-Stable tag: 4.5.0
+Stable tag: 4.5.1
 
 A suite of word counters, keyword counters and readability analysis for your blog.
 
@@ -43,6 +43,10 @@ Feel free to send feedback, requests or suggestions at email@franontanaya.com.
 Or follow me on Twitter: [https://twitter.com/FranOntanaya](https://twitter.com/FranOntanaya)
 
 == Changelog ==
+= 4.5.1 =
+* Fix: Prepared query wasn't working on the dashboard.
+* Fix: Provisional fix for dashboard stats in WordPress +3.8
+
 = 4.5.0 =
 * Fix: PHP 5.5 compatibility issue.
 * Fix: Strip shortcodes.

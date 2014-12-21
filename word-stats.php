@@ -4,7 +4,7 @@ Plugin Name: Word Stats
 Plugin URI: http://wordpress.org/extend/plugins/word-stats/stats/
 Description: A suite of word counters, keyword counters and readability analysis for your blog.
 Author: Fran Ontanaya
-Version: 4.5.0
+Version: 4.5.1
 Author URI: http://www.franontanaya.com
 
 Copyright (C) 2014 Fran Ontanaya
@@ -30,7 +30,7 @@ Thanks to Allan Ellegaard, Eric Johnson, Feuerwächter and Chedr for testing and
 /* # Setup
 -------------------------------------------------------------- */
 # Used to perform upgrades
-define( 'WS_CURRENT_VERSION', '4.5.0' );
+define( 'WS_CURRENT_VERSION', '4.5.1' );
 
 define( 'WS_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WS_FOLDER', basename( WS_DIR_PATH ) );
@@ -49,7 +49,7 @@ $word_stats_options = Word_Stats_Core::load_options();
 	Check version. Perform upgrades.
 */
 # Force recache to update stats.
-if ( version_compare( $word_stats_options[ 'version' ], '4.5.0' ) < 0 ) {
+if ( version_compare( $word_stats_options[ 'version' ], '4.5.1' ) < 0 ) {
 	Word_Stats_Core::recount_all();
 }
 
@@ -76,7 +76,11 @@ add_action( 'save_post', array( 'Word_Stats_Core', 'cache_stats' ) );
 # User may want to switch it off for performance.
 # ToDo: Add options to disable the widget and the shortcode.
 if ( $word_stats_options[ 'totals' ] ) {
-	add_action( 'right_now_content_table_end', array( 'Word_Stats_Core', 'total_word_counts' ) );
+    if ( version_compare( get_bloginfo( 'version' ), '3.8.0' ) < 0 ) {
+    	add_action( 'right_now_content_table_end', array( 'Word_Stats_Core', 'total_word_counts' ) );
+    } else {
+    	add_action( 'dashboard_glance_items', array( 'Word_Stats_Core', 'total_word_counts' ) );
+    }
 }
 
 # Hook readability level column in the posts management list
@@ -198,7 +202,7 @@ class Word_Stats_Core {
 		global $wpdb, $word_stats_options;
 		$query = $wpdb->prepare(
 		    "SELECT * FROM $wpdb->posts WHERE " .
-		    !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' .
+		    ( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
 		    "post_type = %s ORDER BY ID DESC",
 		    $post_type_name );
 		return $wpdb->get_results( $query, OBJECT );
@@ -366,10 +370,11 @@ class Word_Stats_Core {
 				$query = $wpdb->prepare(
 	                "SELECT * FROM $wpdb->posts " .
 					"WHERE post_type = %s AND " .
-					!$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' .
+					( !$word_stats_options[ 'count_unpublished' ] ? "post_status = 'publish' AND " : '' ) .
 					"post_date BETWEEN %s AND %s " .
 					"ORDER BY post_date DESC",
                     $post_type->name, $period_start, $period_end );
+
 				$posts = $wpdb->get_results( $query, OBJECT );
 
 				foreach( $posts as $post ) {
@@ -414,15 +419,15 @@ class Word_Stats_Core {
 			$words = array_sum( $months );
 			$text = __( 'Words', 'word-stats' ) . ' (' . $type . ')';
 			$html .= ( $mode == 'table'
-							 ? '<tr><td class="first b"><a>' . number_format_i18n( $words ) . '</a></td><td class="t"><a>' . $text . '</a></td></tr>'
-							 : '<li class="word-stats-count">' . number_format_i18n( $words ) . ' ' . $text . '</li>' );
+							 ? '<tr><td class="first b"><a>' . number_format_i18n( $words ) . ' </a></td><td class="t"><a>' . $text . "\n" . '</a></td></tr>'
+							 : '<li class="word-stats-count">' . number_format_i18n( $words ) . ' ' . $text . "\n" .  '</li>' );
 		}
 		# Absolute total words
 		$text =  __( 'Total words', 'word-stats' );
 		$total_all =  number_format_i18n( $total_all );
 		$html .= ( $mode == 'table'
-			 			 ? '<tr><td class="first b word-stats-dash-total"><a>' . $total_all . '</a></td><td class="t"><a>' . $text . '</a></td></tr>'
-						 : '<li class="word-stats-count word-stats-list-total">' . $total_all . ' ' . $text . '</li>' );
+			 			 ? '<tr><td class="first b word-stats-dash-total"><a>' . $total_all . ' </a></td><td class="t"><a>' . $text . "\n" .  '</a></td></tr>'
+						 : '<li class="word-stats-count word-stats-list-total">' . $total_all . ' ' . $text . "\n" .  '</li>' );
 		return $html;
 	}
 
