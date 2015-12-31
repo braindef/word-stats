@@ -189,12 +189,12 @@
 				$var_kw_ticks .= '"' . str_replace( '"', '\"', $key ) . '"'; # Double check for unescaped quotes
 				$comma = true;
 				$z++;
-				if ( $z == 20 ) { break; }
+				if ( $z == 50 ) { break; }
 		}
 	}
 	# Fill the blanks
-	if ( $z < 20 ) {
-		for( $i = 1; 20 - $z; $i++ ) {
+	if ( $z < 50 ) {
+		for( $i = 1; 50 - $z; $i++ ) {
 			if ( $comma ) { $kw_data .= ', '; $kw_ticks .= ', '; $var_kw_ticks .= ', '; }
 			$kw_data .= "[  0, $z ]";
 			$var_kw_ticks .= '""';
